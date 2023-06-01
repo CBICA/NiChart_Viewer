@@ -70,7 +70,6 @@
                     <string>File</string>
                 </property>
                 <addaction name="actionOpenData"/>
-                <addaction name="actionLoadDict"/>
                 <addaction name="actionSaveData"/>
                 <addaction name="actionSaveNotebook"/>
             </widget>
@@ -103,11 +102,6 @@
         <action name="actionOpenData">
             <property    name="text">
                 <string>Open Dataset</string>
-            </property>
-        </action>
-        <action name="actionLoadDict">
-            <property    name="text">
-                <string>Load Dictionary</string>
             </property>
         </action>
         <action name="actionSaveData">

@@ -154,9 +154,9 @@
                                     </spacer>
                                 </item>
                                 <item>
-                                    <widget  class="QPushButton"  name="selectModelBtn">
+                                    <widget  class="QPushButton"  name="loadModelBtn">
                                     <property  name="text">
-                                        <string>Select Model</string>
+                                        <string>Load Model</string>
                                     </property>
                                     </widget>
                                 </item>

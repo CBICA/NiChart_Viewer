@@ -18,17 +18,15 @@ from NiChartGUI.core.model.datamodel import PandasModel
 import inspect
 
 import sys
-#sys.path.append('/cbica/home/erusg/3_DEV/SPARE-Scores/05_niCHART/packaging/spare_scores')
-#import spare_scores as spare
 
-from spare_scores import spare_scores as spare
+from NiChartHarmonize import nh_apply_model as nh_test
 
 logger = iStagingLogger.get_logger(__name__)
 
-class SpareView(QtWidgets.QWidget,BasePlugin):
+class HarmonizeView(QtWidgets.QWidget,BasePlugin):
 
     def __init__(self):
-        super(SpareView,self).__init__()
+        super(HarmonizeView,self).__init__()
         
         self.data_model_arr = None
         self.active_index = -1
@@ -36,7 +34,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         self.cmds = None
         
         self.modelname = None
-        self.modelname = '/home/guraylab/AIBIL/Github/NiChartPackages/NiChartHarmonize/test_temp/Test3/outputs/EXP2_ALL_TrainTest/spare_model.pkl.gz'
+        ##self.modelname = '/home/guraylab/AIBIL/Github/TmpPackages/HarmonizeScores/mdl/mdl_SPARE_AD_MUSE_single.pkl.gz'
 
         ## Status bar of the main window
         ## Initialized by the mainwindow during loading of plugin
@@ -49,7 +47,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
 
         root = os.path.dirname(__file__)
         self.readAdditionalInformation(root)
-        self.ui = uic.loadUi(os.path.join(root, 'spareview.ui'),self)
+        self.ui = uic.loadUi(os.path.join(root, 'harmonizeview.ui'),self)
         
         ## Main view panel        
         self.mdi = self.findChild(QMdiArea, 'mdiArea')       
@@ -60,7 +58,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         
         self.ui.wOptions.setMaximumWidth(300)
         
-        self.ui.wCalcSpare.hide()
+        self.ui.wCalcHarmonize.hide()
         
         
 
@@ -69,8 +67,43 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.active_dset_changed.connect(self.OnDataChanged)
         
         self.ui.selectModelBtn.clicked.connect(self.OnSelectModelBtnClicked)
-        self.ui.calcSpareBtn.clicked.connect(self.OnCalcSpareBtnClicked)
+        self.ui.calcHarmonizeBtn.clicked.connect(self.OnCalcHarmonizeBtnClicked)
 
+
+    def CheckModel(self, filename):
+        #read input data
+        
+        # Load model
+        with gzip.open(filename, 'rb') as f:
+            self.mdl = pickle.load(f)
+            
+        # Get columns and check if they exist in dset
+        mdlCol = self.mdl['predictors']
+        dfCol = self.data_model_arr.datasets[self.active_index].data.columns
+
+        dfMdl = pd.DataFrame(columns=['Predictor'], data = mdlCol)
+        dfMdl['Status'] = dfMdl.Predictor.isin(dfCol)
+        dfMdl = dfMdl.replace({True:'FOUND', False:'MISSING'}).sort_values('Status', ascending = False)
+        
+        self.PopulateTable(dfMdl)
+
+        ## Set data view to mdi widget
+        sub = QMdiSubWindow()
+        sub.setWidget(self.dataView)
+        sub.setWindowTitle('MODEL: ' + os.path.basename(filename))
+        self.mdi.addSubWindow(sub)        
+        sub.show()
+        self.mdi.tileSubWindows()
+        
+        if dfMdl[dfMdl.Status=='MISSING'].shape[0] > 0:
+            self.statusbar.showMessage('WARNING: Model does not match the data!')
+        
+        else:
+            self.ui.wCalcHarmonize.show()
+            self.statusbar.showMessage('Model is valid')
+            
+        
+        logger.critical(dfMdl.head())
 
     def OnSelectModelBtnClicked(self):
 
@@ -79,8 +112,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         #else:
             #directory = self.dataPathLast
         directory = QtCore.QDir().homePath()
-        directory = '/home/guraylab/AIBIL/Github/TmpPackages/SpareScores/mdl'
-        directory = '/home/guraylab/AIBIL/Github/NiChartPackages/NiChartHarmonize/test_temp/Test3/outputs/EXP2_ALL_TrainTest'
+        directory = '/home/guraylab/AIBIL/Github/TmpPackages/HarmonizeScores/mdl'
 
         filename = QtWidgets.QFileDialog.getOpenFileName(None,
             caption = 'Open model file',
@@ -91,56 +123,59 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
             logger.warning("No file was selected")
         else:
             self.modelname = filename[0]
-            self.ui.wCalcSpare.show()
+            self.ui.wCalcHarmonize.show()
 
-    def OnCalcSpareBtnClicked(self):
 
-        ## Read data and spare options
+    def OnCalcHarmonizeBtnClicked(self):
+
+        ## Read data and harmonize options
         df = self.data_model_arr.datasets[self.active_index].data
         outVarName = self.ui.edit_outVarName.text()
         if outVarName == '':
-            outVarName = 'SPARE'
+            outVarName = 'HARM'
         if outVarName[0] == '_':
             outVarName = outVarName[1:]
         outCat = outVarName
         
-        ## Apply SPARE
+        ## Apply Harmonization
+        res_harm = nh_test.nh_harmonize_to_ref(df, self.modelname)
         
-        logger.info('AAAAAAAAAAAAa')
-        logger.info(df)
-        dfOut = spare.spare_test(df, self.modelname)
-        logger.info(dfOut.columns)
-        logger.info(dfOut.head())
-        logger.info('AAAAAAAAAAAAa')
-        input()
+        if len(res_harm) == 1:          ## Model mismatch
+            logger.warning('AAAAAAAAAAAAAAAAAAA')
 
+        else:
+            mdlOut, dfOut = res_harm
+        
+        ## Set updated dset
+        df = dfOut
         self.data_model_arr.datasets[self.active_index].data = df
         
         ## Create dict with info about new columns
-        outDesc = 'Created by NiChartGUI SPARE Plugin'
-        outSource = 'NiChartGUI SPARE Plugin'
+        outDesc = 'Created by NiChartHarmonize Plugin'
+        outSource = 'NiChartHarmonize Plugin'
+        ##self.data_model_arr.AddNewVarsToDict([outVarName], outCat, outDesc, outSource)
             
+        ## Call signal for change in data
+        ##self.data_model_arr.OnDataChanged()
+        
         ## Load data to data view 
         self.dataView = QtWidgets.QTableView()
         
-
+        ## Show only columns involved in application
+        
         #dfOut = dfOut.round(3)
         self.PopulateTable(dfOut)
                                                                                                                         
         ## Set data view to mdi widget
         sub = QMdiSubWindow()
         sub.setWidget(self.dataView)
-        sub.setWindowTitle('SPARE Scores')
+        sub.setWindowTitle('Harmonized Values')
         self.mdi.addSubWindow(sub)        
         sub.show()
         self.mdi.tileSubWindows()
         
 
     def PopulateTable(self, data):
-        
-        logger.info(data)
-        logger.info('AAAAAAAAAAAAa')
-        
         
         model = PandasModel(data)
         self.dataView = QtWidgets.QTableView()

@@ -41,7 +41,9 @@ class MainWindow(QtWidgets.QMainWindow):
         
         # Variable to keep path for the last data file loaded
         self.dataPathLast = ''
-        self.dataPathLast = '/home/guraylab/AIBIL/Github/TmpPackages/20221117_NiChartGUI_TestData/TestSet_v1'      ## FIXME : Tmp
+
+        ## FIXME : Tmp
+        self.dataPathLast = '/home/guraylab/AIBIL/Github/TmpPackages/20221117_NiChartGUI_TestData/TestSet_v1'      
 
 
         # Create plugin manager
@@ -76,7 +78,8 @@ class MainWindow(QtWidgets.QMainWindow):
         
         ## FIXME Select to activate few plugins:
         ## ['Dataset View', 'Filter View', 'Dist View', 'Plot View', 'Merge View', 'Normalize View', 'Adjust Cov View', 'Harmonize View', 'Spare View']
-        indSort = indSort[[0,3,5,6,7,8]]
+        
+        #indSort = indSort[[0,3,5,6,7,8]]
         
         plTmp = np.array(plTmp)[indSort]
         plNameTmp = np.array(plNameTmp)[indSort]
@@ -156,7 +159,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def SetupConnections(self):
         self.actionOpenData.triggered.connect(self.OnLoadDsetClicked)
-        self.actionLoadDict.triggered.connect(self.OnLoadDictClicked)
         self.actionSaveData.triggered.connect(self.OnSaveDataClicked)
         self.actionSaveNotebook.triggered.connect(self.OnSaveNotebookClicked)
         self.actionAbout.triggered.connect(self.OnAboutClicked)
@@ -247,77 +249,6 @@ class MainWindow(QtWidgets.QMainWindow):
             cmds.append(dset_name + ' = pd.read_csv("' + filename + '")')
             self.cmds.add_cmd(cmds)
         ##-------
-        
-    def LoadDictFile(self, filename):
-        #read input data
-        
-        ## Keep initial condition for the data dict
-        isDictNone = self.data_model_arr.data_dict is None
-        
-        dio = DataIO()
-        if filename.endswith('.csv'):
-            df = dio.ReadCSVFile(filename)
-        #elif filename.endswith('.csv'):
-            #d = dio.ReadJsonFile(filename)
-        else:
-            df = None
-
-        if (df is not None):
-
-            logger.info('New dict read from file: %s', filename)
-            
-            ## Read multiple var categories to single list
-            df['VarCat'] = [[e for e in row if e==e] for row in 
-                            df[df.columns[df.columns.str.contains('VarCat')]].values.tolist()]
-            
-            df = df[['Var', 'VarName', 'VarDesc', 'VarCat']]
-            df['SourceDict'] = os.path.basename(filename)
-            df = df.set_index('Var')
-
-            self.data_model_arr.AddDataDict(df)
-
-            ## Call signal for change in data
-            self.data_model_arr.OnDataChanged()
-
-            self.actionSaveData.setEnabled(True)
-            self.actionSaveNotebook.setEnabled(True)
-
-            self.ui.statusbar.showMessage('Loaded dictionary: ' + filename)
-
-        else:
-            logger.warning('Loaded dict was not valid.')
-            self.ui.statusbar.showMessage('WARNING: Could not load dictionary: ' + filename)
-
-
-        ##-------
-        ## Populate commands that will be written in a notebook
-        
-        ## Add code to read the dict file and merge it to main dict
-        cmds = ['']
-        cmds.append('# Adding dictionary file')
-        cmds.append('dfTmp = pd.read_csv("' + filename + '")')
-        
-        cmds.append('dfTmp["VarCat"] = [[e for e in row if e==e] for row in \
-dfTmp[dfTmp.columns[dfTmp.columns.str.contains("VarCat")]].values.tolist()]')
-        cmds.append('dfTmp = dfTmp[["Var", "VarName", "VarDesc", "VarCat"]]')
-        cmds.append('dfTmp["SourceDict"] = "DictFile"')
-        cmds.append('dfTmp = dfTmp.set_index("Var")')
-        
-        if isDictNone:
-            cmds.append('dfDict = dfTmp')
-        else:
-            cmds.append('dfDict = pd.concat([dfDict, dfTmp])')
-            cmds.append('dfDict = dfDict[~dfDict.index.duplicated(keep="last")]')
-        
-        ## Add code to apply the dict to each dataset
-        cmds.append('')
-        cmds.append('dictTmp = dict(zip(dfDict.index, dfDict.VarName))')
-        for dset in  self.data_model_arr.dataset_names:
-            cmds.append(dset + ' = ' + dset + '.rename(columns=dictTmp)')
-            cmds.append('print("Dictionary applied to dataset : ' + dset + '")')
-        cmds.append('')
-        self.cmds.add_cmd(cmds)
-        ##-------
 
     def OnLoadDsetClicked(self):
         
@@ -336,23 +267,6 @@ dfTmp[dfTmp.columns[dfTmp.columns.str.contains("VarCat")]].values.tolist()]')
         else:
             self.LoadDataFile(filename[0])
             self.dataPathLast = os.path.dirname(filename[0])
-
-    def OnLoadDictClicked(self):
-
-        if self.dataPathLast == '':
-            directory = QtCore.QDir().homePath()
-        else:
-            directory = self.dataPathLast
-
-        filename = QtWidgets.QFileDialog.getOpenFileName(None,
-            caption = 'Open dictionary file',
-            directory = directory,
-            filter = "Json/CSV files (*.json *.csv)")
-
-        if filename[0] == "":
-            logger.warning("No file was selected")
-        else:
-            self.LoadDictFile(filename[0])
 
     ## Function to write commands into a notebook
     ##   Commands are collected from individual actions within plugins

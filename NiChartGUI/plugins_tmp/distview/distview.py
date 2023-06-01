@@ -40,11 +40,19 @@ class DistView(QtWidgets.QWidget,BasePlugin):
         self.mdi.setBackground(QtGui.QColor(245,245,245,255))
         
         ## Panel for X var
+        self.ui.comboXCat = QComboBox(self.ui)
+        self.ui.comboXCat.setEditable(False)
+        self.ui.vlComboX.addWidget(self.ui.comboXCat)
+
         self.ui.comboXVar = QComboBox(self.ui)
         self.ui.comboXVar.setEditable(False)
         self.ui.vlComboX.addWidget(self.ui.comboXVar)
 
         ## Panel for filter var
+        self.ui.comboFilterCat = QComboBox(self.ui)
+        self.ui.comboFilterCat.setEditable(False)
+        self.ui.vlComboFilter.addWidget(self.ui.comboFilterCat)
+
         self.ui.comboFilterVar = QComboBox(self.ui)
         self.ui.comboFilterVar.setEditable(False)
         self.ui.vlComboFilter.addWidget(self.ui.comboFilterVar)
@@ -54,6 +62,10 @@ class DistView(QtWidgets.QWidget,BasePlugin):
         self.ui.vlComboFilterVal.addWidget(self.ui.comboFilterVal)
 
         ## Panel for hue var
+        self.ui.comboHueCat = QComboBox(self.ui)
+        self.ui.comboHueCat.setEditable(False)
+        self.ui.vlComboHue.addWidget(self.ui.comboHueCat)
+
         self.ui.comboHueVar = QComboBox(self.ui)
         self.ui.comboHueVar.setEditable(False)
         self.ui.vlComboHue.addWidget(self.ui.comboHueVar)
@@ -80,8 +92,30 @@ class DistView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboHueVar.currentIndexChanged.connect(lambda: self.OnHueIndexChanged())
         self.ui.comboFilterVar.currentIndexChanged.connect(lambda: self.OnFilterIndexChanged())
 
+        self.ui.comboXCat.currentIndexChanged.connect(self.OnXCatChanged)
+        self.ui.comboFilterCat.currentIndexChanged.connect(self.OnFilterCatChanged)
+        self.ui.comboHueCat.currentIndexChanged.connect(self.OnHueCatChanged)
+
         self.ui.plotBtn.clicked.connect(lambda: self.OnPlotBtnClicked())
 
+    def OnXCatChanged(self):
+        selCat = self.ui.comboXCat.currentText()
+        tmpData = self.data_model_arr.datasets[self.active_index]
+        selVars = tmpData.data_cat_map.loc[[selCat]].VarName.tolist()
+        self.PopulateComboBox(self.ui.comboXVar, selVars)
+
+    def OnFilterCatChanged(self):
+        selCat = self.ui.comboFilterCat.currentText()
+        tmpData = self.data_model_arr.datasets[self.active_index]
+        selVars = tmpData.data_cat_map.loc[[selCat]].VarName.tolist()
+        self.PopulateComboBox(self.ui.comboFilterVar, selVars)
+
+    def OnHueCatChanged(self):
+        selCat = self.ui.comboHueCat.currentText()
+        tmpData = self.data_model_arr.datasets[self.active_index]
+        selVars = tmpData.data_cat_map.loc[[selCat]].VarName.tolist()
+        self.PopulateComboBox(self.ui.comboHueVar, selVars)
+    
     def OnFilterIndexChanged(self):
         
         ## Threshold to show categorical values for selection
@@ -124,28 +158,19 @@ class DistView(QtWidgets.QWidget,BasePlugin):
         colSel = [*set(colSel)]
         
         dtmp = df[colSel]
-
-        logger.info('AAAAA')
-        logger.info(dtmp.head())
-        logger.info(len(filterVals))
-        logger.info(len(hueVals))
-
         
         ## Filter data
         if len(filterVals)>0:
-            logger.info('BBBBBBBBBBBBBBBBB')
             dtmp = dtmp[dtmp[filterVar].isin(filterVals)]
 
         ## Get hue values
         if len(hueVals)>0:
-            logger.info('BBBBBBBBBBBBBBBBB')
             dtmp = dtmp[dtmp[hueVar].isin(hueVals)]
 
         ## Plot distribution
         if len(hueVals)>0:
             sns.kdeplot(data=dtmp, x=xVar, hue=hueVar, ax=axes)
         else:
-            logger.info('CCCCCCCCCCCCCCCCCC')
             sns.kdeplot(data=dtmp, x=xVar, ax=axes)
         
         sns.despine(fig=axes.get_figure(), trim=True)
@@ -216,6 +241,42 @@ class DistView(QtWidgets.QWidget,BasePlugin):
         self.cmds.add_cmd(cmds)
         ##-------
         
+    def OnPlotBtnClicked2(self):
+
+        xVar = self.ui.comboXVar.currentText()
+        
+        hueVar = self.ui.comboHueVar.currentText()
+        hueVals = self.ui.comboHueVal.listCheckedItems()
+        
+        if hueVals == []:
+            hueVar = ''
+        
+        filterVar = self.ui.comboFilterVar.currentText()
+        filterVals = self.ui.comboFilterVal.listCheckedItems()
+
+        if filterVals == []:
+            filterVar = ''
+
+        self.plotCanvas = PlotCanvas(self.ui)
+        self.plotCanvas.axes = self.plotCanvas.fig.add_subplot(111)
+
+        sub = QMdiSubWindow()
+        sub.setWidget(self.plotCanvas)
+        self.mdi.addSubWindow(sub)        
+        
+        plot_cmds = self.PlotData(xVar, filterVar, filterVals, hueVar, hueVals)
+        sub.show()
+        self.mdi.tileSubWindows()
+        
+        ##-------
+        ## Populate commands that will be written in a notebook
+        cmds = ['']
+        cmds.append('')
+        cmds = cmds + plot_cmds
+        cmds.append('')        
+        self.cmds.add_cmd(cmds)
+        ##-------
+
     def OnDataChanged(self):
         
         if self.data_model_arr.active_index >= 0:
@@ -229,16 +290,30 @@ class DistView(QtWidgets.QWidget,BasePlugin):
             ## Get data variables
             dataset = self.data_model_arr.datasets[self.active_index]
             colNames = dataset.data.columns.tolist()
+            catNames = dataset.data_cat_map.index.unique().tolist()
 
             logger.info(self.active_index)
+            logger.info(catNames)
             
             ## Set active dset name
             self.ui.edit_activeDset.setText(self.data_model_arr.dataset_names[self.active_index])
 
             ## Update selection, sorting and drop duplicates panels
-            self.UpdatePanels(colNames)
+            self.UpdatePanels(catNames, colNames)
 
-    def UpdatePanels(self, colNames):
+    def UpdatePanels(self, catNames, colNames):
+        
+        if len(catNames) == 1:      ## Single variable category, no need for category combobox
+            self.ui.comboXCat.hide()
+            self.ui.comboFilterCat.hide()
+            self.ui.comboHueCat.hide()
+        else:
+            self.ui.comboXCat.show()
+            self.ui.comboFilterCat.show()
+            self.ui.comboHueCat.show()
+            self.PopulateComboBox(self.ui.comboXCat, catNames, '--var group--')
+            self.PopulateComboBox(self.ui.comboFilterCat, catNames, '--var group--')
+            self.PopulateComboBox(self.ui.comboHueCat, catNames, '--var group--')
         
         self.PopulateComboBox(self.ui.comboXVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboFilterVar, colNames, '--var name--')

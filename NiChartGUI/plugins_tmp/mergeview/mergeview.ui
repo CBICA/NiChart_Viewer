@@ -14,15 +14,15 @@
       <string>Form</string>
     </property>
     
-
-    <layout  class="QVBoxLayout"  name="horizontalLayout">
+    <layout  class="QVBoxLayout"  name="vlMain">
       <item>
         
         <widget class="QWidget" name="verticalLayoutWidget">
-    
+
     
             <layout  class="QHBoxLayout"  name="horizontalLayout">
             <item>
+                
                 <widget  class="QSplitter"  name="splitter">
                 <property  name="orientation">
                     <enum>Qt::Horizontal</enum>
@@ -43,16 +43,14 @@
                 </widget>
                 
                 <widget  class="QWidget"  name="wOptions">
-                    
                     <property  name="sizePolicy">
                     <sizepolicy  hsizetype="Minimum"  vsizetype="Minimum">
                         <horstretch>1</horstretch>
                         <verstretch>0</verstretch>
                     </sizepolicy>
                     </property>
-
                     <layout  class="QVBoxLayout"  name="vlOptions">
-
+                        
                     <item>
                         <widget  class="QFrame"  name="wActiveDset">
                         <property  name="frameShape">
@@ -65,7 +63,8 @@
                             <number>8</number>
                         </property>
                         
-                        
+
+
                         <layout  class="QVBoxLayout"  name="vlActiveDset">
                             
                             <item>
@@ -105,60 +104,37 @@
                                 </item>
                             </layout>
                             </item>
-                            
-                        </layout>
-                        </widget>
-                    </item>
-                        
-                    <item>
-                        <widget  class="QFrame"  name="wSpareOptions">
-                        
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
-                        
-                        <layout  class="QVBoxLayout"  name="vlNormalize">
 
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Model</string>
+                                <string>Merge On</string>
                                 </property>
                             </widget>
                             </item>
-                            
+
                             <item>
-                            <layout  class="QHBoxLayout"  name="hlDivideBy">
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
                                 <item>
-                                    <spacer  name="horizontalSpacer_5">
-                                        <property  name="orientation">
-                                        <enum>Qt::Horizontal</enum>
-                                        </property>
-                                        
-                                        <property name="sizeType">
-                                            <enum>QSizePolicy::Fixed</enum>
-                                        </property>                                    
-                                        
-                                        <property  name="sizeHint"  stdset="0">
-                                        <size>
-                                            <width>30</width>
-                                            <height>20</height>
-                                        </size>
-                                        </property>
-                                    </spacer>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
                                 </item>
                                 <item>
-                                    <widget  class="QPushButton"  name="selectModelBtn">
-                                    <property  name="text">
-                                        <string>Select Model</string>
-                                    </property>
-                                    </widget>
+                                <layout  class="QVBoxLayout"  name="vlComboMerge1"/>
                                 </item>
                             </layout>
                             </item>
@@ -166,9 +142,10 @@
                         </layout>
                         </widget>
                     </item>
-                        
+                    
+                    
                     <item>
-                        <widget  class="QFrame"  name="wOutVarName">
+                        <widget  class="QFrame"  name="wMerge2">
                         <property  name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
                         </property>
@@ -178,16 +155,18 @@
                         <property  name="lineWidth">
                             <number>8</number>
                         </property>
-                        <layout  class="QVBoxLayout"  name="vlBC">
+                        <layout  class="QVBoxLayout"  name="vlBB">
+                            
                             <item>
-                            <widget  class="QLabel"  name="label_select2">
+                            <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Output Variable Name: </string>
+                                <string>Merge to</string>
                                 </property>
                             </widget>
                             </item>
+
                             <item>
-                            <layout  class="QHBoxLayout"  name="horizontalLayout_6">
+                            <layout  class="QHBoxLayout"  name="hlMergeDset2">
                                 <item>
                                 <spacer  name="horizontalSpacer_6">
                                     <property  name="orientation">
@@ -207,51 +186,80 @@
                                 </spacer>
                                 </item>
                                 <item>
-                                    <widget  class="QLineEdit"  name="edit_outVarName">
-                                    </widget>
+                                    <layout  class="QVBoxLayout"  name="vlMergeDset2"/>
                                 </item>
                             </layout>
                             </item>
+
+                            <item>
+                            <widget  class="QLabel"  name="label_mergeon2">
+                                <property  name="text">
+                                <string>Merge On</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="hlMergeVar2">
+                                <item>
+                                <spacer  name="horizontalSpacer_7">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>40</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                    <layout  class="QVBoxLayout"  name="vlComboMerge2"/>
+                                </item>
+                            </layout>
+                            </item>
+                            
                         </layout>
                         </widget>
                     </item>
-
+                    
                     <item>
-                    <widget  class="QFrame"  name="wCalcSpare">
+                        <widget  class="QFrame"  name="wMerge">
                         <property  name="frameShape">
-                        <enum>QFrame::StyledPanel</enum>
+                            <enum>QFrame::StyledPanel</enum>
                         </property>
                         <property  name="frameShadow">
-                        <enum>QFrame::Raised</enum>
+                            <enum>QFrame::Raised</enum>
                         </property>
                         <property  name="lineWidth">
-                        <number>8</number>
+                            <number>8</number>
                         </property>
-                        <layout  class="QHBoxLayout"  name="horizontalLayout_8">
-                        <item>
-                            <spacer  name="horizontalSpacer_8">
-                            <property  name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property  name="sizeHint"  stdset="0">
-                                <size>
-                                <width>40</width>
-                                <height>20</height>
-                                </size>
-                            </property>
-                            </spacer>
-                        </item>
-                        <item>
-                            <widget  class="QPushButton"  name="calcSpareBtn">
-                            <property  name="text">
-                                <string>Calc SPARE</string>
-                            </property>
-                            </widget>
-                        </item>
-                        </layout>
-                    </widget>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_8">
+                            <item>
+                                <spacer  name="horizontalSpacer_8">
+                                <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                </property>
+                                <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                    </size>
+                                </property>
+                                </spacer>
+                            </item>
+                            <item>
+                                <widget  class="QPushButton"  name="mergeBtn">
+                                <property  name="text">
+                                    <string>Merge Data</string>
+                                </property>
+                                </widget>
+                            </item>
+                            </layout>
+                        </widget>
                     </item>
-                            
+
                     <item>
                         <spacer  name="verticalSpacer">
                         <property  name="orientation">
@@ -273,11 +281,12 @@
             </item>
             </layout>
     
+
         </widget>
       </item>
 
       </layout>
-    
+            
             
   </widget>
   <resources/>

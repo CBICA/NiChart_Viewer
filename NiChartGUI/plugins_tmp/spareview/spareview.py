@@ -20,8 +20,8 @@ import inspect
 import sys
 #sys.path.append('/cbica/home/erusg/3_DEV/SPARE-Scores/05_niCHART/packaging/spare_scores')
 #import spare_scores as spare
+from spare_scores import spare_train
 
-from spare_scores import spare_scores as spare
 
 logger = iStagingLogger.get_logger(__name__)
 
@@ -36,7 +36,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         self.cmds = None
         
         self.modelname = None
-        self.modelname = '/home/guraylab/AIBIL/Github/NiChartPackages/NiChartHarmonize/test_temp/Test3/outputs/EXP2_ALL_TrainTest/spare_model.pkl.gz'
+        self.modelname = '/home/guraylab/AIBIL/Github/TmpPackages/SpareScores/mdl/mdl_SPARE_AD_MUSE_single.pkl.gz'
 
         ## Status bar of the main window
         ## Initialized by the mainwindow during loading of plugin
@@ -68,11 +68,46 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         
         self.data_model_arr.active_dset_changed.connect(self.OnDataChanged)
         
-        self.ui.selectModelBtn.clicked.connect(self.OnSelectModelBtnClicked)
+        self.ui.loadModelBtn.clicked.connect(self.OnLoadModelBtnClicked)
         self.ui.calcSpareBtn.clicked.connect(self.OnCalcSpareBtnClicked)
 
 
-    def OnSelectModelBtnClicked(self):
+    def CheckModel(self, filename):
+        #read input data
+        
+        # Load model
+        with gzip.open(filename, 'rb') as f:
+            self.mdl = pickle.load(f)
+            
+        # Get columns and check if they exist in dset
+        mdlCol = self.mdl['predictors']
+        dfCol = self.data_model_arr.datasets[self.active_index].data.columns
+
+        dfMdl = pd.DataFrame(columns=['Predictor'], data = mdlCol)
+        dfMdl['Status'] = dfMdl.Predictor.isin(dfCol)
+        dfMdl = dfMdl.replace({True:'FOUND', False:'MISSING'}).sort_values('Status', ascending = False)
+        
+        self.PopulateTable(dfMdl)
+
+        ## Set data view to mdi widget
+        sub = QMdiSubWindow()
+        sub.setWidget(self.dataView)
+        sub.setWindowTitle('MODEL: ' + os.path.basename(filename))
+        self.mdi.addSubWindow(sub)        
+        sub.show()
+        self.mdi.tileSubWindows()
+        
+        if dfMdl[dfMdl.Status=='MISSING'].shape[0] > 0:
+            self.statusbar.showMessage('WARNING: Model does not match the data!')
+        
+        else:
+            self.ui.wCalcSpare.show()
+            self.statusbar.showMessage('Model is valid')
+            
+        
+        logger.critical(dfMdl.head())
+
+    def OnLoadModelBtnClicked(self):
 
         #if self.dataPathLast == '':
             #directory = QtCore.QDir().homePath()
@@ -80,7 +115,6 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
             #directory = self.dataPathLast
         directory = QtCore.QDir().homePath()
         directory = '/home/guraylab/AIBIL/Github/TmpPackages/SpareScores/mdl'
-        directory = '/home/guraylab/AIBIL/Github/NiChartPackages/NiChartHarmonize/test_temp/Test3/outputs/EXP2_ALL_TrainTest'
 
         filename = QtWidgets.QFileDialog.getOpenFileName(None,
             caption = 'Open model file',
@@ -91,7 +125,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
             logger.warning("No file was selected")
         else:
             self.modelname = filename[0]
-            self.ui.wCalcSpare.show()
+            self.CheckModel(self.modelname)
 
     def OnCalcSpareBtnClicked(self):
 
@@ -105,26 +139,31 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         outCat = outVarName
         
         ## Apply SPARE
-        
-        logger.info('AAAAAAAAAAAAa')
-        logger.info(df)
         dfOut = spare.spare_test(df, self.modelname)
-        logger.info(dfOut.columns)
-        logger.info(dfOut.head())
-        logger.info('AAAAAAAAAAAAa')
-        input()
-
+        dfOut.columns = [outVarName]
+        
+        ## Set updated dset
+        df = pd.concat([df, dfOut], axis=1)
         self.data_model_arr.datasets[self.active_index].data = df
         
         ## Create dict with info about new columns
         outDesc = 'Created by NiChartGUI SPARE Plugin'
         outSource = 'NiChartGUI SPARE Plugin'
+        self.data_model_arr.AddNewVarsToDict([outVarName], outCat, outDesc, outSource)
             
+        ## Call signal for change in data
+        self.data_model_arr.OnDataChanged()
+        
         ## Load data to data view 
         self.dataView = QtWidgets.QTableView()
         
-
-        #dfOut = dfOut.round(3)
+        ## Show only columns involved in application
+        
+        logger.info('CCCCCCCCCCCCCCCCCCCCCCCCCCCccc')
+        logger.info(dfOut.shape)
+        logger.info(df.shape)
+        
+        dfOut = dfOut.round(3)
         self.PopulateTable(dfOut)
                                                                                                                         
         ## Set data view to mdi widget
@@ -137,10 +176,6 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         
 
     def PopulateTable(self, data):
-        
-        logger.info(data)
-        logger.info('AAAAAAAAAAAAa')
-        
         
         model = PandasModel(data)
         self.dataView = QtWidgets.QTableView()

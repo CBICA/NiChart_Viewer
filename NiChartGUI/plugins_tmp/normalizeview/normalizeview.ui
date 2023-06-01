@@ -111,7 +111,7 @@
                     </item>
                         
                     <item>
-                        <widget  class="QFrame"  name="wSpareOptions">
+                        <widget  class="QFrame"  name="wNormalizeOptions">
                         
                         <property  name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
@@ -128,7 +128,7 @@
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Model</string>
+                                <string>Divide by</string>
                                 </property>
                             </widget>
                             </item>
@@ -136,39 +136,103 @@
                             <item>
                             <layout  class="QHBoxLayout"  name="hlDivideBy">
                                 <item>
-                                    <spacer  name="horizontalSpacer_5">
-                                        <property  name="orientation">
-                                        <enum>Qt::Horizontal</enum>
-                                        </property>
-                                        
-                                        <property name="sizeType">
-                                            <enum>QSizePolicy::Fixed</enum>
-                                        </property>                                    
-                                        
-                                        <property  name="sizeHint"  stdset="0">
-                                        <size>
-                                            <width>30</width>
-                                            <height>20</height>
-                                        </size>
-                                        </property>
-                                    </spacer>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>                                    
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
                                 </item>
                                 <item>
-                                    <widget  class="QPushButton"  name="selectModelBtn">
-                                    <property  name="text">
-                                        <string>Select Model</string>
-                                    </property>
-                                    </widget>
+                                <layout  class="QVBoxLayout"  name="vlComboDivideBy"/>
                                 </item>
                             </layout>
                             </item>
 
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Apply to</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="hlSel">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>                                    
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboSel"/>
+                                </item>
+                            </layout>
+                            </item>
+                            
                         </layout>
                         </widget>
                     </item>
                         
+        <!--                    <item>
+                            <widget  class="QWidget"  name="wSelOptions">
+                                <layout  class="QHBoxLayout"  name="hlSelOptions">
+                                    <item>
+                                    <spacer  name="horizontalSpacer">
+                                        <property  name="orientation">
+                                        <enum>Qt::Horizontal</enum>
+                                        </property>
+                                        <property  name="sizeHint"  stdset="0">
+                                        <size>
+                                            <width>40</width>
+                                            <height>20</height>
+                                        </size>
+                                        </property>
+                                    </spacer>
+                                    </item>
+                                    <item>
+                                    <widget  class="QCheckBox"  name="check_all">
+                                        <property  name="text">
+                                        <string>All</string>
+                                        </property>
+                                    </widget>
+                                    </item>
+                                    <item>
+                                    <widget  class="QCheckBox"  name="check_inv">
+                                        <property  name="text">
+                                        <string>Invert</string>
+                                        </property>
+                                    </widget>
+                                    </item>
+                                </layout>
+                            </widget>
+                            </item>-->
+
                     <item>
-                        <widget  class="QFrame"  name="wOutVarName">
+                        <widget  class="QFrame"  name="wOutSuffix">
                         <property  name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
                         </property>
@@ -182,7 +246,7 @@
                             <item>
                             <widget  class="QLabel"  name="label_select2">
                                 <property  name="text">
-                                <string>Output Variable Name: </string>
+                                <string>Out suffix: </string>
                                 </property>
                             </widget>
                             </item>
@@ -207,7 +271,7 @@
                                 </spacer>
                                 </item>
                                 <item>
-                                    <widget  class="QLineEdit"  name="edit_outVarName">
+                                    <widget  class="QLineEdit"  name="edit_outSuff">
                                     </widget>
                                 </item>
                             </layout>
@@ -217,7 +281,7 @@
                     </item>
 
                     <item>
-                    <widget  class="QFrame"  name="wCalcSpare">
+                    <widget  class="QFrame"  name="wNormalize">
                         <property  name="frameShape">
                         <enum>QFrame::StyledPanel</enum>
                         </property>
@@ -242,9 +306,9 @@
                             </spacer>
                         </item>
                         <item>
-                            <widget  class="QPushButton"  name="calcSpareBtn">
+                            <widget  class="QPushButton"  name="normalizeBtn">
                             <property  name="text">
-                                <string>Calc SPARE</string>
+                                <string>Normalize</string>
                             </property>
                             </widget>
                         </item>

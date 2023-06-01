@@ -35,11 +35,19 @@ class NormalizeView(QtWidgets.QWidget,BasePlugin):
         self.mdi.setBackground(QtGui.QColor(245,245,245,255))
                 
         ## Panel for Divide By
+        self.ui.comboBoxDivideByCat = QComboBox(self.ui)
+        self.ui.comboBoxDivideByCat.setEditable(False)
+        self.ui.vlComboDivideBy.addWidget(self.ui.comboBoxDivideByCat)
+
         self.ui.comboBoxDivideByVar = QComboBox(self.ui)
         self.ui.comboBoxDivideByVar.setEditable(False)
         self.ui.vlComboDivideBy.addWidget(self.ui.comboBoxDivideByVar)
 
         ## Panel for Apply To
+        self.ui.comboBoxSelCat = CheckableQComboBox(self.ui)
+        self.ui.comboBoxSelCat.setEditable(False)
+        self.ui.vlComboSel.addWidget(self.ui.comboBoxSelCat)
+
         self.ui.comboBoxSelVar = CheckableQComboBox(self.ui)
         self.ui.comboBoxSelVar.setEditable(False)
         self.ui.vlComboSel.addWidget(self.ui.comboBoxSelVar)
@@ -53,10 +61,47 @@ class NormalizeView(QtWidgets.QWidget,BasePlugin):
     def SetupConnections(self):
         
         self.data_model_arr.active_dset_changed.connect(self.OnDataChanged)
+        
         self.ui.normalizeBtn.clicked.connect(self.OnNormalizeBtnClicked)
 
+        self.ui.comboBoxSelCat.view().pressed.connect(self.OnApplyToCatSelected)
+
+        self.ui.comboBoxDivideByCat.currentIndexChanged.connect(self.OnDivideByCatChanged)
 
         ## https://gist.github.com/ales-erjavec/7624dd1d183dfbfb3354600b285abb94
+
+    def OnApplyToCatSelected(self, index):
+        
+        selItem = self.ui.comboBoxSelCat.model().itemFromIndex(index) 
+        
+        ## Read selected cat value
+        selCat = selItem.text()
+
+        ## Get list of cat to var name mapping
+        dmap = self.data_model_arr.datasets[self.active_index].data_cat_map
+        
+        ## Check status of edit box for sel category
+        isChecked = selItem.checkState()
+        
+        ## Set/reset check mark for selected var names in combobox for variables
+        ## Update sel cat check box
+        checkedVars = dmap.loc[[selCat]].VarName.tolist()
+        if selItem.checkState() == QtCore.Qt.Checked: 
+            self.ui.comboBoxSelVar.uncheckItems(checkedVars)      ## Selected vars are set to "checked"
+            selItem.setCheckState(QtCore.Qt.Unchecked)
+        else:
+            self.ui.comboBoxSelVar.checkItems(checkedVars)      ## Selected vars are set to "checked"
+            selItem.setCheckState(QtCore.Qt.Checked)
+        
+        #logger.info(checkedVars)
+
+
+    def OnDivideByCatChanged(self):
+        selCat = self.ui.comboBoxDivideByCat.currentText()
+        tmpData = self.data_model_arr.datasets[self.active_index]
+        
+        selVars = tmpData.data_cat_map.loc[[selCat]].VarName.tolist()
+        self.PopulateComboBox(self.ui.comboBoxDivideByVar, selVars)
 
     def PopulateTable(self, data):
         
@@ -98,17 +143,27 @@ class NormalizeView(QtWidgets.QWidget,BasePlugin):
             ## Get data variables
             dataset = self.data_model_arr.datasets[self.active_index]
             colNames = dataset.data.columns.tolist()
+            catNames = dataset.data_cat_map.index.unique().tolist()
 
             logger.info(self.active_index)
+            logger.info(catNames)
             
             ## Set active dset name
             self.ui.edit_activeDset.setText(self.data_model_arr.dataset_names[self.active_index])
 
             ## Update selection, sorting and drop duplicates panels
-            self.UpdatePanels(colNames)
+            self.UpdatePanels(catNames, colNames)
 
-    def UpdatePanels(self, colNames):
+    def UpdatePanels(self, catNames, colNames):
         
+        if len(catNames) == 1:      ## Single variable category, no need for category combobox
+            self.ui.comboBoxDivideByCat.hide()
+            self.ui.comboBoxSelCat.hide()
+        else:
+            self.ui.comboBoxDivideByCat.show()
+            self.ui.comboBoxSelCat.show()
+            self.PopulateComboBox(self.ui.comboBoxDivideByCat, catNames, '--var group--')
+            self.PopulateComboBox(self.ui.comboBoxSelCat, catNames, '--var group--')
         self.PopulateComboBox(self.ui.comboBoxDivideByVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxSelVar, colNames, '--var name--')
     
@@ -142,6 +197,7 @@ class NormalizeView(QtWidgets.QWidget,BasePlugin):
         ## Create dict with info about new columns
         outDesc = 'Created by NiChartGUI NormalizeView Plugin'
         outSource = 'NiChartGUI NormalizeView Plugin'
+        self.data_model_arr.AddNewVarsToDict(outVarNames, outCat, outDesc, outSource)
             
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()

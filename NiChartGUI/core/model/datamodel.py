@@ -61,14 +61,7 @@ class DataModelArr(QObject):
         self.TABLE_MAXROWS = 20
         
         self._datasets = []         ## An array of datasets
-        self._data_dict = None      ## Data dictionary
-                                    ## Note: We keep a single dictionary and concat multiple
-                                    ##  dictionaries, with the assumption that multiple dictionaries
-                                    ##  are consistent (the last one will overwrite otherwise) and
-                                    ##  they are common to all datasets
-                                    
         self._dataset_names = []    ## Names of datasets (auto generated for now)
-        
         self._active_index = -1     ## An index that keeps the index of active dataset
 
         logger.info('Exit DataModelArr constructor')
@@ -89,20 +82,6 @@ class DataModelArr(QObject):
     @datasets.deleter
     def datasets(self):
         del self._datasets
-
-    #############################
-    ## decorators for data_dict
-    @property
-    def data_dict(self):
-        return self._data_dict
-
-    @data_dict.setter
-    def data_dict(self, value):
-        self._data_dict = value
-
-    @data_dict.deleter
-    def data_dict(self):
-        del self._data_dict
 
     #############################
     ## decorators for dataset_names
@@ -147,9 +126,6 @@ class DataModelArr(QObject):
         ## Add dataset name        
         self.dataset_names.append('DSET_' + str(self.active_index + 1))
         
-        ## Apply data dictionary
-        self.datasets[self.active_index].ApplyDict(self.data_dict)
-        
         logger.info('Exit DataModelArr.AddDataSet()')
         
     #############################
@@ -157,48 +133,6 @@ class DataModelArr(QObject):
     def OnDataChanged(self):
         logger.info('Signal to emit: active_dset_changed')
         self.active_dset_changed.emit()
-
-    #############################
-    ## Add data dictionary
-    def AddDataDict(self, dfDict):
-
-        logger.info('In DataModelArr.AddDataDict()')
-
-        ## Update current data dictionary
-        if self.data_dict is None:
-            self.data_dict = dfDict
-            
-        else:
-            ## Add new dict to old one, overwrite those with same index
-            tmpDict = pd.concat([self.data_dict, dfDict])
-            tmpDict = tmpDict[~tmpDict.index.duplicated(keep='last')]
-            self.data_dict = tmpDict
-
-        ## Apply updated data dict on each dataset
-        
-        if len(self.datasets) > 0:
-            for i in np.arange(0, len(self.datasets)):
-                self.datasets[i].ApplyDict(self.data_dict)
-
-        logger.info('Exit DataModelArr.AddDataDict()')
-      
-    #############################
-    ## Add new vars to the data dictionary
-    def AddNewVarsToDict(self, newVars, newCat, newDesc, newSource):
-
-        ## Create dict with info about new columns
-        dfCols = ['VarName', 'VarDesc', 'VarCat', 'SourceDict']
-        dfDict = pd.DataFrame(index = newVars, columns = dfCols)
-        dfDict.index.name = 'Var'
-        dfDict['VarName'] = newVars
-        dfDict['VarDesc'] = newDesc
-        dfDict['VarCat'] = newCat
-        dfDict['VarCat'] = dfDict.VarCat.apply(lambda x: [x])
-        dfDict['SourceDict'] = newSource
-        
-        ## Update data dictionary
-        self.AddDataDict(dfDict)
-      
 
 class DataModel(QObject):
     """This class holds the data model."""
@@ -209,28 +143,12 @@ class DataModel(QObject):
         QObject.__init__(self)
 
         self._data = None        ## The dataset (a pandas dataframe)
-        self._data_dict = None   ## The dictionary with info about variables (a pandas dataframe)
-        self._data_cat_map = None   ## Keeps a list of mapping between var names and categories
-        self._data_dict_inv_map = None   ## A dict to keep inverse mapping between vars and dict var names
         self._file_name = None   ## The name of the data file
 
         if data is not None: 
             self.data = data
             self.file_name = fname
             self.data_index = data_index
-
-            ## Create dict with default placeholder values
-            dictCols = ['VarName', 'VarDesc', 'VarCat', 'SourceDict']
-            dfDict = pd.DataFrame(index = data.columns, columns = dictCols)
-            dfDict.index.name = 'Var'
-            dfDict['VarName'] = dfDict.index
-            dfDict['VarDesc'] = 'No Description'
-            #dfDict['VarDesc'] = dfDict.VarDesc.apply(lambda x: [x])
-            dfDict['VarCat'] = 'No Category'
-            dfDict['VarCat'] = dfDict.VarCat.apply(lambda x: [x])
-            dfDict['SourceDict'] = 'No dictionary file'
-            self.data_dict = dfDict
-            
 
     ## Setter and Getter functions for all variables 
     ## https://stackoverflow.com/questions/2627002/whats-the-pythonic-way-to-use-getters-and-setters
@@ -248,45 +166,6 @@ class DataModel(QObject):
     @data.deleter
     def data(self):
         del self._data
-
-    #############################
-    ## decorators for data_dict
-    @property
-    def data_dict(self):
-        return self._data_dict
-
-    @data_dict.setter
-    def data_dict(self, value):
-
-        logger.info('In DataModel setter for data_dict')
-
-        self._data_dict = value
-        
-        ### inverse map used to switch between default names (Var) and dict names (VarName)
-        ### in a simple way (backward search is done using VarName as an index)
-        #tmpMap = value[['VarName']].reset_index().set_index('VarName')
-        #tmpMap.columns = ['Var']
-        #self._data_dict_inv_map = tmpMap
-        
-        logger.info('Exit DataModel setter for data_dict')
-
-    @data_dict.deleter
-    def data_dict(self):
-        del self._data_dict
-
-    #############################
-    ## decorators for data_cat_map
-    @property
-    def data_cat_map(self):
-        return self._data_cat_map
-
-    @data_cat_map.setter
-    def data_cat_map(self, value):
-        self._data_cat_map = value
-
-    @data_cat_map.deleter
-    def data_cat_map(self):
-        del self._data_cat_map
 
     #############################
     ## decorators for file_name
@@ -311,103 +190,6 @@ class DataModel(QObject):
             return False
         else:
             return True
-
-    ### Use getter function
-    #def GetData(self):
-        #return self._data
-
-    #############################
-    ## If data columns change , update the dictionary and mapping btw categories and var names
-    ##   based on current columns
-    def addNewColsToDict(self, newCols):
-        tmpDf = pd.DataFrame(data = newCols, columns = ['VarName'])
-        tmpDf['Var'] = tmpDf.VarName
-        tmpDf = tmpDf.set_index('Var')
-        self.data_dict = pd.concat([self.data_dict, tmpDf])
-
-        ### FIXME this should not be necessary
-        ###self.data_cat_map = self.data_cat_map[self.data_cat_map.VarName.isin(currCols)]
-
-    #############################
-    ## If a subset of data columns are selected, update dict
-    def UpdateDictSelCols(self, selCols):
-        self.data_dict = self.data_dict[self.data_dict.VarName.isin(selCols)]
-        self.data_cat_map = self.data_cat_map[self.data_cat_map.VarName.isin(selCols)]
-
-
-    #############################
-    ## Concat data dictionaries
-    ##   Used for updating the dict during the merge of dsets
-    def ConcatDict(self, dfDict):
-
-        self.data_dict = pd.concat([self.data_dict, dfDict]).drop_duplicates(subset='VarName')
-
-        ## Update mapping for categories
-        df1 = self.data_dict
-        df2 = pd.DataFrame(df1['VarCat'].tolist())
-        df2['VarName'] = df1.VarName.tolist()
-        
-        tmpList = []
-        for tmpCol in df2.columns[0:-1]:
-            tmpList.append(df2[[tmpCol,'VarName']].dropna().set_index(tmpCol))
-        df2 = pd.concat(tmpList).sort_index()
-        
-        self.data_cat_map = df2
-        
-
-
-    #############################
-    ## Add the data dictionary
-    def ApplyDict(self, dfDict):
-
-        logger.info('In DataModel.ApplyDict()')
-
-        """ Adds data dictionary to existing dictionary items."""
-        """  Input dictionary (data frame) can be either:"""
-        """  - Input data dictionary file"""
-        """  - Created automatically by a process to annotate new variables added to the data"""
-        
-        ## Update dict
-        ##   If there are new columns in the data file,
-        ##   add rows to the dictionary of the dataset with placeholder values,
-        ##   and they will be updated with values coming from dfDict
-        if self.data.shape[0]>0:
-            currCols = self.data.columns.tolist()
-            dictVars = self.data_dict.VarName.tolist()
-            newCols = list(set(currCols).difference(set(dictVars)))
-            
-            if len(newCols)>0:
-                self.addNewColsToDict(newCols)
-
-            #self.UpdateDict(self.data.columns.tolist())
-
-            ## Update dictionary
-            self.data_dict.update(dfDict)
-
-            ## Create mapping for categories
-            ##  - Get all categories from the current dictionary
-            ##  - Find all variables that match with this category
-            df1 = self.data_dict
-            df2 = pd.DataFrame(df1['VarCat'].tolist())
-            df2['VarName'] = df1.VarName.tolist()
-            
-            tmpList = []
-            for tmpCol in df2.columns[0:-1]:
-                tmpList.append(df2[[tmpCol,'VarName']].dropna().set_index(tmpCol))
-            df2 = pd.concat(tmpList).sort_index()
-            
-            self.data_cat_map = df2
-
-            ## Update var names
-            tmpData = self.data
-            tmpCol = self.data_dict.index.intersection(tmpData.columns.tolist())
-            tmpDf = self.data_dict.loc[tmpCol][['VarName']]
-            tmpDict = dict(zip(tmpDf.index, tmpDf.VarName))
-            tmpData = tmpData.rename(columns=tmpDict)
-
-            self.data = tmpData
-            
-            logger.info('Exit DataModel.ApplyDict()')
 
     #############################
     ## Get data type of columns

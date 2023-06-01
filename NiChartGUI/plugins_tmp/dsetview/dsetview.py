@@ -239,6 +239,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             colNames = dataset.data.columns.tolist()
             dsetFileName = dataset.file_name
             dsetShape = dataset.data.shape
+            catNames = dataset.data_cat_map.index.unique().tolist()
             dataset_names = self.data_model_arr.dataset_names
 
             ## Set data info fields
@@ -249,12 +250,12 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             self.ui.edit_dshape.setCursorPosition(0)
 
             ## Update sorting panel
-            self.UpdateSortingPanel(colNames)
+            self.UpdateSortingPanel(catNames, colNames)
             
             ## Update dataset selection
             self.PopulateComboBox(self.ui.comboBoxDsets, dataset_names, currTxt = dataset_names[self.active_index])
 
-    def UpdateSortingPanel(self, colNames):
+    def UpdateSortingPanel(self, catNames, colNames):
         
         ## Uncheck edit boxes
         self.ui.check_sort1.setChecked(False)
@@ -262,9 +263,14 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.check_sort2.setChecked(False)
         self.ui.check_asc2.setChecked(False)
         
-        self.ui.comboBoxSortCat1.hide()
-        self.ui.comboBoxSortCat2.hide()
-
+        if len(catNames) == 1:      ## Single variable category, no need for category combobox
+            self.ui.comboBoxSortCat1.hide()
+            self.ui.comboBoxSortCat2.hide()
+        else:
+            self.ui.comboBoxSortCat1.show()
+            self.ui.comboBoxSortCat2.show()
+            self.PopulateComboBox(self.ui.comboBoxSortCat1, catNames, '--var group--')
+            self.PopulateComboBox(self.ui.comboBoxSortCat2, catNames, '--var group--')
         self.PopulateComboBox(self.ui.comboBoxSortVar1, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxSortVar2, colNames, '--var name--')
 

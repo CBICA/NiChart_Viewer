@@ -111,7 +111,7 @@
                     </item>
                         
                     <item>
-                        <widget  class="QFrame"  name="wSpareOptions">
+                        <widget  class="QFrame"  name="wHarmonizeOptions">
                         
                         <property  name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
@@ -217,7 +217,7 @@
                     </item>
 
                     <item>
-                    <widget  class="QFrame"  name="wCalcSpare">
+                    <widget  class="QFrame"  name="wCalcHarmonize">
                         <property  name="frameShape">
                         <enum>QFrame::StyledPanel</enum>
                         </property>
@@ -242,9 +242,9 @@
                             </spacer>
                         </item>
                         <item>
-                            <widget  class="QPushButton"  name="calcSpareBtn">
+                            <widget  class="QPushButton"  name="calcHarmonizeBtn">
                             <property  name="text">
-                                <string>Calc SPARE</string>
+                                <string>Harmonize</string>
                             </property>
                             </widget>
                         </item>

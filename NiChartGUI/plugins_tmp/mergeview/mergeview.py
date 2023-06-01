@@ -34,6 +34,10 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.mdi.setBackground(QtGui.QColor(245,245,245,255))
                 
         ### Panel for dset1 merge variables selection
+        #self.ui.comboBoxMergeCat1 = CheckableQComboBox(self.ui)
+        #self.ui.comboBoxMergeCat1.setEditable(False)
+        #self.ui.vlComboMerge1.addWidget(self.ui.comboBoxMergeCat1)
+        
         self.ui.comboBoxMergeVar1 = CheckableQComboBox(self.ui)
         self.ui.comboBoxMergeVar1.setEditable(False)
         self.ui.vlComboMerge1.addWidget(self.ui.comboBoxMergeVar1)
@@ -43,6 +47,10 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.ui.hlMergeDset2.addWidget(self.ui.comboBoxDataset2)
 
         ### Panel for dset2 merge variables selection
+        #self.ui.comboBoxMergeCat2 = CheckableQComboBox(self.ui)
+        #self.ui.comboBoxMergeCat2.setEditable(False)
+        #self.ui.vlComboMerge2.addWidget(self.ui.comboBoxMergeCat2)
+        
         self.ui.comboBoxMergeVar2 = CheckableQComboBox(self.ui)
         self.ui.comboBoxMergeVar2.setEditable(False)
         self.ui.vlComboMerge2.addWidget(self.ui.comboBoxMergeVar2)
@@ -58,6 +66,9 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
 
     def SetupConnections(self):
         self.data_model_arr.active_dset_changed.connect(lambda: self.OnDataChanged())        
+
+        #self.ui.comboBoxMergeCat1.view().pressed.connect(self.OnMergeCat1Selected)
+        #self.ui.comboBoxMergeCat2.view().pressed.connect(self.OnMergeCat2Selected)
 
         self.ui.comboBoxDataset2.currentIndexChanged.connect(lambda: self.OnDataset2Changed())
 
@@ -107,6 +118,10 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         # Set updated dset
         self.data_model_arr.datasets[self.active_index].data = dfOut
 
+        ## Concat dictionaries of the two datasets
+        dict2 = self.data_model_arr.datasets[self.dataset2_index].data_dict
+        self.data_model_arr.datasets[self.active_index].ConcatDict(dict2)
+        
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()
         
@@ -185,6 +200,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
             dataset = self.data_model_arr.datasets[self.active_index]
             dsetName = self.data_model_arr.dataset_names[self.active_index]
             colNames = dataset.data.columns.tolist()
+            catNames = dataset.data_cat_map.index.unique().tolist()
 
             ## Set active dset name
             self.ui.edit_activeDset.setText(dsetName)

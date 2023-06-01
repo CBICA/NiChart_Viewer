@@ -1,0 +1,15 @@
+[Core]
+Name = Harmonize View
+Module = harmonizeview
+
+[Documentation]
+Author = Guray Erus
+Version = 0.1
+Website = 
+Description = ---------- Description ----------
+    Plugin for calculating the HARMONIZED values
+    ---------- Options ----------
+
+[Tab]
+#tab position starts from 0
+Position = 8

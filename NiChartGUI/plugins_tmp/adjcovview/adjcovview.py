@@ -44,21 +44,37 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.mdi.setBackground(QtGui.QColor(245,245,245,255))
         
         ## Panel for outcome vars
+        self.ui.comboBoxOutCat = CheckableQComboBox(self.ui)
+        self.ui.comboBoxOutCat.setEditable(False)
+        self.ui.vlComboOut.addWidget(self.ui.comboBoxOutCat)
+
         self.ui.comboBoxOutVar = CheckableQComboBox(self.ui)
         self.ui.comboBoxOutVar.setEditable(False)
         self.ui.vlComboOut.addWidget(self.ui.comboBoxOutVar)
         
         ## Panel for cov to keep
+        self.ui.comboBoxCovKeepCat = CheckableQComboBox(self.ui)
+        self.ui.comboBoxCovKeepCat.setEditable(False)
+        self.ui.vlComboCovKeep.addWidget(self.ui.comboBoxCovKeepCat)
+
         self.ui.comboBoxCovKeepVar = CheckableQComboBox(self.ui)
         self.ui.comboBoxCovKeepVar.setEditable(False)
         self.ui.vlComboCovKeep.addWidget(self.ui.comboBoxCovKeepVar)
         
         ## Panel for cov to correct
+        self.ui.comboBoxCovCorrCat = CheckableQComboBox(self.ui)
+        self.ui.comboBoxCovCorrCat.setEditable(False)
+        self.ui.vlComboCovCorr.addWidget(self.ui.comboBoxCovCorrCat)
+
         self.ui.comboBoxCovCorrVar = CheckableQComboBox(self.ui)
         self.ui.comboBoxCovCorrVar.setEditable(False)
         self.ui.vlComboCovCorr.addWidget(self.ui.comboBoxCovCorrVar)
 
         ## Panel for selection
+        self.ui.comboBoxSelCat = QComboBox(self.ui)
+        self.ui.comboBoxSelCat.setEditable(False)
+        self.ui.vlComboSel.addWidget(self.ui.comboBoxSelCat)
+
         self.ui.comboBoxSelVar = QComboBox(self.ui)
         self.ui.comboBoxSelVar.setEditable(False)
         self.ui.vlComboSel.addWidget(self.ui.comboBoxSelVar)
@@ -80,6 +96,11 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.active_dset_changed.connect(lambda: self.OnDataChanged())
 
         self.ui.comboBoxSelVar.currentIndexChanged.connect(lambda: self.OnSelIndexChanged())
+
+        self.ui.comboBoxOutCat.view().pressed.connect(self.OnOutCatSelected)
+        self.ui.comboBoxCovKeepCat.view().pressed.connect(self.OnCovKeepCatSelected)
+        self.ui.comboBoxCovCorrCat.view().pressed.connect(self.OnCovCorrCatSelected)
+        self.ui.comboBoxSelCat.currentIndexChanged.connect(self.OnSelCatChanged)
 
         self.ui.adjCovBtn.clicked.connect(lambda: self.OnAdjCovBtnClicked())
 
@@ -104,6 +125,24 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         else:
             comboVar.checkItems(checkedVars)      ## Selected vars are set to "checked"
             selItem.setCheckState(QtCore.Qt.Checked)
+
+    def OnOutCatSelected(self, index):
+        selItem = self.ui.comboBoxOutCat.model().itemFromIndex(index) 
+        self.CheckSelVars(selItem, self.ui.comboBoxOutVar)
+        
+    def OnCovKeepCatSelected(self, index):
+        selItem = self.ui.comboBoxCovKeepCat.model().itemFromIndex(index) 
+        self.CheckSelVars(selItem, self.ui.comboBoxCovKeepVar)
+        
+    def OnCovCorrCatSelected(self, index):
+        selItem = self.ui.comboBoxCovCorrCat.model().itemFromIndex(index) 
+        self.CheckSelVars(selItem, self.ui.comboBoxCovCorrVar)
+
+    def OnSelCatChanged(self):
+        selCat = self.ui.comboBoxSelCat.currentText()
+        tmpData = self.data_model_arr.datasets[self.active_index]
+        selVars = tmpData.data_cat_map.loc[[selCat]].VarName.tolist()
+        self.PopulateComboBox(self.ui.comboBoxSelVar, selVars)
 
     ## Apply a linear regression model and correct for covariates
     ## It runs independently for each outcome variable
@@ -200,6 +239,7 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         ## Create dict with info about new columns
         outDesc = 'Created by NiChartGUI AdjCovView Plugin'
         outSource = 'NiChartGUI AdjCovView Plugin'
+        self.data_model_arr.AddNewVarsToDict(outVarNames, outCat, outDesc, outSource)
         
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
@@ -341,17 +381,33 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
             ## Get data variables
             dataset = self.data_model_arr.datasets[self.active_index]
             colNames = dataset.data.columns.tolist()
+            catNames = dataset.data_cat_map.index.unique().tolist()
 
             logger.info(self.active_index)
+            logger.info(catNames)
             
             ## Set active dset name
             self.ui.edit_activeDset.setText(self.data_model_arr.dataset_names[self.active_index])
 
             ## Update selection, sorting and drop duplicates panels
-            self.UpdatePanels(colNames)
+            self.UpdatePanels(catNames, colNames)
 
-    def UpdatePanels(self, colNames):
+    def UpdatePanels(self, catNames, colNames):
         
+        if len(catNames) == 1:      ## Single variable category, no need for category combobox
+            self.ui.comboBoxOutCat.hide()
+            self.ui.comboBoxCovKeepCat.hide()
+            self.ui.comboBoxCovCorrCat.hide()
+            self.ui.comboBoxSelCat.hide()
+        else:
+            self.ui.comboBoxOutCat.show()
+            self.ui.comboBoxCovKeepCat.show()
+            self.ui.comboBoxCovCorrCat.show()
+            self.ui.comboBoxSelCat.show()
+            self.PopulateComboBox(self.ui.comboBoxOutCat, catNames, '--var group--')
+            self.PopulateComboBox(self.ui.comboBoxCovKeepCat, catNames, '--var group--')
+            self.PopulateComboBox(self.ui.comboBoxCovCorrCat, catNames, '--var group--')
+            self.PopulateComboBox(self.ui.comboBoxSelCat, catNames, '--var group--')
         self.PopulateComboBox(self.ui.comboBoxOutVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxCovKeepVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxCovCorrVar, colNames, '--var name--')

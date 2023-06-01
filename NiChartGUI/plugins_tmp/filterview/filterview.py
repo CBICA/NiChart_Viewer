@@ -33,11 +33,21 @@ class FilterView(QtWidgets.QWidget,BasePlugin):
         self.mdi.setBackground(QtGui.QColor(245,245,245,255))
                 
         ## Panel for variable selection
+        self.ui.comboBoxSelCat = CheckableQComboBox(self.ui)
+        self.ui.comboBoxSelCat.setEditable(False)
+        self.ui.vlComboSel.addWidget(self.ui.comboBoxSelCat)
+        #self.ui.comboBoxSelCat.hide()
+
         self.ui.comboBoxSelVar = CheckableQComboBox(self.ui)
         self.ui.comboBoxSelVar.setEditable(False)
         self.ui.vlComboSel.addWidget(self.ui.comboBoxSelVar)
 
         ## Panel for data filtering
+        self.ui.comboBoxFilterCat = QComboBox(self.ui)
+        self.ui.comboBoxFilterCat.setEditable(False)
+        self.ui.vlComboFilter.addWidget(self.ui.comboBoxFilterCat)
+        #self.ui.comboBoxFilterCat.hide()
+
         self.ui.comboBoxFilterVar = QComboBox(self.ui)
         self.ui.comboBoxFilterVar.setEditable(False)
         self.ui.vlComboFilter.addWidget(self.ui.comboBoxFilterVar)
@@ -50,6 +60,11 @@ class FilterView(QtWidgets.QWidget,BasePlugin):
         self.ui.wFilterCategorical.hide()
 
         ## Panel for drop duplicates
+        self.ui.comboBoxSelDuplCat = CheckableQComboBox(self.ui)
+        self.ui.comboBoxSelDuplCat.setEditable(False)
+        self.ui.vlComboSelDupl.addWidget(self.ui.comboBoxSelDuplCat)
+        self.ui.comboBoxSelDuplCat.hide()
+
         self.ui.comboBoxSelDuplVar = CheckableQComboBox(self.ui)
         self.ui.comboBoxSelDuplVar.setEditable(False)
         self.ui.vlComboSelDupl.addWidget(self.ui.comboBoxSelDuplVar)
@@ -73,8 +88,72 @@ class FilterView(QtWidgets.QWidget,BasePlugin):
         self.ui.dropBtn.clicked.connect(self.OnDropBtnClicked)
 
         self.ui.comboBoxFilterVar.currentIndexChanged.connect(self.OnFilterVarChanged)
+        self.ui.comboBoxFilterCat.currentIndexChanged.connect(self.OnFilterCatChanged)
+
+        self.ui.comboBoxSelCat.view().pressed.connect(self.OnSelCatSelected)
+        self.ui.comboBoxSelDuplCat.view().pressed.connect(self.OnSelDuplCatSelected)
 
         ## https://gist.github.com/ales-erjavec/7624dd1d183dfbfb3354600b285abb94
+
+    def OnFilterCatChanged(self):
+        selCat = self.ui.comboBoxFilterCat.currentText()
+        tmpData = self.data_model_arr.datasets[self.active_index]
+        
+        selVars = tmpData.data_cat_map.loc[[selCat]].VarName.tolist()
+        self.PopulateComboBox(self.ui.comboBoxFilterVar, selVars)
+
+
+    def OnSelDuplCatSelected(self, index):
+        
+        selItem = self.ui.comboBoxSelDuplCat.model().itemFromIndex(index) 
+        
+        ## Read selected cat value
+        selCat = selItem.text()
+
+        ## Get list of cat to var name mapping
+        dmap = self.data_model_arr.datasets[self.active_index].data_cat_map
+        
+        ## Check status of edit box for sel category
+        isChecked = selItem.checkState()
+        
+        ## Set/reset check mark for selected var names in combobox for variables
+        ## Update sel cat check box
+        checkedVars = dmap.loc[[selCat]].VarName.tolist()
+        if selItem.checkState() == QtCore.Qt.Checked: 
+            self.ui.comboBoxSelDuplVar.uncheckItems(checkedVars)      ## Selected vars are set to "checked"
+            selItem.setCheckState(QtCore.Qt.Unchecked)
+        else:
+            self.ui.comboBoxSelDuplVar.checkItems(checkedVars)      ## Selected vars are set to "checked"
+            selItem.setCheckState(QtCore.Qt.Checked)
+        
+        #logger.info(checkedVars)
+
+
+    def OnSelCatSelected(self, index):
+        
+        selItem = self.ui.comboBoxSelCat.model().itemFromIndex(index) 
+        
+        ## Read selected cat value
+        selCat = selItem.text()
+
+        ## Get list of cat to var name mapping
+        dmap = self.data_model_arr.datasets[self.active_index].data_cat_map
+        
+        ## Check status of edit box for sel category
+        isChecked = selItem.checkState()
+        
+        ## Set/reset check mark for selected var names in combobox for variables
+        ## Update sel cat check box
+        checkedVars = dmap.loc[[selCat]].VarName.tolist()
+        if selItem.checkState() == QtCore.Qt.Checked: 
+            self.ui.comboBoxSelVar.uncheckItems(checkedVars)      ## Selected vars are set to "checked"
+            selItem.setCheckState(QtCore.Qt.Unchecked)
+        else:
+            self.ui.comboBoxSelVar.checkItems(checkedVars)      ## Selected vars are set to "checked"
+            selItem.setCheckState(QtCore.Qt.Checked)
+        
+        #logger.info(checkedVars)
+
 
     def OnDropBtnClicked(self):
         
@@ -127,6 +206,9 @@ class FilterView(QtWidgets.QWidget,BasePlugin):
         dtmp = dtmp[selVars]
         self.data_model_arr.datasets[self.active_index].data = dtmp
         
+        ## Columns changed; Update data dictionary
+        self.data_model_arr.datasets[self.active_index].UpdateDictSelCols(selVars)
+
         ## Show data table
         self.dataView = QtWidgets.QTableView()
 
@@ -199,17 +281,30 @@ class FilterView(QtWidgets.QWidget,BasePlugin):
             ## Get data variables
             dataset = self.data_model_arr.datasets[self.active_index]
             colNames = dataset.data.columns.tolist()
+            catNames = dataset.data_cat_map.index.unique().tolist()
 
             logger.info(self.active_index)
+            logger.info(catNames)
             
             ## Set active dset name
             self.ui.edit_activeDset.setText(self.data_model_arr.dataset_names[self.active_index])
 
             ## Update selection, sorting and drop duplicates panels
-            self.UpdatePanels(colNames)
+            self.UpdatePanels(catNames, colNames)
 
-    def UpdatePanels(self, colNames):
+    def UpdatePanels(self, catNames, colNames):
         
+        if len(catNames) == 1:      ## Single variable category, no need for category combobox
+            self.ui.comboBoxSelCat.hide()
+            self.ui.comboBoxFilterCat.hide()
+            self.ui.comboBoxSelDuplCat.hide()
+        else:
+            self.ui.comboBoxSelCat.show()
+            self.ui.comboBoxFilterCat.show()
+            self.ui.comboBoxSelDuplCat.show()
+            self.PopulateComboBox(self.ui.comboBoxSelCat, catNames, '--var group--', bypassCheckable=True)
+            self.PopulateComboBox(self.ui.comboBoxFilterCat, catNames, '--var group--')
+            self.PopulateComboBox(self.ui.comboBoxSelDuplCat, catNames, '--var group--', bypassCheckable=True)
         self.PopulateComboBox(self.ui.comboBoxSelVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxFilterVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxSelDuplVar, colNames, '--var name--')

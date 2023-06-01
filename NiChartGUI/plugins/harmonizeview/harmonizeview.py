@@ -69,42 +69,6 @@ class HarmonizeView(QtWidgets.QWidget,BasePlugin):
         self.ui.selectModelBtn.clicked.connect(self.OnSelectModelBtnClicked)
         self.ui.calcHarmonizeBtn.clicked.connect(self.OnCalcHarmonizeBtnClicked)
 
-
-    def CheckModel(self, filename):
-        #read input data
-        
-        # Load model
-        with gzip.open(filename, 'rb') as f:
-            self.mdl = pickle.load(f)
-            
-        # Get columns and check if they exist in dset
-        mdlCol = self.mdl['predictors']
-        dfCol = self.data_model_arr.datasets[self.active_index].data.columns
-
-        dfMdl = pd.DataFrame(columns=['Predictor'], data = mdlCol)
-        dfMdl['Status'] = dfMdl.Predictor.isin(dfCol)
-        dfMdl = dfMdl.replace({True:'FOUND', False:'MISSING'}).sort_values('Status', ascending = False)
-        
-        self.PopulateTable(dfMdl)
-
-        ## Set data view to mdi widget
-        sub = QMdiSubWindow()
-        sub.setWidget(self.dataView)
-        sub.setWindowTitle('MODEL: ' + os.path.basename(filename))
-        self.mdi.addSubWindow(sub)        
-        sub.show()
-        self.mdi.tileSubWindows()
-        
-        if dfMdl[dfMdl.Status=='MISSING'].shape[0] > 0:
-            self.statusbar.showMessage('WARNING: Model does not match the data!')
-        
-        else:
-            self.ui.wCalcHarmonize.show()
-            self.statusbar.showMessage('Model is valid')
-            
-        
-        logger.critical(dfMdl.head())
-
     def OnSelectModelBtnClicked(self):
 
         #if self.dataPathLast == '':
@@ -112,7 +76,7 @@ class HarmonizeView(QtWidgets.QWidget,BasePlugin):
         #else:
             #directory = self.dataPathLast
         directory = QtCore.QDir().homePath()
-        directory = '/home/guraylab/AIBIL/Github/TmpPackages/HarmonizeScores/mdl'
+        directory = '/home/guraylab/AIBIL/Github/NiChartPackages/NiChartHarmonize/test_temp/Test3/outputs/EXP2_ALL_TrainTest'
 
         filename = QtWidgets.QFileDialog.getOpenFileName(None,
             caption = 'Open model file',

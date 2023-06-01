@@ -2,6 +2,7 @@
 <ui  version="4.0">
   <class>Form</class>
   <widget  class="QWidget"  name="Form">
+      
     <property  name="geometry">
       <rect>
         <x>0</x>
@@ -10,11 +11,11 @@
         <height>500</height>
       </rect>
     </property>
+    
     <property  name="windowTitle">
       <string>Form</string>
     </property>
     
-
     <layout  class="QVBoxLayout"  name="horizontalLayout">
       <item>
         
@@ -22,8 +23,10 @@
     
     
             <layout  class="QHBoxLayout"  name="horizontalLayout">
+                
             <item>
                 <widget  class="QSplitter"  name="splitter">
+                    
                 <property  name="orientation">
                     <enum>Qt::Horizontal</enum>
                 </property>
@@ -43,14 +46,13 @@
                 </widget>
                 
                 <widget  class="QWidget"  name="wOptions">
-                    
                     <property  name="sizePolicy">
                     <sizepolicy  hsizetype="Minimum"  vsizetype="Minimum">
                         <horstretch>1</horstretch>
                         <verstretch>0</verstretch>
                     </sizepolicy>
                     </property>
-
+                    
                     <layout  class="QVBoxLayout"  name="vlOptions">
 
                     <item>
@@ -64,7 +66,6 @@
                         <property  name="lineWidth">
                             <number>8</number>
                         </property>
-                        
                         
                         <layout  class="QVBoxLayout"  name="vlActiveDset">
                             
@@ -111,8 +112,7 @@
                     </item>
                         
                     <item>
-                        <widget  class="QFrame"  name="wSpareOptions">
-                        
+                        <widget  class="QFrame"  name="wXVar">
                         <property  name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
                         </property>
@@ -123,52 +123,46 @@
                             <number>8</number>
                         </property>
                         
-                        <layout  class="QVBoxLayout"  name="vlNormalize">
-
+                        <layout  class="QVBoxLayout"  name="vlXVar">
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Model</string>
+                                <string>X Var</string>
                                 </property>
                             </widget>
                             </item>
-                            
                             <item>
-                            <layout  class="QHBoxLayout"  name="hlDivideBy">
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
                                 <item>
-                                    <spacer  name="horizontalSpacer_5">
-                                        <property  name="orientation">
-                                        <enum>Qt::Horizontal</enum>
-                                        </property>
-                                        
-                                        <property name="sizeType">
-                                            <enum>QSizePolicy::Fixed</enum>
-                                        </property>                                    
-                                        
-                                        <property  name="sizeHint"  stdset="0">
-                                        <size>
-                                            <width>30</width>
-                                            <height>20</height>
-                                        </size>
-                                        </property>
-                                    </spacer>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
                                 </item>
                                 <item>
-                                    <widget  class="QPushButton"  name="selectModelBtn">
-                                    <property  name="text">
-                                        <string>Select Model</string>
-                                    </property>
-                                    </widget>
+                                <layout  class="QVBoxLayout"  name="vlComboX"/>
                                 </item>
                             </layout>
                             </item>
-
                         </layout>
+                        
                         </widget>
                     </item>
-                        
+
                     <item>
-                        <widget  class="QFrame"  name="wOutVarName">
+                        <widget  class="QFrame"  name="wFilter">
                         <property  name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
                         </property>
@@ -179,13 +173,15 @@
                             <number>8</number>
                         </property>
                         <layout  class="QVBoxLayout"  name="vlBC">
+                            
                             <item>
                             <widget  class="QLabel"  name="label_select2">
                                 <property  name="text">
-                                <string>Output Variable Name: </string>
+                                <string>Filter Var</string>
                                 </property>
                             </widget>
                             </item>
+                            
                             <item>
                             <layout  class="QHBoxLayout"  name="horizontalLayout_6">
                                 <item>
@@ -207,51 +203,155 @@
                                 </spacer>
                                 </item>
                                 <item>
-                                    <widget  class="QLineEdit"  name="edit_outVarName">
-                                    </widget>
+                                <layout  class="QVBoxLayout"  name="vlComboFilter"/>
                                 </item>
                             </layout>
                             </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_6">
+                                <item>
+                                <spacer  name="horizontalSpacer_6">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboFilterVal"/>
+                                </item>
+                            </layout>
+                            </item>
+
+                        </layout>
+                        </widget>
+                    </item>
+                    
+                    <item>
+                        <widget  class="QFrame"  name="wHue">
+                        <property  name="frameShape">
+                            <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property  name="frameShadow">
+                            <enum>QFrame::Raised</enum>
+                        </property>
+                        <property  name="lineWidth">
+                            <number>8</number>
+                        </property>
+                        
+                        <layout  class="QVBoxLayout"  name="vlBD">
+                        
+                            <item>
+                            <widget  class="QLabel"  name="label_select3">
+                                <property  name="text">
+                                <string>Hue Var</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_7">
+                                <item>
+                                <spacer  name="horizontalSpacer_7">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboHue"/>
+                                </item>
+                            </layout>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_7">
+                                <item>
+                                <spacer  name="horizontalSpacer_7">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboHueVal"/>
+                                </item>
+                            </layout>
+                            </item>
+
                         </layout>
                         </widget>
                     </item>
 
                     <item>
-                    <widget  class="QFrame"  name="wCalcSpare">
+                        <widget  class="QFrame"  name="wPlotBtn">
                         <property  name="frameShape">
-                        <enum>QFrame::StyledPanel</enum>
+                            <enum>QFrame::StyledPanel</enum>
                         </property>
                         <property  name="frameShadow">
-                        <enum>QFrame::Raised</enum>
+                            <enum>QFrame::Raised</enum>
                         </property>
                         <property  name="lineWidth">
-                        <number>8</number>
+                            <number>8</number>
                         </property>
-                        <layout  class="QHBoxLayout"  name="horizontalLayout_8">
-                        <item>
-                            <spacer  name="horizontalSpacer_8">
-                            <property  name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property  name="sizeHint"  stdset="0">
-                                <size>
-                                <width>40</width>
-                                <height>20</height>
-                                </size>
-                            </property>
-                            </spacer>
-                        </item>
-                        <item>
-                            <widget  class="QPushButton"  name="calcSpareBtn">
-                            <property  name="text">
-                                <string>Calc SPARE</string>
-                            </property>
-                            </widget>
-                        </item>
-                        </layout>
-                    </widget>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_8">
+                            <item>
+                                <spacer  name="horizontalSpacer_8">
+                                <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                </property>
+                                <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                    </size>
+                                </property>
+                                </spacer>
+                            </item>
+                            <item>
+                                <widget  class="QPushButton"  name="plotBtn">
+                                <property  name="text">
+                                    <string>Plot</string>
+                                </property>
+                                </widget>
+                            </item>
+                            </layout>
+                        </widget>
                     </item>
-                            
+                    
                     <item>
                         <spacer  name="verticalSpacer">
                         <property  name="orientation">
@@ -265,8 +365,8 @@
                         </property>
                         </spacer>
                     </item>
-                                    
-
+                    
+                    
                     </layout>
                 </widget>
                 </widget>
@@ -278,7 +378,7 @@
 
       </layout>
     
-            
+    
   </widget>
   <resources/>
   <connections/>
