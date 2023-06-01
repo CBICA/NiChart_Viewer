@@ -73,12 +73,22 @@ class MainWindow(QtWidgets.QMainWindow):
             
         ## Sort plugins based on tab position. Create a dictionary of plugins
         indSort = np.argsort(plIndTmp)
+        
+        ## FIXME Select to activate few plugins:
+        ## ['Dataset View', 'Filter View', 'Dist View', 'Plot View', 'Merge View', 'Normalize View', 'Adjust Cov View', 'Harmonize View', 'Spare View']
+        indSort = indSort[[0,3,5,6,7,8]]
+        
         plTmp = np.array(plTmp)[indSort]
         plNameTmp = np.array(plNameTmp)[indSort]
+        
 
         self.pluginDescriptions = np.array(pluginDescriptions)[indSort]       # A list with plugin descriptions
         
         self.Plugins = dict(zip(plNameTmp, plTmp))                  # A dictionary with plugin name and plugin object
+        
+        #logger.info(self.Plugins)
+        #logger.info('AAAAAA')
+        
         self.IndexPlugins = dict(zip(plNameTmp, np.arange(0, plNameTmp.shape[0])))  # A dictionary with plugin name and plugin index
         
 
@@ -105,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i, [key,value] in enumerate(self.Plugins.items()):
             self.ui.tabWidget.insertTab(i, value, key)
             if i>0:
-                #self.ui.tabWidget.setTabVisible(i, False)
+                self.ui.tabWidget.setTabVisible(i, False)
                 self.ui.tabWidget.setTabVisible(i, True)
                 
         if dataFiles is not None:

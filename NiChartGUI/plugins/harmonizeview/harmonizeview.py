@@ -18,17 +18,15 @@ from NiChartGUI.core.model.datamodel import PandasModel
 import inspect
 
 import sys
-#sys.path.append('/cbica/home/erusg/3_DEV/SPARE-Scores/05_niCHART/packaging/spare_scores')
-#import spare_scores as spare
-from spare_scores import spare_train
 
+from NiChartHarmonize import nh_apply_model as nh_test
 
 logger = iStagingLogger.get_logger(__name__)
 
-class SpareView(QtWidgets.QWidget,BasePlugin):
+class HarmonizeView(QtWidgets.QWidget,BasePlugin):
 
     def __init__(self):
-        super(SpareView,self).__init__()
+        super(HarmonizeView,self).__init__()
         
         self.data_model_arr = None
         self.active_index = -1
@@ -36,7 +34,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         self.cmds = None
         
         self.modelname = None
-        self.modelname = '/home/guraylab/AIBIL/Github/TmpPackages/SpareScores/mdl/mdl_SPARE_AD_MUSE_single.pkl.gz'
+        ##self.modelname = '/home/guraylab/AIBIL/Github/TmpPackages/HarmonizeScores/mdl/mdl_SPARE_AD_MUSE_single.pkl.gz'
 
         ## Status bar of the main window
         ## Initialized by the mainwindow during loading of plugin
@@ -49,7 +47,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
 
         root = os.path.dirname(__file__)
         self.readAdditionalInformation(root)
-        self.ui = uic.loadUi(os.path.join(root, 'spareview.ui'),self)
+        self.ui = uic.loadUi(os.path.join(root, 'harmonizeview.ui'),self)
         
         ## Main view panel        
         self.mdi = self.findChild(QMdiArea, 'mdiArea')       
@@ -60,7 +58,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         
         self.ui.wOptions.setMaximumWidth(300)
         
-        self.ui.wCalcSpare.hide()
+        self.ui.wCalcHarmonize.hide()
         
         
 
@@ -68,8 +66,8 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         
         self.data_model_arr.active_dset_changed.connect(self.OnDataChanged)
         
-        self.ui.loadModelBtn.clicked.connect(self.OnLoadModelBtnClicked)
-        self.ui.calcSpareBtn.clicked.connect(self.OnCalcSpareBtnClicked)
+        self.ui.selectModelBtn.clicked.connect(self.OnSelectModelBtnClicked)
+        self.ui.calcHarmonizeBtn.clicked.connect(self.OnCalcHarmonizeBtnClicked)
 
 
     def CheckModel(self, filename):
@@ -101,20 +99,20 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
             self.statusbar.showMessage('WARNING: Model does not match the data!')
         
         else:
-            self.ui.wCalcSpare.show()
+            self.ui.wCalcHarmonize.show()
             self.statusbar.showMessage('Model is valid')
             
         
         logger.critical(dfMdl.head())
 
-    def OnLoadModelBtnClicked(self):
+    def OnSelectModelBtnClicked(self):
 
         #if self.dataPathLast == '':
             #directory = QtCore.QDir().homePath()
         #else:
             #directory = self.dataPathLast
         directory = QtCore.QDir().homePath()
-        directory = '/home/guraylab/AIBIL/Github/TmpPackages/SpareScores/mdl'
+        directory = '/home/guraylab/AIBIL/Github/TmpPackages/HarmonizeScores/mdl'
 
         filename = QtWidgets.QFileDialog.getOpenFileName(None,
             caption = 'Open model file',
@@ -125,51 +123,53 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
             logger.warning("No file was selected")
         else:
             self.modelname = filename[0]
-            self.CheckModel(self.modelname)
+            self.ui.wCalcHarmonize.show()
 
-    def OnCalcSpareBtnClicked(self):
 
-        ## Read data and spare options
+    def OnCalcHarmonizeBtnClicked(self):
+
+        ## Read data and harmonize options
         df = self.data_model_arr.datasets[self.active_index].data
         outVarName = self.ui.edit_outVarName.text()
         if outVarName == '':
-            outVarName = 'SPARE'
+            outVarName = 'HARM'
         if outVarName[0] == '_':
             outVarName = outVarName[1:]
         outCat = outVarName
         
-        ## Apply SPARE
-        dfOut = spare.spare_test(df, self.modelname)
-        dfOut.columns = [outVarName]
+        ## Apply Harmonization
+        res_harm = nh_test.nh_harmonize_to_ref(df, self.modelname)
+        
+        if len(res_harm) == 1:          ## Model mismatch
+            logger.warning('AAAAAAAAAAAAAAAAAAA')
+
+        else:
+            mdlOut, dfOut = res_harm
         
         ## Set updated dset
-        df = pd.concat([df, dfOut], axis=1)
+        df = dfOut
         self.data_model_arr.datasets[self.active_index].data = df
         
         ## Create dict with info about new columns
-        outDesc = 'Created by NiChartGUI SPARE Plugin'
-        outSource = 'NiChartGUI SPARE Plugin'
-        self.data_model_arr.AddNewVarsToDict([outVarName], outCat, outDesc, outSource)
+        outDesc = 'Created by NiChartHarmonize Plugin'
+        outSource = 'NiChartHarmonize Plugin'
+        ##self.data_model_arr.AddNewVarsToDict([outVarName], outCat, outDesc, outSource)
             
         ## Call signal for change in data
-        self.data_model_arr.OnDataChanged()
+        ##self.data_model_arr.OnDataChanged()
         
         ## Load data to data view 
         self.dataView = QtWidgets.QTableView()
         
         ## Show only columns involved in application
         
-        logger.info('CCCCCCCCCCCCCCCCCCCCCCCCCCCccc')
-        logger.info(dfOut.shape)
-        logger.info(df.shape)
-        
-        dfOut = dfOut.round(3)
+        #dfOut = dfOut.round(3)
         self.PopulateTable(dfOut)
                                                                                                                         
         ## Set data view to mdi widget
         sub = QMdiSubWindow()
         sub.setWidget(self.dataView)
-        sub.setWindowTitle('SPARE Scores')
+        sub.setWindowTitle('Harmonized Values')
         self.mdi.addSubWindow(sub)        
         sub.show()
         self.mdi.tileSubWindows()
