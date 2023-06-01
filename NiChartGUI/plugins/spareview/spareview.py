@@ -105,14 +105,7 @@ class SpareView(QtWidgets.QWidget,BasePlugin):
         outCat = outVarName
         
         ## Apply SPARE
-        
-        logger.info('AAAAAAAAAAAAa')
-        logger.info(df)
         dfOut = spare.spare_test(df, self.modelname)
-        logger.info(dfOut.columns)
-        logger.info(dfOut.head())
-        logger.info('AAAAAAAAAAAAa')
-        input()
 
         self.data_model_arr.datasets[self.active_index].data = df
         

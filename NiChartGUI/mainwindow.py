@@ -79,7 +79,11 @@ class MainWindow(QtWidgets.QMainWindow):
         ## FIXME Select to activate few plugins:
         ## ['Dataset View', 'Filter View', 'Dist View', 'Plot View', 'Merge View', 'Normalize View', 'Adjust Cov View', 'Harmonize View', 'Spare View']
         
-        #indSort = indSort[[0,3,5,6,7,8]]
+        #indSort = indSort[[0,3,7,8,9]]
+        logger.info(plNameTmp)
+        logger.info('AAAA')
+        indSort = indSort[[0,7,8,9]]
+        input()
         
         plTmp = np.array(plTmp)[indSort]
         plNameTmp = np.array(plNameTmp)[indSort]
