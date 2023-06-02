@@ -82,8 +82,8 @@ class MainWindow(QtWidgets.QMainWindow):
         #indSort = indSort[[0,3,7,8,9]]
         logger.info(plNameTmp)
         logger.info('AAAA')
-        indSort = indSort[[0,7,8,9]]
-        input()
+        #indSort = indSort[[0,7,8,9]]
+        #input()
         
         plTmp = np.array(plTmp)[indSort]
         plNameTmp = np.array(plNameTmp)[indSort]

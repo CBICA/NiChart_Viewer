@@ -1,5 +1,5 @@
 [Core]
-Name = Harmonize View
+Name = Harmonize  View
 Module = harmonizeview
 
 [Documentation]
@@ -7,9 +7,11 @@ Author = Guray Erus
 Version = 0.1
 Website = 
 Description = ---------- Description ----------
-    Plugin for calculating the HARMONIZED values
+    Plugin for training the harmonization model.
     ---------- Options ----------
+    ---------- Notes ----------
+
 
 [Tab]
 #tab position starts from 0
-Position = 8
+Position = 9
