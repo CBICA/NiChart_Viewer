@@ -15,6 +15,8 @@ from NiChartGUI.core.gui.CheckableQComboBox import CheckableQComboBox
 from NiChartGUI.core.gui.NestedQMenu import NestedQMenu
 from NiChartGUI.core.model.datamodel import PandasModel
 
+from NiChartGUI.core.model.datamodel import DataModel
+
 import inspect
 
 import sys
@@ -188,9 +190,16 @@ class HarmonizeView(QtWidgets.QWidget,BasePlugin):
             else:
                 mdlOut, dfOut = res_harm
             
-            ## Set updated dset
+            ### Set updated dset
+            #df = dfOut
+            #self.data_model_arr.datasets[self.active_index].data = df
+
+            ## Add updated dset as new set
             df = dfOut
-            self.data_model_arr.datasets[self.active_index].data = df
+            dset_name = self.data_model_arr.dataset_names[self.active_index] + outSuff
+            logger.info('New data from existing: %s', dset_name)
+            dmodel= DataModel(df, dset_name)
+            self.data_model_arr.AddDataset(dmodel)
             
             ## Call signal for change in data
             self.data_model_arr.OnDataChanged()
