@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 import neuroHarmonize as nh
 import importlib.resources as pkg_resources
-import sys
+import os, sys
 import joblib
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
@@ -124,7 +124,8 @@ class DataModelArr(QObject):
         self.datasets.append(value)
         
         ## Add dataset name        
-        self.dataset_names.append('DSET_' + str(self.active_index + 1))
+        #self.dataset_names.append('DSET_' + str(self.active_index + 1))
+        self.dataset_names.append(os.path.basename(value.file_name).replace('.csv', '').replace('.pkl.gz', ''))
         
         logger.info('Exit DataModelArr.AddDataSet()')
         
