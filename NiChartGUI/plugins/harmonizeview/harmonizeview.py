@@ -192,6 +192,9 @@ class HarmonizeView(QtWidgets.QWidget,BasePlugin):
             df = dfOut
             self.data_model_arr.datasets[self.active_index].data = df
             
+            ## Call signal for change in data
+            self.data_model_arr.OnDataChanged()
+            
             ## Load data to data view 
             self.dataView = QtWidgets.QTableView()
 
