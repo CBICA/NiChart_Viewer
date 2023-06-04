@@ -17,6 +17,8 @@ import pandas as pd
 from matplotlib.cm import get_cmap
 from matplotlib.lines import Line2D
 
+from NiChartGUI.core import datautils
+
 import inspect
 
 logger = iStagingLogger.get_logger(__name__)
@@ -108,49 +110,42 @@ class DistView(QtWidgets.QWidget,BasePlugin):
             self.PopulateComboBox(self.ui.comboHueVal, selHueVals)
         else:
             print('Too many unique values for selection, skip : ' + str(len(selHueVals)))
+
             
-    def PlotDist(self, axes, df, xVar, filterVar, filterVals, hueVar, hueVals):
+    #def PlotDist(self, axes, df, xVar, filterVar, filterVals, hueVar, hueVals):
 
-        # clear plot
-        axes.clear()
+        ## clear plot
+        #axes.clear()
 
-        ## Get data
-        colSel = [xVar]
-        if len(filterVals)>0:
-            colSel.append(filterVar)
-        if len(hueVals)>0:
-            colSel.append(hueVar)
-        ## Remove duplicates in selected vars
-        colSel = [*set(colSel)]
+        ### Get data
+        #colSel = [xVar]
+        #if len(filterVals)>0:
+            #colSel.append(filterVar)
+        #if len(hueVals)>0:
+            #colSel.append(hueVar)
+
+        ### Remove duplicates in selected vars
+        #colSel = [*set(colSel)]
         
-        dtmp = df[colSel]
-
-        logger.info('AAAAA')
-        logger.info(dtmp.head())
-        logger.info(len(filterVals))
-        logger.info(len(hueVals))
-
+        #dtmp = df[colSel]
         
-        ## Filter data
-        if len(filterVals)>0:
-            logger.info('BBBBBBBBBBBBBBBBB')
-            dtmp = dtmp[dtmp[filterVar].isin(filterVals)]
+        ### Filter data
+        #if len(filterVals)>0:
+            #dtmp = dtmp[dtmp[filterVar].isin(filterVals)]
 
-        ## Get hue values
-        if len(hueVals)>0:
-            logger.info('BBBBBBBBBBBBBBBBB')
-            dtmp = dtmp[dtmp[hueVar].isin(hueVals)]
+        ### Get hue values
+        #if len(hueVals)>0:
+            #dtmp = dtmp[dtmp[hueVar].isin(hueVals)]
 
-        ## Plot distribution
-        if len(hueVals)>0:
-            sns.kdeplot(data=dtmp, x=xVar, hue=hueVar, ax=axes)
-        else:
-            logger.info('CCCCCCCCCCCCCCCCCC')
-            sns.kdeplot(data=dtmp, x=xVar, ax=axes)
+        ### Plot distribution
+        #if len(hueVals)>0:
+            #sns.kdeplot(data=dtmp, x=xVar, hue=hueVar, ax=axes)
+        #else:
+            #sns.kdeplot(data=dtmp, x=xVar, ax=axes)
         
-        sns.despine(fig=axes.get_figure(), trim=True)
-        axes.get_figure().set_tight_layout(True)
-        axes.set(xlabel=xVar)
+        #sns.despine(fig=axes.get_figure(), trim=True)
+        #axes.get_figure().set_tight_layout(True)
+        #axes.set(xlabel=xVar)
 
     def OnPlotBtnClicked(self):
 
@@ -178,7 +173,11 @@ class DistView(QtWidgets.QWidget,BasePlugin):
         sub.setWidget(self.plotCanvas)
         self.mdi.addSubWindow(sub)        
         
-        self.PlotDist(self.plotCanvas.axes, df, xVar, filterVar, filterVals, hueVar, hueVals)
+        #self.PlotDist(self.plotCanvas.axes, df, xVar, filterVar, filterVals, hueVar, hueVals)
+
+        df_tmp = datautils.FilterData(df, xVar, filterVar, filterVals, hueVar, hueVals)
+        datautils.PlotDist(self.plotCanvas.axes, df_tmp, xVar, hueVar)
+
         self.plotCanvas.draw()
         
         sub.show()
@@ -189,7 +188,7 @@ class DistView(QtWidgets.QWidget,BasePlugin):
         dset_name = self.data_model_arr.dataset_names[self.active_index]       
 
         ## Add function definitons to notebook
-        fCode = inspect.getsource(self.PlotDist).replace('(self, ','(').replace('self.','').replace('ax=axes','')
+        fCode = inspect.getsource(datautils.PlotDist).replace('(self, ','(').replace('self.','').replace('ax=axes','')
         self.cmds.add_funcdef('PlotDist', ['', fCode, ''])
 
         ## Add cmds to call the function

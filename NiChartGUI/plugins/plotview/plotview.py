@@ -17,6 +17,9 @@ import pandas as pd
 from matplotlib.cm import get_cmap
 from matplotlib.lines import Line2D
 
+#from NiChartGUI.core import datautils
+from NiChartGUI.core.datautils import *
+
 import inspect
 
 logger = iStagingLogger.get_logger(__name__)
@@ -38,6 +41,12 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         
         self.mdi = self.findChild(QMdiArea, 'mdiArea')       
         self.mdi.setBackground(QtGui.QColor(245,245,245,255))
+        
+        ## Panel for action
+        self.ui.comboPlotType = QComboBox(self.ui)
+        self.ui.comboPlotType.setEditable(False)
+        self.ui.vlPlotType.addWidget(self.ui.comboPlotType)
+        self.PopulateComboBox(self.ui.comboPlotType, ['RegPlot', 'DistPlot'], '--action name--')        
         
         ## Panel for X var
         self.ui.comboXVar = QComboBox(self.ui)
@@ -73,6 +82,12 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         
         ## Options panel is not shown if there is no dataset loaded
         self.ui.wOptions.hide()
+        self.ui.wXVar.hide()
+        self.ui.wYVar.hide()
+        self.ui.wFilter.hide()
+        self.ui.wHue.hide()
+        self.ui.wPlotBtn.hide()
+        
         
         self.ui.edit_activeDset.setReadOnly(True)               
 
@@ -86,19 +101,31 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboHueVar.currentIndexChanged.connect(lambda: self.OnHueIndexChanged())
         self.ui.comboFilterVar.currentIndexChanged.connect(lambda: self.OnFilterIndexChanged())
 
+        self.ui.comboPlotType.currentIndexChanged.connect(self.OnPlotTypeChanged)
         self.ui.plotBtn.clicked.connect(lambda: self.OnPlotBtnClicked())
 
-    def hue_regplot(self, data, x, y, hue, palette=None, **kwargs):
-        regplots = []
-        levels = data[hue].unique()
-        if palette is None:
-            default_colors = get_cmap('tab10')
-            palette = {k: default_colors(i) for i, k in enumerate(levels)}
-        legendhandls=[]
-        for key in levels:
-            regplots.append(sns.regplot(x=x, y=y, data=data[data[hue] == key], color=palette[key], **kwargs))
-            legendhandls.append(Line2D([], [], color=palette[key], label=key))
-        return (regplots, legendhandls)
+    def OnPlotTypeChanged(self):
+        
+        logger.info('Plot type selection changed')
+
+        self.selPlotType = self.ui.comboPlotType.currentText()
+        
+        if self.selPlotType == 'RegPlot':
+            self.ui.wXVar.show()
+            self.ui.wYVar.show()
+            self.ui.wFilter.show()
+            self.ui.wHue.show()
+            self.ui.wPlotBtn.show()
+            
+
+        if self.selPlotType == 'DistPlot':
+            self.ui.wXVar.show()
+            self.ui.wYVar.hide()
+            self.ui.wFilter.show()
+            self.ui.wHue.show()
+            self.ui.wPlotBtn.show()
+
+        self.statusbar.showMessage('Plot type selection changed: ' + self.selPlotType)
 
     def OnFilterIndexChanged(self):
         
@@ -129,41 +156,6 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         else:
             print('Too many unique values for selection, skip : ' + str(len(selHueVals)))
 
-
-
-    def PlotData(self, axes, df, xVar, yVar, filterVar, filterVals, hueVar, hueVals):
-
-        ## Get data
-        colSel = [xVar, yVar]
-        if filterVar != '':
-            colSel.append(filterVar)
-        if hueVar != '':
-            colSel.append(hueVar)
-        ## Remove duplicates in selected vars
-        colSel = [*set(colSel)]
-        
-        dtmp = df[colSel]
-        
-        ## Filter data
-        if filterVar != '':
-            dtmp = dtmp[dtmp[filterVar].isin(filterVals)]
-
-        ## Get hue values
-        if hueVar != '':
-            dtmp = dtmp[dtmp[hueVar].isin(hueVals)]
-            a,b = self.hue_regplot(dtmp, xVar, yVar, hueVar, ax=axes)
-            axes.legend(handles=b)
-            
-        else:
-            sns.regplot(data = dtmp, x = xVar, y = yVar, ax=axes)
-            
-        axes.yaxis.set_ticks_position('left')
-        axes.xaxis.set_ticks_position('bottom')
-        sns.despine(fig=axes.get_figure(), trim=True)
-        axes.get_figure().set_tight_layout(True)
-        axes.set(xlabel=xVar)
-        axes.set(ylabel=yVar)
-
     def OnPlotBtnClicked(self):
 
         dset_name = self.data_model_arr.dataset_names[self.active_index]        
@@ -191,7 +183,8 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         sub.setWidget(self.plotCanvas)
         self.mdi.addSubWindow(sub)        
         
-        self.PlotData(self.plotCanvas.axes, df, xVar, yVar, filterVar, filterVals, hueVar, hueVals)
+        df_tmp = FilterData(df, xVar, filterVar, filterVals, hueVar, hueVals)
+        PlotData(self.plotCanvas.axes, df_tmp, xVar, yVar, hueVar)
         self.plotCanvas.draw()
         
         sub.show()
@@ -202,10 +195,10 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         dset_name = self.data_model_arr.dataset_names[self.active_index]       
 
         ## Add function definitons to notebook
-        fCode = inspect.getsource(self.hue_regplot).replace('(self, ','(')
+        fCode = inspect.getsource(hue_regplot).replace('(self, ','(')
         self.cmds.add_funcdef('hue_regplot', ['', fCode, ''])
 
-        fCode = inspect.getsource(self.PlotData).replace('(self, ','(').replace('self.','').replace('ax=axes','')
+        fCode = inspect.getsource(PlotData).replace('(self, ','(').replace('self.','').replace('ax=axes','')
         self.cmds.add_funcdef('PlotData', ['', fCode, ''])
 
         ## Add cmds to call the function
