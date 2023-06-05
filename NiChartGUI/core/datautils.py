@@ -22,7 +22,7 @@ def hue_regplot(data, x, y, hue, palette=None, **kwargs):
     regplots = []
     levels = data[hue].unique()
     if palette is None:
-        default_colors = get_cmap('tab10')
+        default_colors = plt.colormaps['tab10']
         palette = {k: default_colors(i) for i, k in enumerate(levels)}
     legendhandls=[]
     for key in levels:

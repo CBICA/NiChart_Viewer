@@ -126,7 +126,8 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         
         ## Reduce data size to make the app run faster
         tmpData = self.data_model_arr.datasets[self.active_index].data
-        tmpData = tmpData.head(self.data_model_arr.TABLE_MAXROWS)
+#        tmpData = tmpData.head(self.data_model_arr.TABLE_MAXROWS)
+        tmpData = pd.concat( [tmpData.head(20), tmpData.tail(20)])
 
         self.PopulateTable(tmpData)
 

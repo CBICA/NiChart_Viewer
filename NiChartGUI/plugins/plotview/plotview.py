@@ -46,7 +46,7 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboPlotType = QComboBox(self.ui)
         self.ui.comboPlotType.setEditable(False)
         self.ui.vlPlotType.addWidget(self.ui.comboPlotType)
-        self.PopulateComboBox(self.ui.comboPlotType, ['RegPlot', 'DistPlot'], '--action name--')        
+        self.PopulateComboBox(self.ui.comboPlotType, ['DistPlot', 'RegPlot'], '--plot type--')        
         
         ## Panel for X var
         self.ui.comboXVar = QComboBox(self.ui)
@@ -82,13 +82,10 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         
         ## Options panel is not shown if there is no dataset loaded
         self.ui.wOptions.hide()
-        self.ui.wXVar.hide()
+        self.ui.wVars.hide()
         self.ui.wYVar.hide()
-        self.ui.wFilter.hide()
-        self.ui.wHue.hide()
         self.ui.wPlotBtn.hide()
-        
-        
+
         self.ui.edit_activeDset.setReadOnly(True)               
 
         self.ui.wOptions.setMaximumWidth(300)
@@ -111,18 +108,14 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         self.selPlotType = self.ui.comboPlotType.currentText()
         
         if self.selPlotType == 'RegPlot':
-            self.ui.wXVar.show()
+            self.ui.wVars.show()
             self.ui.wYVar.show()
-            self.ui.wFilter.show()
-            self.ui.wHue.show()
             self.ui.wPlotBtn.show()
             
 
         if self.selPlotType == 'DistPlot':
-            self.ui.wXVar.show()
+            self.ui.wVars.show()
             self.ui.wYVar.hide()
-            self.ui.wFilter.show()
-            self.ui.wHue.show()
             self.ui.wPlotBtn.show()
 
         self.statusbar.showMessage('Plot type selection changed: ' + self.selPlotType)
@@ -165,7 +158,6 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         
         ## Read user selections for the plot
         xVar = self.ui.comboXVar.currentText()
-        yVar = self.ui.comboYVar.currentText()
         hueVar = self.ui.comboHueVar.currentText()
         hueVals = self.ui.comboHueVal.listCheckedItems()
         filterVar = self.ui.comboFilterVar.currentText()
@@ -174,19 +166,33 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
             filterVar = ''
         if (hueVar == '--var name--') | (hueVals == []):
             hueVar = ''
-        
-        ## Plot data    
+
+        ## Filter data
+        df_tmp = FilterData(df, xVar, filterVar, filterVals, hueVar, hueVals)
+
+        ## Prepare plot canvas  
         self.plotCanvas = PlotCanvas(self.ui)
         self.plotCanvas.axes = self.plotCanvas.fig.add_subplot(111)
 
         sub = QMdiSubWindow()
         sub.setWidget(self.plotCanvas)
         self.mdi.addSubWindow(sub)        
+
+        if self.selPlotType == 'RegPlot':
+
+            ## Read y var for reg plot
+            yVar = self.ui.comboYVar.currentText()
         
-        df_tmp = FilterData(df, xVar, filterVar, filterVals, hueVar, hueVals)
-        PlotData(self.plotCanvas.axes, df_tmp, xVar, yVar, hueVar)
+            ## Plot data
+            PlotData(self.plotCanvas.axes, df_tmp, xVar, yVar, hueVar)
+
+        if self.selPlotType == 'DistPlot':
+
+            ## Plot data
+            PlotDist(self.plotCanvas.axes, df_tmp, xVar, hueVar)
+            
         self.plotCanvas.draw()
-        
+
         sub.show()
         self.mdi.tileSubWindows()
         
@@ -201,33 +207,30 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         fCode = inspect.getsource(PlotData).replace('(self, ','(').replace('self.','').replace('ax=axes','')
         self.cmds.add_funcdef('PlotData', ['', fCode, ''])
 
+        fCode = inspect.getsource(PlotDist).replace('(self, ','(').replace('self.','').replace('ax=axes','')
+        self.cmds.add_funcdef('PlotDist', ['', fCode, ''])
+
+
         ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Plot data')
-
         cmds.append('xVar = "' + xVar + '"')
-
-        cmds.append('yVar = "' + yVar + '"')
-
+        if self.selPlotType == 'RegPlot':
+            cmds.append('yVar = "' + yVar + '"')
         cmds.append('filterVar = "' + filterVar + '"')
-
         str_filterVals = '[' + ','.join('"{0}"'.format(x) for x in filterVals) + ']'
         cmds.append('filterVals = ' + str_filterVals)
-
         cmds.append('hueVar = "' + hueVar + '"')
-
         str_hueVals = '[' + ','.join('"{0}"'.format(x) for x in hueVals) + ']'
         cmds.append('hueVals = ' + str_hueVals)
-
         cmds.append('f, axes = plt.subplots(1, 1, figsize=(5, 4), dpi=100)')
-
-        cmds.append('axes = PlotData(axes, ' + dset_name + ', xVar, yVar, filterVar, filterVals, hueVar, hueVals)')
-        
-        #cmds.append('plt.show()')
-
+        if self.selPlotType == 'RegPlot':
+            cmds.append('axes = PlotData(axes, ' + dset_name + ', xVar, yVar, hueVar)')
+        if self.selPlotType == 'DistPlot':
+            cmds.append('axes = PlotDist(axes, ' + dset_name + ', xVar, hueVar)')
         cmds.append('')
         self.cmds.add_cmd(cmds)
-        ##-------
+        #-------
         
     def OnDataChanged(self):
 

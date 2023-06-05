@@ -67,8 +67,7 @@
                             <number>8</number>
                         </property>
 
-                        <layout  class="QVBoxLayout"  name="vlActiveDset">
-                            
+                        <layout  class="QVBoxLayout"  name="vlActiveDset">                            
                             <item>
                             <widget  class="QLabel"  name="label_activeDset">
                                 <property  name="text">
@@ -123,8 +122,7 @@
                             <number>8</number>
                         </property>
                         
-                        <layout  class="QVBoxLayout"  name="vlPlotType">
-                            
+                        <layout  class="QVBoxLayout"  name="vlTmp">
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
@@ -153,6 +151,10 @@
                                     </property>
                                 </spacer>
                                 </item>
+                                <item>
+                                    <layout  class="QHBoxLayout"  name="vlPlotType"/>
+                                </item>
+                                
                             </layout>
                             </item>
                         </layout>
@@ -161,19 +163,19 @@
                     </item>                    
                     
                     <item>
-                        <widget  class="QFrame"  name="wXVar">
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
+                        <widget  class="QFrame"  name="wVars">
+                            <property  name="frameShape">
+                                <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property  name="frameShadow">
+                                <enum>QFrame::Raised</enum>
+                            </property>
+                            <property  name="lineWidth">
+                                <number>8</number>
+                            </property>
                         
-                        <layout  class="QVBoxLayout"  name="vlXVar">
-                            
+                            <layout  class="QVBoxLayout"  name="vlTmp">
+
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
@@ -208,75 +210,54 @@
                             </layout>
                             </item>
                             
-                        </layout>
-                        
-                        </widget>
-                    </item>
-
-
-                    <item>
-                        <widget  class="QFrame"  name="wYVar">
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
-                        
-                        <layout  class="QVBoxLayout"  name="vlYVar">
                             <item>
-                            <widget  class="QLabel"  name="label_select">
-                                <property  name="text">
-                                <string>Y Var</string>
+                            <widget  class="QFrame"  name="wYVar">
+                                <property  name="frameShape">
+                                    <enum>QFrame::StyledPanel</enum>
                                 </property>
+                                <layout  class="QVBoxLayout"  name="vlYVar">
+                                    <property name="leftMargin">
+                                        <number>0</number>
+                                    </property>
+                                    <property name="rightMargin">
+                                        <number>0</number>
+                                    </property>
+                                    <item>
+                                        <widget  class="QLabel"  name="label_select">
+                                        <property  name="text">
+                                            <string>Y Var</string>
+                                        </property>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                    <layout  class="QHBoxLayout"  name="horizontalLayout_5">
+                                        <item>
+                                        <spacer  name="horizontalSpacer_5">
+                                            <property  name="orientation">
+                                            <enum>Qt::Horizontal</enum>
+                                            </property>
+                                            
+                                            <property name="sizeType">
+                                                <enum>QSizePolicy::Fixed</enum>
+                                            </property>
+                                            
+                                            <property  name="sizeHint"  stdset="0">
+                                            <size>
+                                                <width>30</width>
+                                                <height>20</height>
+                                            </size>
+                                            </property>
+                                        </spacer>
+                                        </item>
+                                        <item>
+                                        <layout  class="QVBoxLayout"  name="vlComboY"/>
+                                        </item>
+                                    </layout>
+                                    </item>
+                                </layout>
                             </widget>
                             </item>
-                            <item>
-                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
-                                <item>
-                                <spacer  name="horizontalSpacer_5">
-                                    <property  name="orientation">
-                                    <enum>Qt::Horizontal</enum>
-                                    </property>
-                                    
-                                    <property name="sizeType">
-                                        <enum>QSizePolicy::Fixed</enum>
-                                    </property>
-                                    
-                                    <property  name="sizeHint"  stdset="0">
-                                    <size>
-                                        <width>30</width>
-                                        <height>20</height>
-                                    </size>
-                                    </property>
-                                </spacer>
-                                </item>
-                                <item>
-                                <layout  class="QVBoxLayout"  name="vlComboY"/>
-                                </item>
-                            </layout>
-                            </item>
-                        </layout>
-                        
-                        </widget>
-                    </item>
                     
-                    <item>
-                        <widget  class="QFrame"  name="wFilter">
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
-                        <layout  class="QVBoxLayout"  name="vlFilter">
-                            
                             <item>
                             <widget  class="QLabel"  name="label_select2">
                                 <property  name="text">
@@ -337,24 +318,6 @@
                             </layout>
                             </item>
 
-                        </layout>
-                        </widget>
-                    </item>
-                    
-                    <item>
-                        <widget  class="QFrame"  name="wHue">
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
-                        
-                        <layout  class="QVBoxLayout"  name="vlBD">
-                        
                             <item>
                             <widget  class="QLabel"  name="label_select3">
                                 <property  name="text">
@@ -415,7 +378,7 @@
                             </layout>
                             </item>
 
-                        </layout>
+                            </layout>
                         </widget>
                     </item>
 
