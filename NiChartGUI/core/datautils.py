@@ -70,3 +70,12 @@ def PlotData(axes, df, x_var, y_var, hue_var):
     axes.get_figure().set_tight_layout(True)
     axes.set(xlabel=x_var)
     axes.set(ylabel=y_var)
+    
+def SortData(df, sort_cols, sort_orders):
+    if len(sort_cols)>0:
+        dfSort = df.sort_values(sort_cols, ascending=sort_orders)
+        return dfSort
+    else:
+        return df
+    
+    
