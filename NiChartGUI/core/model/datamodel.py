@@ -58,7 +58,7 @@ class DataModelArr(QObject):
         ## Table view is very slow if there are many rows
         ## We limit it here as a shortcut solution
         ## FIXME: Find a good way of managing this
-        self.TABLE_MAXROWS = 20
+        self.TABLE_MAXROWS = 50
         
         self._datasets = []         ## An array of datasets
         self._dataset_names = []    ## Names of datasets (auto generated for now)

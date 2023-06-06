@@ -43,6 +43,15 @@ def FilterData(df, x_var, filter_var, filter_vals, hue_var, hue_vals):
 
     return df_out
 
+def StatsData(df, group_vars, display_vars):
+
+    df_out = df[group_vars + display_vars]
+
+    if len(group_vars)>0:
+        df_out = df_out.groupby(group_vars).describe()
+
+    return df_out
+
 def PlotDist(axes, df, x_var, hue_var):
 
     # clear plot

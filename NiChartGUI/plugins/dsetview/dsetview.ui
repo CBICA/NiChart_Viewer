@@ -281,6 +281,121 @@
 
                     
                     <item>
+                        <widget  class="QFrame"  name="wShowStats">
+                            <property  name="frameShape">
+                                <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property  name="frameShadow">
+                                <enum>QFrame::Raised</enum>
+                            </property>
+                            <property  name="lineWidth">
+                                <number>8</number>
+                            </property>
+                        
+                            <layout  class="QVBoxLayout"  name="vlTmp">
+
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Group Vars</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboStatsGroup"/>
+                                </item>
+                            </layout>
+                            </item>
+                    
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Display Vars</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboStats"/>
+                                </item>
+                            </layout>
+                            </item>
+                            
+                            <item>
+                                <layout  class="QHBoxLayout"  name="hlSortBtn">
+                                <item>
+                                    <spacer  name="horizontalSpacer_8">
+                                    <property  name="orientation">
+                                        <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                        <size>
+                                        <width>40</width>
+                                        <height>20</height>
+                                        </size>
+                                    </property>
+                                    </spacer>
+                                </item>
+                                <item>
+                                    <widget  class="QPushButton"  name="showStatsBtn">
+                                    <property  name="text">
+                                        <string>Show Stats</string>
+                                    </property>
+                                    </widget>
+                                </item>
+                                </layout>
+                            </item>
+                            
+                            
+                            
+
+                            </layout>
+                        </widget>
+                    </item>
+         
+                    <item>
                         <widget  class="QFrame"  name="wSort">
                         <property  name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
@@ -516,7 +631,209 @@
                             
                         </layout>
                         </widget>
-                    </item>              
+                    </item>    
+
+                    <item>
+                        <widget  class="QFrame"  name="wDrop">
+                        <property  name="frameShape">
+                            <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property  name="frameShadow">
+                            <enum>QFrame::Raised</enum>
+                        </property>
+                        <property  name="lineWidth">
+                            <number>8</number>
+                        </property>
+
+                        <layout  class="QVBoxLayout"  name="vlDropDupl">
+                            
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Drop Duplicates</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboSelDupl"/>
+                                </item>
+                            </layout>
+                            </item>
+
+                            <item>  
+                                <layout  class="QHBoxLayout"  name="hlFilterButton">
+
+                                    <item>
+                                        <spacer  name="horizontalSpacer_8">
+                                        <property  name="orientation">
+                                            <enum>Qt::Horizontal</enum>
+                                        </property>
+                                        <property  name="sizeHint"  stdset="0">
+                                            <size>
+                                            <width>40</width>
+                                            <height>20</height>
+                                            </size>
+                                        </property>
+                                        </spacer>
+                                    </item>
+                                    
+                                    <item>
+                                        <widget  class="QPushButton"  name="dropBtn">
+                                        <property  name="text">
+                                            <string>Drop</string>
+                                        </property>
+                                        </widget>
+                                    </item>
+                                
+                                </layout>
+                            </item>
+
+                        </layout>
+                        </widget>
+                    </item>
+
+                    
+                    <item>
+                        <widget  class="QFrame"  name="wSelectCol">
+                        <property  name="frameShape">
+                            <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property  name="frameShadow">
+                            <enum>QFrame::Raised</enum>
+                        </property>
+                        <property  name="lineWidth">
+                            <number>8</number>
+                        </property>
+                        
+                        <layout  class="QVBoxLayout"  name="vlSelectCol">
+
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Select Columns</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="hlSelCol1">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                    <layout  class="QVBoxLayout"  name="vlComboSel"/>
+                                </item>
+                            </layout>
+                            </item>
+                            
+                            <item>
+                            <widget  class="QWidget"  name="wSelOptions">
+                                <layout  class="QHBoxLayout"  name="hlSelOptions">
+                                    <item>
+                                    <spacer  name="horizontalSpacer">
+                                        <property  name="orientation">
+                                        <enum>Qt::Horizontal</enum>
+                                        </property>
+                                        
+                                        <property name="sizeType">
+                                            <enum>QSizePolicy::Fixed</enum>
+                                        </property>
+                                        
+                                        <property  name="sizeHint"  stdset="0">
+                                        <size>
+                                            <width>30</width>
+                                            <height>20</height>
+                                        </size>
+                                        </property>
+                                    </spacer>
+                                    </item>
+                                    <item>
+                                    <widget  class="QCheckBox"  name="check_all">
+                                        <property  name="text">
+                                        <string>All</string>
+                                        </property>
+                                    </widget>
+                                    </item>
+                                    <item>
+                                    <widget  class="QCheckBox"  name="check_inv">
+                                        <property  name="text">
+                                        <string>Invert</string>
+                                        </property>
+                                    </widget>
+                                    </item>
+                                </layout>
+                            </widget>
+                            </item>
+                            
+                            <item>  
+                                <layout  class="QHBoxLayout"  name="hlSelColButton">
+
+                                    <item>
+                                        <spacer  name="horizontalSpacer_8">
+                                        <property  name="orientation">
+                                            <enum>Qt::Horizontal</enum>
+                                        </property>
+                                        
+                                        <property  name="sizeHint"  stdset="0">
+                                            <size>
+                                            <width>30</width>
+                                            <height>20</height>
+                                            </size>
+                                        </property>
+                                        </spacer>
+                                    </item>
+                                    
+                                    <item>
+                                        <widget  class="QPushButton"  name="selColBtn">
+                                        <property  name="text">
+                                            <string>Select</string>
+                                        </property>
+                                        </widget>
+                                    </item>
+                                
+                                </layout>
+                            </item>
+                            
+                        </layout>
+                        </widget>
+                    </item>
+                    
 
                     <item>
                         <widget  class="QFrame"  name="wFilter">
