@@ -14,6 +14,7 @@ from NiChartGUI.core.model.datamodel import PandasModel
 
 logger = iStagingLogger.get_logger(__name__)
 
+from NiChartGUI.core.datautils import *
 
 class MergeView(QtWidgets.QWidget,BasePlugin):
 
@@ -33,6 +34,12 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.mdi = self.findChild(QMdiArea, 'mdiArea')       
         self.mdi.setBackground(QtGui.QColor(245,245,245,255))
                 
+        ## Panel for action
+        self.ui.comboAction = QComboBox(self.ui)
+        self.ui.comboAction.setEditable(False)
+        self.ui.vlAction.addWidget(self.ui.comboAction)
+        self.PopulateComboBox(self.ui.comboAction, ['Concat', 'Merge'], '--action--')        
+                
         ### Panel for dset1 merge variables selection
         self.ui.comboBoxMergeVar1 = CheckableQComboBox(self.ui)
         self.ui.comboBoxMergeVar1.setEditable(False)
@@ -47,13 +54,18 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboBoxMergeVar2.setEditable(False)
         self.ui.vlComboMerge2.addWidget(self.ui.comboBoxMergeVar2)
 
+        ## Panel for dset2 selection for concat
+        self.ui.comboBoxConcatDset2 = QComboBox(self.ui)
+        self.ui.hlConcatDset2.addWidget(self.ui.comboBoxConcatDset2)
+
+
         self.ui.wOptions.setMaximumWidth(300)
         
         self.ui.edit_activeDset.setReadOnly(True)
 
-        ## Options panel is not shown if there is no dataset loaded
-        self.ui.wOptions.hide()
-
+        ## Panel are shown based on selected actions
+        self.ui.wMerge.hide()
+        self.ui.wConcat.hide()
     
 
     def SetupConnections(self):
@@ -61,8 +73,39 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
 
         self.ui.comboBoxDataset2.currentIndexChanged.connect(lambda: self.OnDataset2Changed())
 
-        self.ui.mergeBtn.clicked.connect(lambda: self.OnMergeDataBtnClicked())
+        self.ui.comboBoxConcatDset2.currentIndexChanged.connect(lambda: self.OnConcatDset2Changed())
 
+        self.ui.comboAction.currentIndexChanged.connect(self.OnActionChanged)
+
+        self.ui.mergeBtn.clicked.connect(lambda: self.OnMergeDataBtnClicked())
+        self.ui.concatBtn.clicked.connect(lambda: self.OnConcatBtnClicked())
+
+    def OnActionChanged(self):
+        
+        logger.info('Action changed')
+
+        self.ui.wMerge.hide()
+        self.ui.wConcat.hide()
+
+        self.selAction = self.ui.comboAction.currentText()
+
+        if self.selAction == 'Merge':
+            self.ui.wMerge.show()
+        
+        if self.selAction == 'Concat':
+            self.ui.wConcat.show()
+
+        self.statusbar.showMessage('Action selection changed: ' + self.selAction)
+
+
+
+    def OnConcatDset2Changed(self):
+        logger.info('Dataset2 selection changed')
+        selDsetName = self.ui.comboBoxConcatDset2.currentText()
+        self.dataset2_index = np.where(np.array(self.data_model_arr.dataset_names) == selDsetName)[0][0]
+        
+        logger.info('Dataset2 changed to : ' + selDsetName)
+        logger.info('Dataset2 index changed to : ' + str(self.dataset2_index))
 
     def OnDataset2Changed(self):
         logger.info('Dataset2 selection changed')
@@ -78,17 +121,6 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         logger.info('Dataset2 changed to : ' + selDsetName)
         logger.info('Dataset2 index changed to : ' + str(self.dataset2_index))
 
-    ## Merge datasets
-    def MergeData(self, df1, df2, mergeOn1, mergeOn2):
-
-        dfOut = df1.merge(df2, left_on = mergeOn1, right_on = mergeOn2, suffixes=['','_DUPLVARINDF2'])
-        
-        ## If there are additional vars with the same name, we keep only the ones from the first dataset
-        dfOut = dfOut[dfOut.columns[dfOut.columns.str.contains('_DUPLVARINDF2')==False]]
-        
-        return dfOut
-
-
     def OnMergeDataBtnClicked(self):
 
         ## Read merge options
@@ -102,7 +134,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         dfDset2 = self.data_model_arr.datasets[self.dataset2_index].data
         
         ## Apply merge
-        dfOut = self.MergeData(dfCurr, dfDset2, mergeOn1, mergeOn2)
+        dfOut = MergeData(dfCurr, dfDset2, mergeOn1, mergeOn2)
 
         # Set updated dset
         self.data_model_arr.datasets[self.active_index].data = dfOut
@@ -110,19 +142,6 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()
         
-        ## Load data to data view (reduce data size to make the app run faster)
-        ##   This view shows only the out variables
-        tmpData = self.data_model_arr.datasets[self.active_index].data
-        tmpData = tmpData.head(self.data_model_arr.TABLE_MAXROWS)
-        self.PopulateTable(tmpData)
-
-        ## Set data view to mdi widget
-        sub = QMdiSubWindow()
-        sub.setWidget(self.dataView)
-        self.mdi.addSubWindow(sub)
-        sub.show()
-        self.mdi.tileSubWindows()
-
         ## Populate commands that will be written in a notebook
         str_mergeOn1 = ','.join('"{0}"'.format(x) for x in mergeOn1)
         str_mergeOn2 = ','.join('"{0}"'.format(x) for x in mergeOn2)
@@ -141,6 +160,47 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         cmds.append('')
         self.cmds.add_cmd(cmds)
         ##-------
+        
+        ## Display the table
+        self.ShowTable()
+        
+
+    def OnConcatBtnClicked(self):
+
+        ## Read merge options
+        dset_name = self.data_model_arr.dataset_names[self.active_index]        
+        dset_name2 = self.data_model_arr.dataset_names[self.dataset2_index]        
+        
+        dfCurr = self.data_model_arr.datasets[self.active_index].data
+        dfDset2 = self.data_model_arr.datasets[self.dataset2_index].data
+        
+        ## Apply merge
+        dfOut = ConcatData(dfCurr, dfDset2)
+
+        # Set updated dset
+        self.data_model_arr.datasets[self.active_index].data = dfOut
+
+        ## Call signal for change in data
+        self.data_model_arr.OnDataChanged()
+        
+        ## Populate commands that will be written in a notebook
+        #cmds = ['']
+        #cmds.append('# Merge datasets')
+        #cmds.append(dset_name + ' = ' + dset_name + '.merge(' + dset_name2 + 
+                    #', left_on = [' + str_mergeOn1 +'], right_on = [' + str_mergeOn2 + 
+                    #'], suffixes=["","_DUPLVARINDF2"])')
+        
+        #cmds.append('## Note: Lines added to drop duplicate columns in dset2')
+        #cmds.append('colsKeep = ' + dset_name + '.columns[' + dset_name +
+                    #'.columns.str.contains("_DUPLVARINDF2")==False]')
+        #cmds.append(dset_name + ' = ' + dset_name + '[colsKeep]')
+        #cmds.append(dset_name + '.head()')
+        #cmds.append('')
+        #self.cmds.add_cmd(cmds)
+        ##-------
+        
+        ## Display the table
+        self.ShowTable()
         
 
     def PopulateTable(self, data):
@@ -201,3 +261,46 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
             dataset_names.remove(dsetName)
             
             self.PopulateComboBox(self.ui.comboBoxDataset2, dataset_names, '--dset name--')
+            self.PopulateComboBox(self.ui.comboBoxConcatDset2, dataset_names, '--dset name--')
+
+    def ShowTable(self, df = None, dset_name = None):
+
+        ## Read data and user selection
+        if df is None:
+            dset_name = self.data_model_arr.dataset_names[self.active_index]
+            #dset_fname = self.data_model_arr.datasets[self.active_index].file_name
+            df = self.data_model_arr.datasets[self.active_index].data
+            
+        ## Load data to data view 
+        self.dataView = QtWidgets.QTableView()
+        
+        ## Reduce data size to make the app run faster
+        df_tmp = df.head(self.data_model_arr.TABLE_MAXROWS)
+
+        ## Round values for display
+        df_tmp = df_tmp.applymap(lambda x: round(x, 2) if isinstance(x, (float, int)) else x)
+
+        self.PopulateTable(df_tmp)
+
+        ## Set data view to mdi widget
+        sub = QMdiSubWindow()
+        sub.setWidget(self.dataView)
+        #sub.setWindowTitle(dset_name + ': ' + os.path.basename(dset_fname))
+        sub.setWindowTitle(dset_name)
+        self.mdi.addSubWindow(sub)        
+        sub.show()
+        self.mdi.tileSubWindows()
+
+        ## Display status
+        self.statusbar.showMessage('Displaying dataset')
+        
+        ##-------
+        ## Populate commands that will be written in a notebook
+
+        ## Add cmds 
+        cmds = ['']
+        cmds.append('# Show dataset')
+        cmds.append(dset_name + '.head()')
+        cmds.append('')
+        self.cmds.add_cmd(cmds)
+        ##-------

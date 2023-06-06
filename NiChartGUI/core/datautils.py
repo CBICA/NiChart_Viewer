@@ -19,6 +19,8 @@ from NiChartGUI.core import iStagingLogger
 logger = iStagingLogger.get_logger(__name__)
 
 def hue_regplot(data, x, y, hue, palette=None, **kwargs):
+    '''Plotting
+    '''
     regplots = []
     levels = data[hue].unique()
     if palette is None:
@@ -31,6 +33,8 @@ def hue_regplot(data, x, y, hue, palette=None, **kwargs):
     return (regplots, legendhandls)
 
 def FilterData(df, x_var, filter_var, filter_vals, hue_var, hue_vals):
+    '''Filter
+    '''
 
     ## Get filter values
     df_out = df.copy()
@@ -43,16 +47,40 @@ def FilterData(df, x_var, filter_var, filter_vals, hue_var, hue_vals):
 
     return df_out
 
-def StatsData(df, group_vars, display_vars):
+def StatsData(df, group_vars, display_vars, stat_vars):
+    '''Stats
+    '''
 
     df_out = df[group_vars + display_vars]
 
     if len(group_vars)>0:
+        ## Get stats
         df_out = df_out.groupby(group_vars).describe()
+        
+        ## Select stats to display
+        df_out = df_out.loc[:, pd.IndexSlice[:, stat_vars]]
+
+        ## Change multiindex to single for display in table view
+        df_out = df_out.reset_index()
+        df_out = df_out.set_index(df_out.columns[0]).T
+        df_out = df_out.reset_index(names = [group_vars[0], ''])
+
+    else:
+        ## Get stats
+        df_out = df_out.describe()
+
+        ## Select stats to display
+        df_out = df_out.loc[stat_vars, :]
+
+        ## Change multiindex to single for display in table view
+        df_out = df_out.reset_index(names = 'Stats')
 
     return df_out
 
+
 def PlotDist(axes, df, x_var, hue_var):
+    '''Plot
+    '''
 
     # clear plot
     axes.clear()
@@ -67,6 +95,9 @@ def PlotDist(axes, df, x_var, hue_var):
     axes.set(xlabel=x_var)
 
 def PlotData(axes, df, x_var, y_var, hue_var):
+    '''Plot
+    '''
+    
     ## Get hue values
     if len(hue_var)>0:
         a,b = hue_regplot(df, x_var, y_var, hue_var, ax=axes)
@@ -81,10 +112,31 @@ def PlotData(axes, df, x_var, y_var, hue_var):
     axes.set(ylabel=y_var)
     
 def SortData(df, sort_cols, sort_orders):
+    '''Sort
+    '''
+    
     if len(sort_cols)>0:
         dfSort = df.sort_values(sort_cols, ascending=sort_orders)
         return dfSort
     else:
         return df
+    
+def MergeData(df1, df2, mergeOn1, mergeOn2):
+    '''Merge datasets
+    '''
+    dfOut = df1.merge(df2, left_on = mergeOn1, right_on = mergeOn2, suffixes=['','_DUPLVARINDF2'])
+    
+    ## If there are additional vars with the same name, we keep only the ones from the first dataset
+    dfOut = dfOut[dfOut.columns[dfOut.columns.str.contains('_DUPLVARINDF2')==False]]
+    
+    return dfOut
+
+def ConcatData(df1, df2):
+    '''Merge datasets
+    '''
+    dfOut = pd.concat([df1, df2])
+    
+    return dfOut
+
     
     

@@ -7,16 +7,14 @@ Author = Guray Erus
 Version = 0.1
 Website = 
 Description = ---------- Description ----------
-    Plugin for selecting the active dataset
-        Users can load multiple datasets. However only one of them is "active". 
-        All plugins operate on the active dataset
-        Active dataset can only be selected in this plugin
-    ---------- Options ----------
-    File Name: Name of the initial file for the active dataset
-    Data Shape: Shape of the active dataset
-        Current data shape is displayed. The shape will change as the dataset is updated.
-    Sort by: Users can sort the dataset on two columns (optional)
-    Show Table: Displays the complete data table
+    Dataset view provides tools to select the active dataset and to view and modify input datasets. 
+    ---------- Actions ----------
+    Show Data: To display the data table
+    Show Stats: To display data statistics
+    Sort Data: To sort the dataset (on two columns; second column optional)
+    Select Columns: To select a subset of the columns
+    Filter Data: To filter the data (based on selected column values)
+    Drop Duplicates: To drop duplicate rows
 
 [Tab]
 #tab position starts from 0

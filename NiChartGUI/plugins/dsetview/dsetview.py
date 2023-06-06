@@ -67,10 +67,13 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboBoxStatsGroupVar.setEditable(False)
         self.ui.vlComboStatsGroup.addWidget(self.ui.comboBoxStatsGroupVar)
 
-        self.ui.comboBoxStatsVar = CheckableQComboBox(self.ui)
-        self.ui.comboBoxStatsVar.setEditable(False)
-        self.ui.vlComboStats.addWidget(self.ui.comboBoxStatsVar)
+        self.ui.comboBoxStatsIn = CheckableQComboBox(self.ui)
+        self.ui.comboBoxStatsIn.setEditable(False)
+        self.ui.vlComboStatsIn.addWidget(self.ui.comboBoxStatsIn)
 
+        self.ui.comboBoxStatsOut = CheckableQComboBox(self.ui)
+        self.ui.comboBoxStatsOut.setEditable(False)
+        self.ui.vlComboStatsOut.addWidget(self.ui.comboBoxStatsOut)
 
         ## Panel for variable selection
         self.ui.comboBoxSelVar = CheckableQComboBox(self.ui)
@@ -109,12 +112,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.vlComboSelDupl.addWidget(self.ui.comboBoxSelDuplVar)
 
 
-        ## Options panel is not shown initially 
-        ## Shown when a dataset is loaded
-
         ## Panel are shown based on selected actions
-        
-
         self.ui.wShowTable.hide()
         self.ui.wShowStats.hide()
         self.ui.wSort.hide()
@@ -135,7 +133,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
     def SetupConnections(self):
         self.data_model_arr.active_dset_changed.connect(self.OnDataChanged)
 
-        self.ui.showTableBtn.clicked.connect(self.ShowTable)
+        self.ui.showTableBtn.clicked.connect(self.OnShowTableBtnClicked)
         self.ui.showStatsBtn.clicked.connect(self.OnShowStatsBtnClicked)
         self.ui.sortBtn.clicked.connect(self.OnSortBtnClicked)
         self.ui.filterBtn.clicked.connect(self.OnFilterBtnClicked)
@@ -182,6 +180,12 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             self.ui.wDrop.show()
         
         self.statusbar.showMessage('Action selection changed: ' + self.selAction)
+
+        
+    def OnShowTableBtnClicked(self):
+        
+        ## Display the table
+        self.ShowTable()
         
        
     def OnShowStatsBtnClicked(self):
@@ -195,18 +199,17 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         groupVars = self.ui.comboBoxStatsGroupVar.listCheckedItems()
         str_groupVars = ','.join('"{0}"'.format(x) for x in groupVars)
 
-        selVars = self.ui.comboBoxStatsVar.listCheckedItems()
+        selVars = self.ui.comboBoxStatsIn.listCheckedItems()
         str_selVars = ','.join('"{0}"'.format(x) for x in selVars)
 
-        ## Sort data
-        dfStats = StatsData(df, groupVars, selVars)
+        statVars = self.ui.comboBoxStatsOut.listCheckedItems()
+        str_statVars = ','.join('"{0}"'.format(x) for x in statVars)
 
-        ## Update data
-        logger.warning(dfStats.shape)
-        self.data_model_arr.datasets[self.active_index].data = dfStats
-        
+        ## Sort data
+        df_stats = StatsData(df, groupVars, selVars, statVars)
+
         ## Display the table
-        self.ShowTable()        
+        self.ShowTable(df = df_stats, dset_name = 'Data Stats')        
 
 
     def OnDropBtnClicked(self):
@@ -390,27 +393,30 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Display the table
         self.ShowTable()
 
-    def ShowTable(self):
+    def ShowTable(self, df = None, dset_name = None):
 
         ## Read data and user selection
-        dset_name = self.data_model_arr.dataset_names[self.active_index]
-        dset_fname = self.data_model_arr.datasets[self.active_index].file_name
-        df = self.data_model_arr.datasets[self.active_index].data
+        if df is None:
+            dset_name = self.data_model_arr.dataset_names[self.active_index]
+            #dset_fname = self.data_model_arr.datasets[self.active_index].file_name
+            df = self.data_model_arr.datasets[self.active_index].data
             
         ## Load data to data view 
         self.dataView = QtWidgets.QTableView()
         
         ## Reduce data size to make the app run faster
-        tmpData = self.data_model_arr.datasets[self.active_index].data
-        tmpData = tmpData.head(self.data_model_arr.TABLE_MAXROWS)
-        #tmpData = pd.concat( [tmpData.head(20), tmpData.tail(20)])
+        df_tmp = df.head(self.data_model_arr.TABLE_MAXROWS)
 
-        self.PopulateTable(tmpData)
+        ## Round values for display
+        df_tmp = df_tmp.applymap(lambda x: round(x, 2) if isinstance(x, (float, int)) else x)
+
+        self.PopulateTable(df_tmp)
 
         ## Set data view to mdi widget
         sub = QMdiSubWindow()
         sub.setWidget(self.dataView)
-        sub.setWindowTitle(dset_name + ': ' + os.path.basename(dset_fname))
+        #sub.setWindowTitle(dset_name + ': ' + os.path.basename(dset_fname))
+        sub.setWindowTitle(dset_name)
         self.mdi.addSubWindow(sub)        
         sub.show()
         self.mdi.tileSubWindows()
@@ -461,8 +467,8 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         
         ## Read selected variable category, find variables in that category, add them to combo box
         selCat = self.ui.comboBoxSortCat1.currentText()
-        tmpData = self.data_model_arr.datasets[self.active_index]
-        selVars = tmpData.data_cat_map.loc[[selCat]].VarName.tolist()
+        df_tmp = self.data_model_arr.datasets[self.active_index]
+        selVars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
         self.PopulateComboBox(self.ui.comboBoxSortVar1, selVars)
         
         self.statusbar.showMessage('User selected data category: ' + selCat)        
@@ -471,8 +477,8 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ## Read selected variable category, find variables in that category, add them to combo box
         selCat = self.ui.comboBoxSortCat2.currentText()
-        tmpData = self.data_model_arr.datasets[self.active_index]
-        selVars = tmpData.data_cat_map.loc[[selCat]].VarName.tolist()
+        df_tmp = self.data_model_arr.datasets[self.active_index]
+        selVars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
         self.PopulateComboBox(self.ui.comboBoxSortVar2, selVars)
 
         self.statusbar.showMessage('User selected data category: ' + selCat)        
@@ -518,8 +524,11 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.PopulateComboBox(self.ui.comboBoxSelVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxFilterVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxSelDuplVar, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxStatsVar, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboBoxStatsIn, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxStatsGroupVar, colNames, '--var name--')
+        
+        statsVars = ['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max']
+        self.PopulateComboBox(self.ui.comboBoxStatsOut, statsVars, '--stats--')
 
     def UpdateSortingPanel(self, colNames):
         

@@ -9,13 +9,19 @@ Use of this source code is governed by license located in license file: https://
 import logging
 import sys, os
 from logging.handlers import TimedRotatingFileHandler
+
+logging.basicConfig(level=logging.INFO)
+
 #FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 FORMATTER = logging.Formatter("[%(asctime)s — %(name)s — %(filename)s: Line:%(lineno)s — %(funcName)20s() ] — %(levelname)s — %(message)s")
 LOG_FILE = os.path.expanduser(os.path.join('~', '.NiChartGUI-GUI','NiChartGUI-GUI.log'))
 
+
 def get_console_handler():
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(FORMATTER)
+
+
     return console_handler
 
 def get_file_handler():

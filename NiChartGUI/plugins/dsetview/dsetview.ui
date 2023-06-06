@@ -244,15 +244,15 @@
                     
                     <item>
                         <widget  class="QFrame"  name="wShowTable">
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
+                            <property  name="frameShape">
+                                <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property  name="frameShadow">
+                                <enum>QFrame::Raised</enum>
+                            </property>
+                            <property  name="lineWidth">
+                                <number>8</number>
+                            </property>
                             <layout  class="QHBoxLayout"  name="horizontalLayout_8">
                             <item>
                                 <spacer  name="horizontalSpacer_8">
@@ -327,11 +327,11 @@
                                 </item>
                             </layout>
                             </item>
-                    
+
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Display Vars</string>
+                                <string>Input Vars</string>
                                 </property>
                             </widget>
                             </item>
@@ -357,7 +357,41 @@
                                 </spacer>
                                 </item>
                                 <item>
-                                <layout  class="QVBoxLayout"  name="vlComboStats"/>
+                                <layout  class="QVBoxLayout"  name="vlComboStatsIn"/>
+                                </item>
+                            </layout>
+                            </item>
+                            
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Out Stats</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboStatsOut"/>
                                 </item>
                             </layout>
                             </item>
