@@ -67,13 +67,13 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.ui.vlComboCovCorr.addWidget(self.ui.comboCovCorrVar)
 
         ## Panel for selection
-        self.ui.comboBoxSelVar = QComboBox(self.ui)
-        self.ui.comboBoxSelVar.setEditable(False)
-        self.ui.vlComboSel.addWidget(self.ui.comboBoxSelVar)
+        self.ui.comboSelVar = QComboBox(self.ui)
+        self.ui.comboSelVar.setEditable(False)
+        self.ui.vlComboSel.addWidget(self.ui.comboSelVar)
 
-        self.ui.comboBoxSelVal = CheckableQComboBox(self.ui)
-        self.ui.comboBoxSelVal.setEditable(False)
-        self.ui.vlComboSel.addWidget(self.ui.comboBoxSelVal)
+        self.ui.comboSelVal = CheckableQComboBox(self.ui)
+        self.ui.comboSelVal.setEditable(False)
+        self.ui.vlComboSel.addWidget(self.ui.comboSelVal)
 
         ## Panel for outcome vars
         self.ui.comboOutVar = CheckableQComboBox(self.ui)
@@ -94,9 +94,9 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         
         self.data_model_arr.active_dset_changed.connect(lambda: self.OnDataChanged())
 
-        self.ui.comboBoxSelVar.currentIndexChanged.connect(lambda: self.OnSelIndexChanged())
+        self.ui.comboSelVar.currentIndexChanged.connect(lambda: self.OnSelIndexChanged())
 
-        #self.ui.normalizeBtn.clicked.connect(lambda: self.OnNormalizeBtnClicked())
+        self.ui.normalizeBtn.clicked.connect(lambda: self.OnNormalizeBtnClicked())
         self.ui.adjustBtn.clicked.connect(lambda: self.OnAdjustBtnClicked())
 
         self.ui.comboAction.currentIndexChanged.connect(self.OnActionChanged)
@@ -146,7 +146,56 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
 
 
     def OnNormalizeBtnClicked(self):
-        logger.info('AAA')
+
+        ## Read normalize options
+        normVar = self.ui.comboNormVar.currentText()
+        outVars = self.ui.comboOutVar.listCheckedItems()
+        outSuff = self.ui.edit_outSuff.text()
+        if outSuff == '':
+            outSuff = 'NORM'
+        if outSuff[0] == '_':
+            outSuff = outSuff[1:]
+        outCat = outSuff
+
+        ## Apply normalization
+        df = self.data_model_arr.datasets[self.active_index].data
+        dfNorm, outVarNames = NormalizeData(df, outVars, normVar, outSuff)
+
+        ## Set updated dset
+        self.data_model_arr.datasets[self.active_index].data = dfNorm
+        
+        ## Call signal for change in data
+        self.data_model_arr.OnDataChanged()
+        
+        ##-------
+        ## Populate commands that will be written in a notebook
+        dset_name = self.data_model_arr.dataset_names[self.active_index]        
+
+        ## Add NormalizeData function definiton to notebook
+        fCode = inspect.getsource(NormalizeData).replace('(self, ','(')
+        self.cmds.add_funcdef('NormalizeData', ['', fCode, ''])
+        
+        ## Add cmds to call the function
+        cmds = ['']
+        cmds.append('# Normalize data')
+
+        str_outVars = '[' + ','.join('"{0}"'.format(x) for x in outVars) + ']'
+        cmds.append('outVars = ' + str_outVars)
+
+        cmds.append('normVar = "' + normVar + '"')
+        
+        cmds.append('outSuff  = "' + outSuff + '"')
+        
+        cmds.append(dset_name + ', outVarNames = NormalizeData(' + dset_name + ', outVars, normVar, outSuff)')
+        
+        cmds.append(dset_name + '[outVarNames].head()')
+        cmds.append('')
+        self.cmds.add_cmd(cmds)
+        ##-------
+        
+        ## Display the table
+        self.ShowTable()
+        
 
     def OnAdjustBtnClicked(self):
         
@@ -155,8 +204,8 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         outVars = self.ui.comboOutVar.listCheckedItems()
         covKeepVars = self.ui.comboCovKeepVar.listCheckedItems()
         covCorrVars = self.ui.comboCovCorrVar.listCheckedItems()
-        selCol = self.ui.comboBoxSelVar.currentText()
-        selVals = self.ui.comboBoxSelVal.listCheckedItems()
+        selCol = self.ui.comboSelVar.currentText()
+        selVals = self.ui.comboSelVal.listCheckedItems()
         if selVals == []:
             selCol = ''
         outSuff = self.ui.edit_outSuff.text()
@@ -285,13 +334,13 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         val_uniq = dftmp.unique()
         num_uniq = len(val_uniq)
 
-        self.ui.comboBoxSelVals.show()
+        self.ui.comboSelVals.show()
 
         ## Select values if #unique values for the field is less than set threshold
         if num_uniq <= self.TH_NUM_UNIQ:
             #self.ui.wFilterNumerical.hide()
             #self.ui.wFilterCategorical.show()
-            self.PopulateComboBox(self.ui.comboBoxSelVals, val_uniq)
+            self.PopulateComboBox(self.ui.comboSelVals, val_uniq)
         
     # Add the values to comboBox
     def PopulateComboBox(self, cbox, values, strPlaceholder = None, bypassCheckable=False):
@@ -313,12 +362,12 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
     
     def OnSelIndexChanged(self):
         
-        selCol = self.ui.comboBoxSelVar.currentText()
+        selCol = self.ui.comboSelVar.currentText()
         selColVals = self.data_model_arr.datasets[self.active_index].data[selCol].unique()
         
         if len(selColVals) < self.TH_NUM_UNIQ:
-            self.ui.comboBoxSelVal.show()
-            self.PopulateComboBox(self.ui.comboBoxSelVal, selColVals)
+            self.ui.comboSelVal.show()
+            self.PopulateComboBox(self.ui.comboSelVal, selColVals)
         else:
             print('Too many unique values for selection, skip : ' + str(len(selColVals)))
 
@@ -350,8 +399,9 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.PopulateComboBox(self.ui.comboOutVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboCovKeepVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboCovCorrVar, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxSelVar, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboSelVar, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboNormVar, colNames, '--var name--')
 
-        self.ui.comboBoxSelVal.hide()
+        self.ui.comboSelVal.hide()
 
 

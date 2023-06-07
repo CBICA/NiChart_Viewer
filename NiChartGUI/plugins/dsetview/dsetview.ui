@@ -271,7 +271,7 @@
                             <item>
                                 <widget  class="QPushButton"  name="showTableBtn">
                                 <property  name="text">
-                                    <string>Show Table</string>
+                                    <string>Show Data</string>
                                 </property>
                                 </widget>
                             </item>

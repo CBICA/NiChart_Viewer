@@ -45,7 +45,6 @@ class MainWindow(QtWidgets.QMainWindow):
         ## FIXME : Tmp
         self.dataPathLast = '/home/guraylab/AIBIL/Github/TmpPackages/20221117_NiChartGUI_TestData/TestSet_v1'      
 
-
         # Create plugin manager
         self.manager = PluginManager(categories_filter={ "Tabs": BasePlugin})
         root = os.path.dirname(__file__)
@@ -139,7 +138,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.wInfo.setStyleSheet('background-color : rgb(10, 10, 50); color: rgb(230, 230, 230)')
 
         ## Statusbar
-        self.ui.statusbar.setStyleSheet('background-color : rgb(10, 10, 50); color: rgb(230, 230, 230)')
+        self.ui.statusbar.setStyleSheet('background-color : rgb(230, 230, 210); color: rgb(100, 10, 10)')
+        self.ui.statusbar.setFont(QtGui.QFont('Times', 14))
 
         #self.ui.wInfo.setMinimumSize(600, 200)
         #self.SetHelpMsg()

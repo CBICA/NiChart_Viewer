@@ -74,7 +74,7 @@ class CheckableQComboBox(QtWidgets.QComboBox):
         #return item.checkState() == QtCore.Qt.Checked
 
     def handle_item_pressed(self, index):
-        print('PRESSSSSSSED ')
+        #print('PRESSSSSSSED ')
 
         item = self.model().itemFromIndex(index)
   

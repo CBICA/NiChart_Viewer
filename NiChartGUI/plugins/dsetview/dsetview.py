@@ -21,6 +21,8 @@ logger = iStagingLogger.get_logger(__name__)
 class DsetView(QtWidgets.QWidget,BasePlugin):
 
     def __init__(self):
+        '''Initialize view
+        '''
         super(DsetView,self).__init__()
         
         ## Array that keeps all datasets
@@ -111,8 +113,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboBoxSelDuplVar.setEditable(False)
         self.ui.vlComboSelDupl.addWidget(self.ui.comboBoxSelDuplVar)
 
-
-        ## Panel are shown based on selected actions
+        ## Panels will be shown based on selected actions
         self.ui.wShowTable.hide()
         self.ui.wShowStats.hide()
         self.ui.wSort.hide()
@@ -131,6 +132,8 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.wOptions.hide()
     
     def SetupConnections(self):
+        '''Connect user actions to specific functions
+        '''
         self.data_model_arr.active_dset_changed.connect(self.OnDataChanged)
 
         self.ui.showTableBtn.clicked.connect(self.OnShowTableBtnClicked)
@@ -143,15 +146,18 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboBoxDsets.currentIndexChanged.connect(self.OnDataSelectionChanged)
         self.ui.comboBoxSortCat1.currentIndexChanged.connect(self.OnSortCat1Changed)
         self.ui.comboBoxSortCat2.currentIndexChanged.connect(self.OnSortCat2Changed)
-
         self.ui.comboAction.currentIndexChanged.connect(self.OnActionChanged)
         self.ui.comboBoxFilterVar.currentIndexChanged.connect(self.OnFilterVarChanged)
-        
+
+    def do_something(self):
+        logger.warning('AAAA')
 
     def OnActionChanged(self):
+        '''Function to handle new action selection
+        '''
+        logger.info('New action selected')
         
-        logger.info('Action changed')
-
+        ## Hide all panels
         self.ui.wShowTable.hide()
         self.ui.wShowStats.hide()
         self.ui.wSort.hide()
@@ -159,8 +165,8 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.wSelectCol.hide()
         self.ui.wDrop.hide()
 
+        ## Show panel for the selected action
         self.selAction = self.ui.comboAction.currentText()
-
         if self.selAction == 'Show Data':
             self.ui.wShowTable.show()
         
@@ -180,16 +186,16 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             self.ui.wDrop.show()
         
         self.statusbar.showMessage('Action selection changed: ' + self.selAction)
-
         
     def OnShowTableBtnClicked(self):
-        
-        ## Display the table
+        '''Function to handle action to show data
+        '''        
+        ## Display data
         self.ShowTable()
-        
        
     def OnShowStatsBtnClicked(self):
-        
+        '''Function to handle action to show stats
+        '''        
         ## Read data and user selection
         dset_name = self.data_model_arr.dataset_names[self.active_index]
         dset_fname = self.data_model_arr.datasets[self.active_index].file_name
@@ -205,11 +211,17 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         statVars = self.ui.comboBoxStatsOut.listCheckedItems()
         str_statVars = ','.join('"{0}"'.format(x) for x in statVars)
 
-        ## Sort data
-        df_stats = StatsData(df, groupVars, selVars, statVars)
-
+        ## Calculate stats dataframe
+        res_tmp = StatsData(df, groupVars, selVars, statVars)
+        
+        if res_tmp['out_code'] != 0:
+            self.statusbar.showMessage(res_tmp['out_msg'])
+            return;
+    
+        df_out = res_tmp['df_out']
+    
         ## Display the table
-        self.ShowTable(df = df_stats, dset_name = 'Data Stats')        
+        self.ShowTable(df = df_out, dset_name = 'Data Stats')        
 
 
     def OnDropBtnClicked(self):
@@ -225,6 +237,9 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         dtmp = self.data_model_arr.datasets[self.active_index].data   
         dtmp = dtmp.drop_duplicates(subset=selVars)
         self.data_model_arr.datasets[self.active_index].data = dtmp
+
+        ## Call signal for change in data
+        self.data_model_arr.OnDataChanged()        
 
         ##-------
         ## Populate commands that will be written in a notebook
@@ -262,14 +277,20 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
                 sortOrders.append(False)
 
         ## Sort data
-        dfSort = SortData(df, sortCols, sortOrders)
-
+        res_tmp = SortData(df, sortCols, sortOrders)
+        
+        self.statusbar.showMessage(res_tmp['out_msg'])
+        
+        if res_tmp['out_code'] != 0:
+            return;
+    
+        df_out = res_tmp['df_out']
+    
         ## Update data
-        logger.warning(dfSort.shape)
-        self.data_model_arr.datasets[self.active_index].data = dfSort
+        self.data_model_arr.datasets[self.active_index].data = df_out
             
-        ## Display status
-        self.statusbar.showMessage('Sorted dataset')
+        ## Call signal for change in data
+        self.data_model_arr.OnDataChanged()        
         
         ##-------
         ## Populate commands that will be written in a notebook
@@ -347,6 +368,9 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         self.data_model_arr.datasets[self.active_index].data = dtmp
 
+        ## Call signal for change in data
+        self.data_model_arr.OnDataChanged()
+
         ##-------
         ## Populate commands that will be written in a notebook
         cmds = ['']
@@ -377,6 +401,9 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         dtmp = self.data_model_arr.datasets[self.active_index].data      ## FIXME
         dtmp = dtmp[selVars]
         self.data_model_arr.datasets[self.active_index].data = dtmp
+        
+        ## Call signal for change in data
+        self.data_model_arr.OnDataChanged()
         
         ##-------
         ## Populate commands that will be written in a notebook
@@ -421,9 +448,6 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         sub.show()
         self.mdi.tileSubWindows()
 
-        ## Display status
-        self.statusbar.showMessage('Displaying dataset')
-        
         ##-------
         ## Populate commands that will be written in a notebook
 
@@ -556,26 +580,4 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.OnDataChanged()
 
         self.statusbar.showMessage('Selected new dataset: ' + selDsetName)
-        
-    #def OnDataChanged(self):
-        
-        #if self.data_model_arr.active_index >= 0:
-     
-            ### Make options panel visible
-            #self.ui.wOptions.show()
-        
-            ### Set fields for various options     
-            #self.active_index = self.data_model_arr.active_index
-                
-            ### Get data variables
-            #dataset = self.data_model_arr.datasets[self.active_index]
-            #colNames = dataset.data.columns.tolist()
-
-            #logger.info(self.active_index)
-            
-            ### Set active dset name
-            #self.ui.edit_activeDset.setText(self.data_model_arr.dataset_names[self.active_index])
-
-            ### Update selection, sorting and drop duplicates panels
-            #self.UpdatePanels(colNames)
         

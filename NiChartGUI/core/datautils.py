@@ -52,9 +52,19 @@ def FilterData(df, x_var, filter_var, filter_vals, hue_var, hue_vals):
 def StatsData(df, group_vars, display_vars, stat_vars):
     '''Stats
     '''
-
+    ## Check validity of out vars and stats to display
+    if len(display_vars) == 0:
+        out_code = 1
+        out_msg = 'WARNING: Input variable(s) not selected!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
+    
+    if len(stat_vars) == 0:
+        out_code = 2
+        out_msg = 'WARNING: Input stat variable(s) not selected!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
+    
     df_out = df[group_vars + display_vars]
-
+    
     if len(group_vars)>0:
         ## Get stats
         df_out = df_out.groupby(group_vars).describe()
@@ -77,7 +87,9 @@ def StatsData(df, group_vars, display_vars, stat_vars):
         ## Change multiindex to single for display in table view
         df_out = df_out.reset_index(names = 'Stats')
 
-    return df_out
+    out_code = 0
+    out_msg = 'SUCCESS: Created data stats'
+    return {'out_code' : out_code, 'out_msg' : out_msg, 'df_out' : df_out}
 
 
 def PlotDist(axes, df, x_var, hue_var):
@@ -116,12 +128,17 @@ def PlotData(axes, df, x_var, y_var, hue_var):
 def SortData(df, sort_cols, sort_orders):
     '''Sort
     '''
+    if len(sort_cols) == 0:
+        out_code = 1        
+        out_msg = 'WARNING: Sort variable(s) not selected!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
     
-    if len(sort_cols)>0:
-        dfSort = df.sort_values(sort_cols, ascending=sort_orders)
-        return dfSort
-    else:
-        return df
+    df_out = df.sort_values(sort_cols, ascending=sort_orders)
+    
+    out_code = 0
+    out_msg = 'SUCCESS: Created sorted data'
+    return {'out_code' : out_code, 'out_msg' : out_msg, 'df_out' : df_out}
+    
     
 def MergeData(df1, df2, mergeOn1, mergeOn2):
     '''Merge datasets
@@ -149,10 +166,6 @@ def AdjCov(df, outVars, covCorrVars, covKeepVars=[], selCol='', selVals=[], outS
 
     cmds = ['']
     
-    # Make a copy of the init df
-    # It will be modified to handle categorical vars
-    dfOut = df.copy()
-    
     # Combine covariates (to keep + to correct)
     if covKeepVars is []:
         covList = covCorrVars;
@@ -160,7 +173,6 @@ def AdjCov(df, outVars, covCorrVars, covKeepVars=[], selCol='', selVals=[], outS
     else:
         covList = covKeepVars + covCorrVars;
         isCorr = list(np.zeros(len(covKeepVars)).astype(int)) + list(np.ones(len(covCorrVars)).astype(int))
-    str_covList = ' + '.join(covList)
     
     # Prep data
     TH_MAX_NUM_CAT = 20     ## FIXME: This should be a global var
@@ -186,23 +198,24 @@ def AdjCov(df, outVars, covCorrVars, covKeepVars=[], selCol='', selVals=[], outS
     str_covVars = ' + '.join(covVars)
     
     ## Get data with all vars
-    df = pd.concat([df[outVars], dfCovs], axis=1)
-    
-    ## Select training dataset (regression parameters estimated from this set)
     if selVals == []:
-        dfTrain = df
+        dfOut = pd.concat([df[outVars], dfCovs], axis=1)
+        dfTrain = dfOut
     else:
-        dfTrain = df[df[selCol]==selVals]
+        dfOut = pd.concat([df[[selCol] + outVars], dfCovs], axis=1)
+        dfTrain = dfOut[dfOut[selCol].isin(selVals)]
         
     ## Fit and apply model for each outcome var
     outVarNames = []
     for i, tmpOutVar in enumerate(outVars):
+
         ## Fit model
         str_model = tmpOutVar + '  ~ ' + str_covVars
         mod = sm.ols(str_model, data=dfTrain)
         res = mod.fit()
+
         ## Apply model
-        corrVal = df[tmpOutVar]
+        corrVal = dfOut[tmpOutVar]
         for j, tmpCovVar in enumerate(covVars):
             if isCorrArr[j] == 1:
                 corrVal = corrVal - df[tmpCovVar] * res.params[tmpCovVar]
@@ -211,5 +224,14 @@ def AdjCov(df, outVars, covCorrVars, covKeepVars=[], selCol='', selVals=[], outS
     return dfOut, outVarNames
 
 
+## Normalize data by the given variable
+def NormalizeData(df, selVars, normVar, outSuff):
+    dfNorm = 100 * df[selVars].div(df[normVar], axis=0)
+    dfNorm = dfNorm.add_suffix(outSuff)
+    outVarNames = dfNorm.columns.tolist()
+    dfOut = pd.concat([df, dfNorm], axis=1)        
+    return dfOut, outVarNames
+
+    
 
 
