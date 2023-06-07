@@ -19,6 +19,8 @@ from matplotlib.lines import Line2D
 import statsmodels.formula.api as sm
 from NiChartGUI.core.model.datamodel import PandasModel
 
+from NiChartGUI.core.datautils import *
+
 import inspect
 
 logger = iStagingLogger.get_logger(__name__)
@@ -43,20 +45,26 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.mdi = self.findChild(QMdiArea, 'mdiArea')       
         self.mdi.setBackground(QtGui.QColor(245,245,245,255))
         
-        ## Panel for outcome vars
-        self.ui.comboBoxOutVar = CheckableQComboBox(self.ui)
-        self.ui.comboBoxOutVar.setEditable(False)
-        self.ui.vlComboOut.addWidget(self.ui.comboBoxOutVar)
+        ## Panel for action
+        self.ui.comboAction = QComboBox(self.ui)
+        self.ui.comboAction.setEditable(False)
+        self.ui.vlAction.addWidget(self.ui.comboAction)
+        self.PopulateComboBox(self.ui.comboAction, ['Normalize Data', 'Adjust Data'], '--action--')        
+        
+        ## Panel for norm var
+        self.ui.comboNormVar = QComboBox(self.ui)
+        self.ui.comboNormVar.setEditable(False)
+        self.ui.vlComboNormVar.addWidget(self.ui.comboNormVar)
         
         ## Panel for cov to keep
-        self.ui.comboBoxCovKeepVar = CheckableQComboBox(self.ui)
-        self.ui.comboBoxCovKeepVar.setEditable(False)
-        self.ui.vlComboCovKeep.addWidget(self.ui.comboBoxCovKeepVar)
+        self.ui.comboCovKeepVar = CheckableQComboBox(self.ui)
+        self.ui.comboCovKeepVar.setEditable(False)
+        self.ui.vlComboCovKeep.addWidget(self.ui.comboCovKeepVar)
         
         ## Panel for cov to correct
-        self.ui.comboBoxCovCorrVar = CheckableQComboBox(self.ui)
-        self.ui.comboBoxCovCorrVar.setEditable(False)
-        self.ui.vlComboCovCorr.addWidget(self.ui.comboBoxCovCorrVar)
+        self.ui.comboCovCorrVar = CheckableQComboBox(self.ui)
+        self.ui.comboCovCorrVar.setEditable(False)
+        self.ui.vlComboCovCorr.addWidget(self.ui.comboCovCorrVar)
 
         ## Panel for selection
         self.ui.comboBoxSelVar = QComboBox(self.ui)
@@ -67,8 +75,15 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboBoxSelVal.setEditable(False)
         self.ui.vlComboSel.addWidget(self.ui.comboBoxSelVal)
 
+        ## Panel for outcome vars
+        self.ui.comboOutVar = CheckableQComboBox(self.ui)
+        self.ui.comboOutVar.setEditable(False)
+        self.ui.vlComboOut.addWidget(self.ui.comboOutVar)
+
         ## Options panel is not shown if there is no dataset loaded
-        self.ui.wOptions.hide()
+        self.ui.wNormVars.hide()
+        self.ui.wAdjustVars.hide()
+        self.ui.wOutVars.hide()
 
         self.ui.edit_activeDset.setReadOnly(True)
 
@@ -81,7 +96,31 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
 
         self.ui.comboBoxSelVar.currentIndexChanged.connect(lambda: self.OnSelIndexChanged())
 
-        self.ui.adjCovBtn.clicked.connect(lambda: self.OnAdjCovBtnClicked())
+        #self.ui.normalizeBtn.clicked.connect(lambda: self.OnNormalizeBtnClicked())
+        self.ui.adjustBtn.clicked.connect(lambda: self.OnAdjustBtnClicked())
+
+        self.ui.comboAction.currentIndexChanged.connect(self.OnActionChanged)
+
+    def OnActionChanged(self):
+        
+        logger.info('Action changed')
+
+        self.ui.wNormVars.hide()
+        self.ui.wAdjustVars.hide()
+        self.ui.wOutVars.hide()
+
+        self.selAction = self.ui.comboAction.currentText()
+
+        if self.selAction == 'Normalize Data':
+            self.ui.wNormVars.show()
+            self.ui.wOutVars.show()
+        
+        if self.selAction == 'Adjust Data':
+            self.ui.wAdjustVars.show()
+            self.ui.wOutVars.show()
+        
+        self.statusbar.showMessage('Action selection changed: ' + self.selAction)
+
 
     def CheckSelVars(self, selItem, comboVar):
 
@@ -105,81 +144,17 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
             comboVar.checkItems(checkedVars)      ## Selected vars are set to "checked"
             selItem.setCheckState(QtCore.Qt.Checked)
 
-    ## Apply a linear regression model and correct for covariates
-    ## It runs independently for each outcome variable
-    ## The estimation is done on the selected subset and then applied to all samples
-    ## The user can indicate covariates that will be corrected and not
-    def AdjCov(self, df, outVars, covCorrVars, covKeepVars=[], selCol='', selVals=[], outSuff='_COVADJ'):       
-        cmds = ['']
-        
-        # Make a copy of the init df
-        # It will be modified to handle categorical vars
-        dfOut = df.copy()
-        
-        # Combine covariates (to keep + to correct)
-        if covKeepVars is []:
-            covList = covCorrVars;
-            isCorr = list(np.ones(len(covCorrVars)).astype(int))
-        else:
-            covList = covKeepVars + covCorrVars;
-            isCorr = list(np.zeros(len(covKeepVars)).astype(int)) + list(np.ones(len(covCorrVars)).astype(int))
-        str_covList = ' + '.join(covList)
-        
-        # Prep data
-        TH_MAX_NUM_CAT = 20     ## FIXME: This should be a global var
-        dfCovs = []
-        isCorrArr = []
-        for i, tmpVar in enumerate(covList):
-            ## Detect if var is categorical
-            is_num = pd.to_numeric(df[tmpVar].dropna(), errors='coerce').notnull().all()
-            if df[tmpVar].unique().shape[0] < TH_MAX_NUM_CAT:
-                is_num = False
-            ## Create dummy vars for categorical data
-            if is_num == False:
-                dfDummy = pd.get_dummies(df[tmpVar], prefix=tmpVar, drop_first=True)
-                dfCovs.append(dfDummy)
-                isCorrArr = isCorrArr + list(np.zeros(dfDummy.shape[1]).astype(int)+isCorr[i])
-            else:
-                dfCovs.append(df[tmpVar])
-                isCorrArr.append(isCorr[i])
-        dfCovs = pd.concat(dfCovs, axis=1)
-        
-        ## Get cov names
-        covVars = dfCovs.columns.tolist()
-        str_covVars = ' + '.join(covVars)
-        
-        ## Get data with all vars
-        df = pd.concat([df[outVars], dfCovs], axis=1)
-        
-        ## Select training dataset (regression parameters estimated from this set)
-        if selVals == []:
-            dfTrain = df
-        else:
-            dfTrain = df[df[selCol]==selVals]
-            
-        ## Fit and apply model for each outcome var
-        outVarNames = []
-        for i, tmpOutVar in enumerate(outVars):
-            ## Fit model
-            str_model = tmpOutVar + '  ~ ' + str_covVars
-            mod = sm.ols(str_model, data=dfTrain)
-            res = mod.fit()
-            ## Apply model
-            corrVal = df[tmpOutVar]
-            for j, tmpCovVar in enumerate(covVars):
-                if isCorrArr[j] == 1:
-                    corrVal = corrVal - df[tmpCovVar] * res.params[tmpCovVar]
-            dfOut[tmpOutVar + outSuff] = corrVal
-            outVarNames.append(tmpOutVar + outSuff)
-        return dfOut, outVarNames
 
-    def OnAdjCovBtnClicked(self):
+    def OnNormalizeBtnClicked(self):
+        logger.info('AAA')
+
+    def OnAdjustBtnClicked(self):
         
         ## Read data and user selection
         df = self.data_model_arr.datasets[self.active_index].data
-        outVars = self.ui.comboBoxOutVar.listCheckedItems()
-        covKeepVars = self.ui.comboBoxCovKeepVar.listCheckedItems()
-        covCorrVars = self.ui.comboBoxCovCorrVar.listCheckedItems()
+        outVars = self.ui.comboOutVar.listCheckedItems()
+        covKeepVars = self.ui.comboCovKeepVar.listCheckedItems()
+        covCorrVars = self.ui.comboCovCorrVar.listCheckedItems()
         selCol = self.ui.comboBoxSelVar.currentText()
         selVals = self.ui.comboBoxSelVal.listCheckedItems()
         if selVals == []:
@@ -192,46 +167,20 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         outCat = outSuff
         
         ## Correct data    
-        dfCorr, outVarNames = self.AdjCov(df, outVars, covCorrVars, covKeepVars, selCol, selVals, outSuff)
+        dfCorr, outVarNames = AdjCov(df, outVars, covCorrVars, covKeepVars, selCol, selVals, outSuff)
 
         ## Set updated dset
         self.data_model_arr.datasets[self.active_index].data = dfCorr
 
-        ## Create dict with info about new columns
-        outDesc = 'Created by NiChartGUI AdjCovView Plugin'
-        outSource = 'NiChartGUI AdjCovView Plugin'
-        
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
-
-        ## Load data to data view 
-        self.dataView = QtWidgets.QTableView()
-        
-        ## Reduce data size to make the app run faster
-        tmpData = self.data_model_arr.datasets[self.active_index].data
-        tmpData = tmpData.head(self.data_model_arr.TABLE_MAXROWS)
-
-        ## Show only columns involved in application
-        tmpData = tmpData[outVarNames]
-        
-        self.PopulateTable(tmpData)
-        
-        ## Set data view to mdi widget
-        sub = QMdiSubWindow()
-        sub.setWidget(self.dataView)
-        self.mdi.addSubWindow(sub)        
-        sub.show()
-        self.mdi.tileSubWindows()
-        
-        ## Display status
-        self.statusbar.showMessage('Displaying cov adjusted outcome variables')        
 
         ##-------
         ## Populate commands that will be written in a notebook
         dset_name = self.data_model_arr.dataset_names[self.active_index]        
 
         ## Add adjcov function definiton to notebook
-        fCode = inspect.getsource(self.AdjCov).replace('(self, ','(')
+        fCode = inspect.getsource(AdjCov).replace('(self, ','(')
         self.cmds.add_funcdef('AdjCov', ['', fCode, ''])
         
         ## Add cmds to call the function
@@ -260,6 +209,52 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         cmds.append('')
         self.cmds.add_cmd(cmds)
         ##-------
+        
+        ## Display the table
+        self.ShowTable()
+        
+    def ShowTable(self, df = None, dset_name = None):
+
+        ## Read data and user selection
+        if df is None:
+            dset_name = self.data_model_arr.dataset_names[self.active_index]
+            #dset_fname = self.data_model_arr.datasets[self.active_index].file_name
+            df = self.data_model_arr.datasets[self.active_index].data
+            
+        ## Load data to data view 
+        self.dataView = QtWidgets.QTableView()
+        
+        ## Reduce data size to make the app run faster
+        df_tmp = df.head(self.data_model_arr.TABLE_MAXROWS)
+
+        ## Round values for display
+        df_tmp = df_tmp.applymap(lambda x: round(x, 2) if isinstance(x, (float, int)) else x)
+
+        self.PopulateTable(df_tmp)
+
+        ## Set data view to mdi widget
+        sub = QMdiSubWindow()
+        sub.setWidget(self.dataView)
+        #sub.setWindowTitle(dset_name + ': ' + os.path.basename(dset_fname))
+        sub.setWindowTitle(dset_name)
+        self.mdi.addSubWindow(sub)        
+        sub.show()
+        self.mdi.tileSubWindows()
+
+        ## Display status
+        self.statusbar.showMessage('Displaying dataset')
+        
+        ##-------
+        ## Populate commands that will be written in a notebook
+
+        ## Add cmds 
+        cmds = ['']
+        cmds.append('# Show dataset')
+        cmds.append(dset_name + '.head()')
+        cmds.append('')
+        self.cmds.add_cmd(cmds)
+        ##-------
+        
 
     def PopulateTable(self, data):
 
@@ -352,9 +347,9 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
 
     def UpdatePanels(self, colNames):
         
-        self.PopulateComboBox(self.ui.comboBoxOutVar, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxCovKeepVar, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxCovCorrVar, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboOutVar, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboCovKeepVar, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboCovCorrVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboBoxSelVar, colNames, '--var name--')
 
         self.ui.comboBoxSelVal.hide()

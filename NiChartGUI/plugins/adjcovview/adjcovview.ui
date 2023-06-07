@@ -106,7 +106,59 @@
                         </layout>
                         </widget>
                     </item>
+                    
+                    <item>
+                        <widget  class="QFrame"  name="wAction">
+                        <property  name="frameShape">
+                            <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property  name="frameShadow">
+                            <enum>QFrame::Raised</enum>
+                        </property>
+                        <property  name="lineWidth">
+                            <number>8</number>
+                        </property>
                         
+                        <layout  class="QVBoxLayout"  name="vlTmp">
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Action</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                    <layout  class="QHBoxLayout"  name="vlAction"/>
+                                </item>
+                                
+                            </layout>
+                            </item>
+                        </layout>
+                        
+                        </widget>
+                    </item>                    
+                    
                     <item>
                         <widget  class="QFrame"  name="wOutVars">
                         <property  name="frameShape">
@@ -154,14 +206,100 @@
                                 </item>
                             </layout>
                             </item>
+
+                            <item>
+                            <widget  class="QLabel"  name="label_select2">
+                                <property  name="text">
+                                <string>Out suffix/category: </string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_6">
+                                <item>
+                                <spacer  name="horizontalSpacer_6">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                    <widget  class="QLineEdit"  name="edit_outSuff">
+                                    </widget>
+                                </item>
+                            </layout>
+                            </item>
+                            
+                        </layout>
+                        </widget>
+                    </item>
+                    
+                    <item>
+                        <widget  class="QFrame"  name="wNormVars">
+                        <property  name="frameShape">
+                            <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property  name="frameShadow">
+                            <enum>QFrame::Raised</enum>
+                        </property>
+                        <property  name="lineWidth">
+                            <number>8</number>
+                        </property>
+                        
+                        <layout  class="QVBoxLayout"  name="vlwNormalizeVars">
+                            
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Normalize Var</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                    <property  name="sizeHint"  stdset="0">
+                                    <size>
+                                        <width>30</width>
+                                        <height>20</height>
+                                    </size>
+                                    </property>
+                                </spacer>
+                                </item>
+                                <item>
+                                <layout  class="QVBoxLayout"  name="vlComboNormVar"/>
+                                </item>
+                            </layout>
+                            </item>
                         </layout>
                         
                         </widget>
                     </item>
 
-
                     <item>
-                        <widget  class="QFrame"  name="wCov">
+                        <widget  class="QFrame"  name="wAdjustVars">
                         <property  name="frameShape">
                             <enum>QFrame::StyledPanel</enum>
                         </property>
@@ -173,13 +311,15 @@
                         </property>
                         
                         <layout  class="QVBoxLayout"  name="vlCov">
+
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Covariates (Keep)</string>
+                                <string>Covariates to keep</string>
                                 </property>
                             </widget>
                             </item>
+
                             <item>
                             <layout  class="QHBoxLayout"  name="horizontalLayout_5">
                                 <item>
@@ -209,10 +349,11 @@
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Covariates (Correct)</string>
+                                <string>Covariates to correct)</string>
                                 </property>
                             </widget>
                             </item>
+                            
                             <item>
                             <layout  class="QHBoxLayout"  name="horizontalLayout_5">
                                 <item>
@@ -238,23 +379,7 @@
                                 </item>
                             </layout>
                             </item>
-                        </layout>
-                        
-                        </widget>
-                    </item>
 
-                    <item>
-                        <widget  class="QFrame"  name="wSelectRef">
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
-                        <layout  class="QVBoxLayout"  name="vlSelectRef">
                             <item>
                             <widget  class="QLabel"  name="label_select2">
                                 <property  name="text">
@@ -262,6 +387,7 @@
                                 </property>
                             </widget>
                             </item>
+
                             <item>
                             <layout  class="QHBoxLayout"  name="horizontalLayout_6">
                                 <item>
@@ -287,71 +413,10 @@
                                 </item>
                             </layout>
                             </item>
-                        </layout>
-                        </widget>
-                    </item>
-                    
-                    <item>
-                        <widget  class="QFrame"  name="wBC">
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
-                        <layout  class="QVBoxLayout"  name="vlBC">
+
                             <item>
-                            <widget  class="QLabel"  name="label_select2">
-                                <property  name="text">
-                                <string>Out suffix/category: </string>
-                                </property>
-                            </widget>
-                            </item>
-                            <item>
-                            <layout  class="QHBoxLayout"  name="horizontalLayout_6">
-                                <item>
-                                <spacer  name="horizontalSpacer_6">
-                                    <property  name="orientation">
-                                    <enum>Qt::Horizontal</enum>
-                                    </property>
-                                    
-                                    <property name="sizeType">
-                                        <enum>QSizePolicy::Fixed</enum>
-                                    </property>
-                                    
-                                    <property  name="sizeHint"  stdset="0">
-                                    <size>
-                                        <width>30</width>
-                                        <height>20</height>
-                                    </size>
-                                    </property>
-                                </spacer>
-                                </item>
-                                <item>
-                                    <widget  class="QLineEdit"  name="edit_outSuff">
-                                    </widget>
-                                </item>
-                            </layout>
-                            </item>
-                        </layout>
-                        </widget>
-                    </item>
-                    
-                    <item>
-                        <widget  class="QFrame"  name="wAdjust">
-                        <property  name="frameShape">
-                            <enum>QFrame::StyledPanel</enum>
-                        </property>
-                        <property  name="frameShadow">
-                            <enum>QFrame::Raised</enum>
-                        </property>
-                        <property  name="lineWidth">
-                            <number>8</number>
-                        </property>
                             <layout  class="QHBoxLayout"  name="horizontalLayout_8">
+
                             <item>
                                 <spacer  name="horizontalSpacer_8">
                                 <property  name="orientation">
@@ -364,17 +429,25 @@
                                     </size>
                                 </property>
                                 </spacer>
+                            
+                            
                             </item>
+                            
                             <item>
-                                <widget  class="QPushButton"  name="adjCovBtn">
+                                <widget  class="QPushButton"  name="adjustBtn">
                                 <property  name="text">
                                     <string>Adjust</string>
                                 </property>
                                 </widget>
                             </item>
+                            
                             </layout>
+                            </item>
+                        </layout>
+                            
                         </widget>
                     </item>
+                                        
                     
                     <item>
                         <spacer  name="verticalSpacer">
