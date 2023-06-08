@@ -196,7 +196,6 @@ class MainWindow(QtWidgets.QMainWindow):
         indTab = self.ui.tabWidget.currentIndex()
         txtHelp = self.pluginDescriptions[indTab]
 
-        logger.warning(self.Plugins.keys())
         txtPlugin = list(self.Plugins.keys())[indTab]
 
         self.ui.wInfo.setText(txtHelp)

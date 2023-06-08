@@ -23,8 +23,7 @@ def main():
     dict_files = args.dict_file
     noGUI = args.nogui
 
-    print('AAA')
-    print(os.path.dirname(__file__))
+    print('Running in: ' + os.path.dirname(__file__))
 
     if(noGUI):
         app = QtCore.QCoreApplication(sys.argv)
