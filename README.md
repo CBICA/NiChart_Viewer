@@ -15,6 +15,14 @@ conda create -n NiChartGUI python=3.8.8
 conda activate NiChartGUI
 conda install pip
 pip install .
+```
+
+## Note
+
+Harmonization plugin requires installation of the NiChartHarmonize package (https://github.com/gurayerus/NiChartHarmonize)
+
+SPARE plugin requires installation of the NiChartSPARE package (https://github.com/georgeaidinis/spare_score)
+
 
 ## Usage
 
