@@ -95,7 +95,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         if self.selAction == 'Concat':
             self.ui.wConcat.show()
 
-        self.statusbar.showMessage('Action selection changed: ' + self.selAction)
+        self.statusbar.showMessage('Action selected: ' + self.selAction, 2000)
 
 
 
@@ -134,14 +134,19 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         dfDset2 = self.data_model_arr.datasets[self.dataset2_index].data
         
         ## Apply merge
-        dfOut = MergeData(dfCurr, dfDset2, mergeOn1, mergeOn2)
+        df_out = DataMerge(dfCurr, dfDset2, mergeOn1, mergeOn2)
 
         # Set updated dset
-        self.data_model_arr.datasets[self.active_index].data = dfOut
+        self.data_model_arr.datasets[self.active_index].data = df_out
+
+        ## Display the table
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)        
+        self.ShowTable()
 
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()
         
+        ##-------
         ## Populate commands that will be written in a notebook
         str_mergeOn1 = ','.join('"{0}"'.format(x) for x in mergeOn1)
         str_mergeOn2 = ','.join('"{0}"'.format(x) for x in mergeOn2)
@@ -159,11 +164,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         cmds.append(dset_name + '.head()')
         cmds.append('')
         self.cmds.add_cmd(cmds)
-        ##-------
-        
-        ## Display the table
-        self.ShowTable()
-        
+                
 
     def OnConcatBtnClicked(self):
 
@@ -175,14 +176,19 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         dfDset2 = self.data_model_arr.datasets[self.dataset2_index].data
         
         ## Apply merge
-        dfOut = ConcatData(dfCurr, dfDset2)
+        df_out = ConcatData(dfCurr, dfDset2)
 
         # Set updated dset
-        self.data_model_arr.datasets[self.active_index].data = dfOut
+        self.data_model_arr.datasets[self.active_index].data = df_out
+
+        ## Show table
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)        
+        self.ShowTable()
 
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()
         
+        ##-------
         ## Populate commands that will be written in a notebook
         #cmds = ['']
         #cmds.append('# Merge datasets')
@@ -197,10 +203,6 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         #cmds.append(dset_name + '.head()')
         #cmds.append('')
         #self.cmds.add_cmd(cmds)
-        ##-------
-        
-        ## Display the table
-        self.ShowTable()
         
 
     def PopulateTable(self, data):
@@ -291,9 +293,6 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         sub.show()
         self.mdi.tileSubWindows()
 
-        ## Display status
-        self.statusbar.showMessage('Displaying dataset')
-        
         ##-------
         ## Populate commands that will be written in a notebook
 

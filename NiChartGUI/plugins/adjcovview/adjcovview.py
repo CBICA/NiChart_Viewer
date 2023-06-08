@@ -146,8 +146,12 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
 
 
     def OnNormalizeBtnClicked(self):
+        '''Function to normalize data
+        '''
+        ## Get data
+        df = self.data_model_arr.datasets[self.active_index].data
 
-        ## Read normalize options
+        ## Get user selections
         normVar = self.ui.comboNormVar.currentText()
         outVars = self.ui.comboOutVar.listCheckedItems()
         outSuff = self.ui.edit_outSuff.text()
@@ -155,24 +159,31 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
             outSuff = 'NORM'
         if outSuff[0] == '_':
             outSuff = outSuff[1:]
-        outCat = outSuff
 
-        ## Apply normalization
-        df = self.data_model_arr.datasets[self.active_index].data
-        dfNorm, outVarNames = NormalizeData(df, outVars, normVar, outSuff)
+        ## Calculate results
+        res_tmp = DataNormalize(df, outVars, normVar, outSuff)
+        if res_tmp['out_code'] != 0:
+            self.errmsg.showMessage(res_tmp['out_msg'])
+            return;
+        df_out = res_tmp['df_out']
+        out_vars = res_tmp['out_vars']
 
-        ## Set updated dset
-        self.data_model_arr.datasets[self.active_index].data = dfNorm
-        
+        ## Update data
+        self.data_model_arr.datasets[self.active_index].data = df_out
+            
         ## Call signal for change in data
-        self.data_model_arr.OnDataChanged()
+        self.data_model_arr.OnDataChanged()        
+        
+        ## Display the table
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        WidgetShowTable(self)
         
         ##-------
         ## Populate commands that will be written in a notebook
         dset_name = self.data_model_arr.dataset_names[self.active_index]        
 
         ## Add NormalizeData function definiton to notebook
-        fCode = inspect.getsource(NormalizeData).replace('(self, ','(')
+        fCode = inspect.getsource(DataNormalize).replace('(self, ','(')
         self.cmds.add_funcdef('NormalizeData', ['', fCode, ''])
         
         ## Add cmds to call the function
@@ -191,16 +202,14 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         cmds.append(dset_name + '[outVarNames].head()')
         cmds.append('')
         self.cmds.add_cmd(cmds)
-        ##-------
-        
-        ## Display the table
-        self.ShowTable()
         
 
     def OnAdjustBtnClicked(self):
         
-        ## Read data and user selection
+        ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
+
+        ## Get user selections
         outVars = self.ui.comboOutVar.listCheckedItems()
         covKeepVars = self.ui.comboCovKeepVar.listCheckedItems()
         covCorrVars = self.ui.comboCovCorrVar.listCheckedItems()
@@ -215,21 +224,30 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
             outSuff = outSuff[1:]
         outCat = outSuff
         
-        ## Correct data    
-        dfCorr, outVarNames = AdjCov(df, outVars, covCorrVars, covKeepVars, selCol, selVals, outSuff)
+        ## Calculate results
+        res_tmp = DataAdjCov(df, outVars, covCorrVars, covKeepVars, selCol, selVals, outSuff)
+        if res_tmp['out_code'] != 0:
+            self.errmsg.showMessage(res_tmp['out_msg'])
+            return;
+        df_out = res_tmp['df_out']
+        out_vars = res_tmp['out_vars']
 
-        ## Set updated dset
-        self.data_model_arr.datasets[self.active_index].data = dfCorr
-
+        ## Update data
+        self.data_model_arr.datasets[self.active_index].data = df_out
+            
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
-
+        
+        ## Display the table
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        WidgetShowTable(self)
+        
         ##-------
         ## Populate commands that will be written in a notebook
         dset_name = self.data_model_arr.dataset_names[self.active_index]        
 
         ## Add adjcov function definiton to notebook
-        fCode = inspect.getsource(AdjCov).replace('(self, ','(')
+        fCode = inspect.getsource(DataAdjCov).replace('(self, ','(')
         self.cmds.add_funcdef('AdjCov', ['', fCode, ''])
         
         ## Add cmds to call the function
@@ -252,15 +270,11 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         
         cmds.append('outSuff  = "' + outSuff + '"')
         
-        cmds.append(dset_name + ', outVarNames = AdjCov(' + dset_name + ', outVars, covCorrVars, covKeepVars, selCol, selVals, outSuff)')
+        cmds.append(dset_name + ', outVarNames = DataAdjCov(' + dset_name + ', outVars, covCorrVars, covKeepVars, selCol, selVals, outSuff)')
         
         cmds.append(dset_name + '[outVarNames].head()')
         cmds.append('')
         self.cmds.add_cmd(cmds)
-        ##-------
-        
-        ## Display the table
-        self.ShowTable()
         
     def ShowTable(self, df = None, dset_name = None):
 

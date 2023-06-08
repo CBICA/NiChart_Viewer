@@ -118,7 +118,7 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
             self.ui.wYVar.hide()
             self.ui.wPlotBtn.show()
 
-        self.statusbar.showMessage('Plot type selection changed: ' + self.selPlotType)
+        self.statusbar.showMessage('New plot type selected: ' + self.selPlotType, 2000)
 
     def OnFilterIndexChanged(self):
         
@@ -168,7 +168,10 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
             hueVar = ''
 
         ## Filter data
-        df_tmp = FilterData(df, xVar, filterVar, filterVals, hueVar, hueVals)
+        res_tmp = FilterData(df, filterVar, filterVals)
+        df_out = res_tmp['df_out']
+        res_tmp = FilterData(df_out, hueVar, hueVals)
+        df_out = res_tmp['df_out']
 
         ## Prepare plot canvas  
         self.plotCanvas = PlotCanvas(self.ui)
@@ -184,17 +187,20 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
             yVar = self.ui.comboYVar.currentText()
         
             ## Plot data
-            PlotData(self.plotCanvas.axes, df_tmp, xVar, yVar, hueVar)
+            PlotData(self.plotCanvas.axes, df_out, xVar, yVar, hueVar)
 
         if self.selPlotType == 'DistPlot':
 
             ## Plot data
-            PlotDist(self.plotCanvas.axes, df_tmp, xVar, hueVar)
+            PlotDist(self.plotCanvas.axes, df_out, xVar, hueVar)
             
         self.plotCanvas.draw()
 
         sub.show()
         self.mdi.tileSubWindows()
+        
+        self.statusbar.showMessage('Displaying plot')
+
         
         ##-------
         ## Populate commands that will be written in a notebook

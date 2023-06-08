@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from PyQt5.QtGui import *
 from PyQt5 import QtGui, QtCore, QtWidgets, uic
-from PyQt5.QtWidgets import QMdiArea, QMdiSubWindow, QTextEdit, QComboBox, QLayout
+from PyQt5.QtWidgets import QMdiArea, QMdiSubWindow, QTextEdit, QComboBox, QLayout, QMessageBox, QErrorMessage
 from NiChartGUI.core.dataio import DataIO
 from NiChartGUI.core.baseplugin import BasePlugin
 from NiChartGUI.core import iStagingLogger
@@ -56,7 +56,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboBoxDsets.setEditable(False)        
         self.ui.vlComboDSets.addWidget(self.ui.comboBoxDsets)
         
-        ## Panel for action
+        ## Panel for actions
         self.ui.comboAction = QComboBox(self.ui)
         self.ui.comboAction.setEditable(False)
         self.ui.vlAction.addWidget(self.ui.comboAction)
@@ -121,14 +121,12 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.wSelectCol.hide()
         self.ui.wDrop.hide()
         
+        ## Few edits to the view
         self.ui.wOptions.setMaximumWidth(300)
-        
         self.ui.edit_fname.setReadOnly(True)
         self.ui.edit_fname.setStyleSheet("border: 0px; background-color: rgb(235, 235, 245)")
-
         self.ui.edit_dshape.setReadOnly(True)
         self.ui.edit_dshape.setStyleSheet("border: 0px; background-color: rgb(235, 235, 245)")
-        
         self.ui.wOptions.hide()
     
     def SetupConnections(self):
@@ -149,14 +147,9 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboAction.currentIndexChanged.connect(self.OnActionChanged)
         self.ui.comboBoxFilterVar.currentIndexChanged.connect(self.OnFilterVarChanged)
 
-    def do_something(self):
-        logger.warning('AAAA')
-
     def OnActionChanged(self):
         '''Function to handle new action selection
         '''
-        logger.info('New action selected')
-        
         ## Hide all panels
         self.ui.wShowTable.hide()
         self.ui.wShowStats.hide()
@@ -185,23 +178,22 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         if self.selAction == 'Drop Duplicates':
             self.ui.wDrop.show()
         
-        self.statusbar.showMessage('Action selection changed: ' + self.selAction)
+        self.statusbar.showMessage('Action selected: ' + self.selAction, 2000)
         
     def OnShowTableBtnClicked(self):
-        '''Function to handle action to show data
+        '''Function to handle show data action
         '''        
         ## Display data
-        self.ShowTable()
+        self.statusbar.showMessage('Displaying dataframe', 2000)        
+        WidgetShowTable(self)
        
     def OnShowStatsBtnClicked(self):
-        '''Function to handle action to show stats
+        '''Function to handle show stats action 
         '''        
-        ## Read data and user selection
-        dset_name = self.data_model_arr.dataset_names[self.active_index]
-        dset_fname = self.data_model_arr.datasets[self.active_index].file_name
+        ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
 
-        ## Get selected column names
+        ## Get user selections
         groupVars = self.ui.comboBoxStatsGroupVar.listCheckedItems()
         str_groupVars = ','.join('"{0}"'.format(x) for x in groupVars)
 
@@ -211,56 +203,64 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         statVars = self.ui.comboBoxStatsOut.listCheckedItems()
         str_statVars = ','.join('"{0}"'.format(x) for x in statVars)
 
-        ## Calculate stats dataframe
-        res_tmp = StatsData(df, groupVars, selVars, statVars)
-        
+        ## Calculate results
+        res_tmp = DataGetStats(df, groupVars, selVars, statVars)
         if res_tmp['out_code'] != 0:
-            self.statusbar.showMessage(res_tmp['out_msg'])
+            self.errmsg.showMessage(res_tmp['out_msg'])
             return;
-    
         df_out = res_tmp['df_out']
     
-        ## Display the table
-        self.ShowTable(df = df_out, dset_name = 'Data Stats')        
+        ## Display results
+        self.statusbar.showMessage('Displaying data stats', 2000)
+        WidgetShowTable(self, df = df_out, dset_name = 'Data Stats')        
 
 
     def OnDropBtnClicked(self):
-        
-        dset_name = self.data_model_arr.dataset_names[self.active_index]        
+        '''Function to handle drop data action
+        '''
+        ## Get data
+        df = self.data_model_arr.datasets[self.active_index].data   
 
-
+        ## Get user selections
         selVars = self.ui.comboBoxSelDuplVar.listCheckedItems()
-
         str_selVars = ','.join('"{0}"'.format(x) for x in selVars)
 
-        # Get active dset, apply drop, reassign it
-        dtmp = self.data_model_arr.datasets[self.active_index].data   
-        dtmp = dtmp.drop_duplicates(subset=selVars)
-        self.data_model_arr.datasets[self.active_index].data = dtmp
+        ## Calculate results
+        res_tmp = DataDrop(df, selVars)
+        if res_tmp['out_code'] != 0:
+            self.errmsg.showMessage(res_tmp['out_msg'])
+            return;
+        df_out = res_tmp['df_out']
+        df_out = df.drop_duplicates(subset=selVars)
+
+        ## Update data
+        self.data_model_arr.datasets[self.active_index].data = df_out
 
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
+
+        ## Display results
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        WidgetShowTable(self)
 
         ##-------
         ## Populate commands that will be written in a notebook
         cmds = ['']
         cmds.append('# Drop duplicates')        
+        dset_name = self.data_model_arr.dataset_names[self.active_index]        
         cmds.append(dset_name + ' = ' + dset_name + '.drop_duplicates(subset = [' + str_selVars + '])')
         cmds.append(dset_name + '.head()')
         cmds.append('')
         self.cmds.add_cmd(cmds)
         ##-------
 
-        ## Display the table
-        self.ShowTable()
-
-
     def OnSortBtnClicked(self):
-
-        ## Read data and user selection
-        dset_name = self.data_model_arr.dataset_names[self.active_index]
-        dset_fname = self.data_model_arr.datasets[self.active_index].file_name
+        '''Function to handle sort data action
+        '''
+        ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
+        
+        ## Get user selections
         sortCols = []
         sortOrders = []
         if self.ui.check_sort1.isChecked():
@@ -276,14 +276,11 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             else:
                 sortOrders.append(False)
 
-        ## Sort data
-        res_tmp = SortData(df, sortCols, sortOrders)
-        
-        self.statusbar.showMessage(res_tmp['out_msg'])
-        
+        ## Calculate results
+        res_tmp = DataSort(df, sortCols, sortOrders)        
         if res_tmp['out_code'] != 0:
+            self.errmsg.showMessage(res_tmp['out_msg'])
             return;
-    
         df_out = res_tmp['df_out']
     
         ## Update data
@@ -292,41 +289,49 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
         
+        ## Display the table
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        WidgetShowTable(self)
+
         ##-------
         ## Populate commands that will be written in a notebook
 
         ## Add sort function definiton to notebook
-        fCode = inspect.getsource(SortData).replace('(self, ','(')
-        self.cmds.add_funcdef('SortData', ['', fCode, ''])
+        fCode = inspect.getsource(DataSort).replace('(self, ','(')
+        self.cmds.add_funcdef('DataSort', ['', fCode, ''])
 
         ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Sort dataset')
 
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
         str_sortCols = '[' +  ','.join('"{0}"'.format(x) for x in sortCols) + ']'
         cmds.append('sortCols = ' + str_sortCols)
 
         str_sortOrders = '[' +  ','.join('{0}'.format(x) for x in sortOrders) + ']'
         cmds.append('sortOrders = ' + str_sortOrders)
 
-        cmds.append(dset_name + ' = SortData(' + dset_name + ', ' + str_sortCols + ', ' + str_sortOrders + ')')
+        cmds.append(dset_name + ' = DataSort(' + dset_name + ', ' + str_sortCols + ', ' + str_sortOrders + ')')
 
         self.cmds.add_cmd(cmds)
-        ##-------
-
-        ##-------
-        ## Display the table
-        self.ShowTable()
 
     def OnFilterVarChanged(self):
+        '''Select filter values
+        '''
         
         ## Threshold to show categorical values for selection
         TH_NUM_UNIQ = 20
-        
+
+        ## Get data
+        df = self.data_model_arr.datasets[self.active_index].data
+
+        ## Get user selections
         selcol = self.ui.comboBoxFilterVar.currentText()
-        dftmp = self.data_model_arr.datasets[self.active_index].data[selcol]
-        is_numerical = pd.to_numeric(dftmp.dropna(), errors='coerce').notnull().all()
         
+        ## Detect if column is numeric
+        is_numerical = pd.to_numeric(df[selcol].dropna(), errors='coerce').notnull().all()
+        
+        ## Set options according to data type
         if is_numerical:
             self.filter_column_type = 'NUM'
         else:
@@ -343,67 +348,92 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             num_uniq = len(val_uniq)
 
             ## Select values if #unique values for the field is less than set threshold
-            if num_uniq <= TH_NUM_UNIQ:
-                self.ui.wFilterNumerical.hide()
-                self.ui.wFilterCategorical.show()
-                self.PopulateComboBox(self.ui.comboBoxCategoricalVars, val_uniq)
+            if num_uniq > TH_NUM_UNIQ:
+                self.errmsg.showMessage('Selected column has too many categories, skipping')
+                return;                
+            self.ui.wFilterNumerical.hide()
+            self.ui.wFilterCategorical.show()
+            self.PopulateComboBox(self.ui.comboBoxCategoricalVars, val_uniq)
 
     def OnFilterBtnClicked(self):
+        '''Function to handle filter data action
+        '''
+        ## Get data
+        df = self.data_model_arr.datasets[self.active_index].data
 
-        dset_name = self.data_model_arr.dataset_names[self.active_index]        
+        ## Get user selections
+        fvar = self.ui.comboBoxFilterVar.currentText()
+        if len(fvar) == 0:
+            self.errmsg.showMessage('Please select input var!')
+            return;
 
-        ## Filter data
-        dtmp = self.data_model_arr.datasets[self.active_index].data
+        ## Get user selections
         if self.filter_column_type == 'NUM':
-            fvar = self.ui.comboBoxFilterVar.currentText()
             vmin = float(self.ui.edit_minval.text())
             vmax = float(self.ui.edit_maxval.text())
-            dtmp = dtmp[(dtmp[fvar]>=vmin) & (dtmp[fvar]<=vmax)]
+            fvals = [vmin, vmax]
         
         if self.filter_column_type == 'CAT':
-            fvar = self.ui.comboBoxFilterVar.currentText()
-            varr = self.ui.comboBoxCategoricalVars.listCheckedItems()
-            str_varr = ','.join('"{0}"'.format(x) for x in varr)
-            dtmp = dtmp[dtmp[fvar].isin(varr)]
+            fvals = self.ui.comboBoxCategoricalVars.listCheckedItems()
+            str_fvals = ','.join('"{0}"'.format(x) for x in fvals)
 
-        self.data_model_arr.datasets[self.active_index].data = dtmp
-
+        ## Calculate results
+        res_tmp = DataFilter(df, fvar, fvals)
+        if res_tmp['out_code'] != 0:
+            self.errmsg.showMessage(res_tmp['out_msg'])
+            return;
+        df_out = res_tmp['df_out']
+        
+        ## Update data
+        self.data_model_arr.datasets[self.active_index].data = df_out
+            
         ## Call signal for change in data
-        self.data_model_arr.OnDataChanged()
+        self.data_model_arr.OnDataChanged()        
+        
+        ## Display the table
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        WidgetShowTable(self)
 
         ##-------
         ## Populate commands that will be written in a notebook
         cmds = ['']
         cmds.append('# Filter dataset')        
+        dset_name = self.data_model_arr.dataset_names[self.active_index]        
         if self.filter_column_type == 'NUM':
             filterTxt = '[(' + dset_name + '["' + fvar + '"] >= ' + str(vmin) + ') & (' + \
                         dset_name + '["' + fvar + '"] <= ' + str(vmax) + ')]'
         if self.filter_column_type == 'CAT':
-            filterTxt = '[' + dset_name + '["' + fvar + '"].isin([' + str_varr + '])]'
+            filterTxt = '[' + dset_name + '["' + fvar + '"].isin([' + str_fvals + '])]'
         cmds.append(dset_name + ' = ' + dset_name + filterTxt)
         cmds.append(dset_name + '.head()')
         cmds.append('')
         self.cmds.add_cmd(cmds)
-        ##-------
-
-        ##-------
-        ## Display the table
-        self.ShowTable()
-
-
-    def OnSelColBtnClicked(self): 
         
-        ## Get selected column names
+    def OnSelColBtnClicked(self): 
+
+        ## Get data
+        df = self.data_model_arr.datasets[self.active_index].data
+
+        ## Get user selections
         selVars = self.ui.comboBoxSelVar.listCheckedItems()
         str_selVars = ','.join('"{0}"'.format(x) for x in selVars)
 
-        ## Select columns from dataset
-        dtmp = self.data_model_arr.datasets[self.active_index].data      ## FIXME
-        dtmp = dtmp[selVars]
-        self.data_model_arr.datasets[self.active_index].data = dtmp
-        
+        ## Calculate results
+        res_tmp = DataSelectColumns(df, selVars)
+        if res_tmp['out_code'] != 0:
+            self.errmsg.showMessage(res_tmp['out_msg'])
+            return;    
+        df_out = res_tmp['df_out']
+
+        ## Update data
+        self.data_model_arr.datasets[self.active_index].data = df_out
+            
         ## Call signal for change in data
-        self.data_model_arr.OnDataChanged()
+        self.data_model_arr.OnDataChanged()        
+        
+        ## Display the table
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        WidgetShowTable(self)
         
         ##-------
         ## Populate commands that will be written in a notebook
@@ -414,50 +444,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         cmds.append(dset_name + '.head()')
         cmds.append('')
         self.cmds.add_cmd(cmds)
-        ##-------
 
-        ##-------
-        ## Display the table
-        self.ShowTable()
-
-    def ShowTable(self, df = None, dset_name = None):
-
-        ## Read data and user selection
-        if df is None:
-            dset_name = self.data_model_arr.dataset_names[self.active_index]
-            #dset_fname = self.data_model_arr.datasets[self.active_index].file_name
-            df = self.data_model_arr.datasets[self.active_index].data
-            
-        ## Load data to data view 
-        self.dataView = QtWidgets.QTableView()
-        
-        ## Reduce data size to make the app run faster
-        df_tmp = df.head(self.data_model_arr.TABLE_MAXROWS)
-
-        ## Round values for display
-        df_tmp = df_tmp.applymap(lambda x: round(x, 2) if isinstance(x, (float, int)) else x)
-
-        self.PopulateTable(df_tmp)
-
-        ## Set data view to mdi widget
-        sub = QMdiSubWindow()
-        sub.setWidget(self.dataView)
-        #sub.setWindowTitle(dset_name + ': ' + os.path.basename(dset_fname))
-        sub.setWindowTitle(dset_name)
-        self.mdi.addSubWindow(sub)        
-        sub.show()
-        self.mdi.tileSubWindows()
-
-        ##-------
-        ## Populate commands that will be written in a notebook
-
-        ## Add cmds 
-        cmds = ['']
-        cmds.append('# Show dataset')
-        cmds.append(dset_name + '.head()')
-        cmds.append('')
-        self.cmds.add_cmd(cmds)
-        ##-------
 
     def PopulateTable(self, data):
         
@@ -495,7 +482,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         selVars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
         self.PopulateComboBox(self.ui.comboBoxSortVar1, selVars)
         
-        self.statusbar.showMessage('User selected data category: ' + selCat)        
+        self.statusbar.showMessage('User selected data category: ' + selCat, 2000)        
 
     def OnSortCat2Changed(self):
 
@@ -505,7 +492,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         selVars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
         self.PopulateComboBox(self.ui.comboBoxSortVar2, selVars)
 
-        self.statusbar.showMessage('User selected data category: ' + selCat)        
+        self.statusbar.showMessage('User selected data category: ' + selCat, 2000)        
 
     def OnDataChanged(self):
         
@@ -579,5 +566,5 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         
         self.data_model_arr.OnDataChanged()
 
-        self.statusbar.showMessage('Selected new dataset: ' + selDsetName)
+        self.statusbar.showMessage('Selected new dataset: ' + selDsetName, 2000)
         

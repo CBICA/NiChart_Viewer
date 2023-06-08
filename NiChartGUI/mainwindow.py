@@ -39,6 +39,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Variable to keep all commands (to create a notebook)
         self.cmds = CmdModel()
         
+        # Widget for err messages
+        self.errmsg = QtWidgets.QErrorMessage()
+        
         # Variable to keep path for the last data file loaded
         self.dataPathLast = ''
 
@@ -65,6 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
             po.data_model_arr = self.data_model_arr
             po.cmds = self.cmds
             po.statusbar = self.ui.statusbar
+            po.errmsg = self.errmsg
             po.SetupConnections()
     
             plTmp.append(po)
@@ -79,8 +83,8 @@ class MainWindow(QtWidgets.QMainWindow):
         ## ['Dataset View', 'Filter View', 'Dist View', 'Plot View', 'Merge View', 'Normalize View', 'Adjust Cov View', 'Harmonize View', 'Spare View']
         
         #indSort = indSort[[0,3,7,8,9]]
-        logger.info(plNameTmp)
-        logger.info('AAAA')
+        #logger.info(plNameTmp)
+        #logger.info('AAAA')
         #indSort = indSort[[0,7,8,9]]
         #input()
         
@@ -108,8 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
             #newAction.setShortcut('Ctrl+N')
             #newAction.setStatusTip('New document')
 
-            if i==0:
-                newAction.setChecked(True)      ## First tab is visible by default
+            newAction.setChecked(True)      ## First tab is visible by default
             
             ## The "function factory" call is an alternative to using a lambda function
             ##   The makeXXX function factory takes an arg and returns a function XXX
@@ -138,7 +141,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.wInfo.setStyleSheet('background-color : rgb(10, 10, 50); color: rgb(230, 230, 230)')
 
         ## Statusbar
-        self.ui.statusbar.setStyleSheet('background-color : rgb(230, 230, 210); color: rgb(100, 10, 10)')
+        self.ui.statusbar.setStyleSheet('background-color : rgb(100, 100, 170); color: rgb(230, 230, 210)')
         self.ui.statusbar.setFont(QtGui.QFont('Times', 14))
 
         #self.ui.wInfo.setMinimumSize(600, 200)
@@ -167,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionSaveNotebook.triggered.connect(self.OnSaveNotebookClicked)
         self.actionAbout.triggered.connect(self.OnAboutClicked)
         self.actionHelpConsole.triggered.connect(self.OnHelpConsoleChecked)
-        self.ui.tabWidget.currentChanged.connect(self.OnHelpConsoleChecked)
+        self.ui.tabWidget.currentChanged.connect(self.OnTabChanged)
 
 
     #def makeOnPluginChecked(self, checked):
@@ -178,31 +181,35 @@ class MainWindow(QtWidgets.QMainWindow):
             tabIndex = self.IndexPlugins[pluginName]
             if checked==True:
                 self.ui.tabWidget.setTabVisible(tabIndex, True)
-                self.ui.statusbar.showMessage('Plugin activated: ' + pluginName)
+                self.ui.statusbar.showMessage('Plugin activated: ' + pluginName, 2000)
                 
             else:
                 self.ui.tabWidget.setTabVisible(tabIndex, False)
-                self.ui.statusbar.showMessage('Plugin deactivated: ' + pluginName)
+                self.ui.statusbar.showMessage('Plugin deactivated: ' + pluginName, 2000)
         
 
         return OnPluginChecked
 
- 
-    def OnHelpConsoleChecked(self):
+
+    def OnTabChanged(self):
         
         indTab = self.ui.tabWidget.currentIndex()
         txtHelp = self.pluginDescriptions[indTab]
-        self.ui.wInfo.setText(txtHelp)
 
-        logger.info(self.actionHelpConsole.isChecked)
-        
+        logger.warning(self.Plugins.keys())
+        txtPlugin = list(self.Plugins.keys())[indTab]
+
+        self.ui.wInfo.setText(txtHelp)
+        self.ui.statusbar.showMessage('Selected plugin: ' + txtPlugin, 2000)
+ 
+    def OnHelpConsoleChecked(self):
         if self.actionHelpConsole.isChecked():
             self.ui.wInfo.show()
-            self.ui.statusbar.showMessage('Help Console activated')
+            self.ui.statusbar.showMessage('Help console activated', 2000)
 
         else:
             self.ui.wInfo.hide()
-            self.ui.statusbar.showMessage('Help Console deactivated')
+            self.ui.statusbar.showMessage('Help console deactivated', 2000)
         
  
     def SetupUi(self):
@@ -237,7 +244,7 @@ class MainWindow(QtWidgets.QMainWindow):
             ## Call signal for change in data
             self.data_model_arr.OnDataChanged()
 
-            self.ui.statusbar.showMessage('Loaded dataset: ' + filename)
+            self.ui.statusbar.showMessage('Loaded dataset: ' + filename, 2000)
 
         else:
             logger.warning('Loaded data was not valid.')
@@ -296,7 +303,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.cmds.cmds_to_notebook(filename)
         
-        self.ui.statusbar.showMessage('Notebook saved to: ' + filename)
+        self.ui.statusbar.showMessage('Notebook saved to: ' + filename, 2000)
 
 
     ## Function to write current data frame to csv file
@@ -310,7 +317,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.data_model_arr.datasets[self.data_model_arr.active_index].data.to_csv(filename, index=False)
 
-        self.ui.statusbar.showMessage('Datafile saved to: ' + filename)
+        self.ui.statusbar.showMessage('Datafile saved to: ' + filename, 2000)
 
         ##-------
         ## Populate commands that will be written in a notebook
@@ -324,7 +331,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def OnAboutClicked(self):
         self.aboutdialog.show()
-        self.ui.statusbar.showMessage('Info Console activated')
+        self.ui.statusbar.showMessage('Information console activated', 2000)
         
 
     def OnCloseClicked(self):
