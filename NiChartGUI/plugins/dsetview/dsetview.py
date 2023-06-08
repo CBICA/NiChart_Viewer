@@ -344,7 +344,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ## Filter for non-numeric data
         if self.filter_column_type == 'CAT':
-            val_uniq = dftmp.unique()
+            val_uniq = df.unique()
             num_uniq = len(val_uniq)
 
             ## Select values if #unique values for the field is less than set threshold
