@@ -334,14 +334,3 @@ def WidgetShowTable(widget_in, df = None, dset_name = None):
     sub.show()
     widget_in.mdi.tileSubWindows()
 
-    ##-------
-    ## Populate commands that will be written in a notebook
-
-    ## Add cmds 
-    cmds = ['']
-    cmds.append('# Show dataset')
-    cmds.append(dset_name + '.head()')
-    cmds.append('')
-    widget_in.cmds.add_cmd(cmds)
-    ##-------
-

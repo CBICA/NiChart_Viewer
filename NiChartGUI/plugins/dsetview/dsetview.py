@@ -187,6 +187,16 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.statusbar.showMessage('Displaying dataframe', 2000)        
         WidgetShowTable(self)
        
+        ##-------
+        ## Populate commands that will be written in a notebook
+        cmds = ['']
+        cmds.append('# Show table')        
+        dset_name = self.data_model_arr.dataset_names[self.active_index]        
+        cmds.append(dset_name + '.head()')
+        cmds.append('')
+        self.cmds.add_cmd(cmds)
+       
+       
     def OnShowStatsBtnClicked(self):
         '''Function to handle show stats action 
         '''        
@@ -194,17 +204,17 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         df = self.data_model_arr.datasets[self.active_index].data
 
         ## Get user selections
-        groupVars = self.ui.comboBoxStatsGroupVar.listCheckedItems()
-        str_groupVars = ','.join('"{0}"'.format(x) for x in groupVars)
+        group_vars = self.ui.comboBoxStatsGroupVar.listCheckedItems()
+        str_group_vars = ','.join('"{0}"'.format(x) for x in group_vars)
 
-        selVars = self.ui.comboBoxStatsIn.listCheckedItems()
-        str_selVars = ','.join('"{0}"'.format(x) for x in selVars)
+        sel_vars = self.ui.comboBoxStatsIn.listCheckedItems()
+        str_sel_vars = ','.join('"{0}"'.format(x) for x in sel_vars)
 
-        statVars = self.ui.comboBoxStatsOut.listCheckedItems()
-        str_statVars = ','.join('"{0}"'.format(x) for x in statVars)
+        stat_vars = self.ui.comboBoxStatsOut.listCheckedItems()
+        str_stat_vars = ','.join('"{0}"'.format(x) for x in stat_vars)
 
         ## Calculate results
-        res_tmp = DataGetStats(df, groupVars, selVars, statVars)
+        res_tmp = DataGetStats(df, group_vars, sel_vars, stat_vars)
         if res_tmp['out_code'] != 0:
             self.errmsg.showMessage(res_tmp['out_msg'])
             return;
@@ -214,6 +224,26 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.statusbar.showMessage('Displaying data stats', 2000)
         WidgetShowTable(self, df = df_out, dset_name = 'Data Stats')        
 
+        ##-------
+        ## Populate commands that will be written in a notebook
+        ##-------
+        ## Add function definiton to notebook
+        fCode = inspect.getsource(DataGetStats)
+        self.cmds.add_funcdef('DataGetStats', ['', fCode, ''])
+
+        ## Add cmds to call the function
+        cmds = ['']
+        cmds.append('# Compute data stats')
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
+        cmds.append('group_vars = [' + str_group_vars + ']')
+        cmds.append('sel_vars = [' + str_sel_vars + ']')
+        cmds.append('stat_vars = [' + str_stat_vars + ']')
+        cmds.append('res_tmp = DataGetStats(' + dset_name + 
+                    ', group_vars, sel_vars, stat_vars)')
+        cmds.append(dset_name + '_stats = res_tmp["df_out"]')
+        cmds.append(dset_name + '_stats.head()') 
+        self.cmds.add_cmd(cmds)
+
 
     def OnDropBtnClicked(self):
         '''Function to handle drop data action
@@ -222,16 +252,16 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         df = self.data_model_arr.datasets[self.active_index].data   
 
         ## Get user selections
-        selVars = self.ui.comboBoxSelDuplVar.listCheckedItems()
-        str_selVars = ','.join('"{0}"'.format(x) for x in selVars)
+        sel_vars = self.ui.comboBoxSelDuplVar.listCheckedItems()
+        str_sel_vars = ','.join('"{0}"'.format(x) for x in sel_vars)
 
         ## Calculate results
-        res_tmp = DataDrop(df, selVars)
+        res_tmp = DataDrop(df, sel_vars)
         if res_tmp['out_code'] != 0:
             self.errmsg.showMessage(res_tmp['out_msg'])
             return;
         df_out = res_tmp['df_out']
-        df_out = df.drop_duplicates(subset=selVars)
+        df_out = df.drop_duplicates(subset=sel_vars)
 
         ## Update data
         self.data_model_arr.datasets[self.active_index].data = df_out
@@ -245,14 +275,20 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ##-------
         ## Populate commands that will be written in a notebook
+        ##-------
+        ## Add function definiton to notebook
+        fCode = inspect.getsource(DataDrop)
+        self.cmds.add_funcdef('DataDrop', ['', fCode, ''])
+
+        ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Drop duplicates')        
-        dset_name = self.data_model_arr.dataset_names[self.active_index]        
-        cmds.append(dset_name + ' = ' + dset_name + '.drop_duplicates(subset = [' + str_selVars + '])')
-        cmds.append(dset_name + '.head()')
-        cmds.append('')
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
+        cmds.append('sel_vars = [' + str_sel_vars + ']')
+        cmds.append('res_tmp = DataDrop(' + dset_name + ', sel_vars)')
+        cmds.append(dset_name + '_stats = res_tmp["df_out"]')
+        cmds.append(dset_name + '_stats.head()') 
         self.cmds.add_cmd(cmds)
-        ##-------
 
     def OnSortBtnClicked(self):
         '''Function to handle sort data action
@@ -261,23 +297,26 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         df = self.data_model_arr.datasets[self.active_index].data
         
         ## Get user selections
-        sortCols = []
-        sortOrders = []
+        sort_cols = []
+        sort_orders = []
         if self.ui.check_sort1.isChecked():
-            sortCols.append(self.ui.comboBoxSortVar1.currentText())
+            sort_cols.append(self.ui.comboBoxSortVar1.currentText())
             if self.ui.check_asc1.isChecked():
-                sortOrders.append(True)
+                sort_orders.append(True)
             else:   
-                sortOrders.append(False)
+                sort_orders.append(False)
         if self.ui.check_sort2.isChecked():
-            sortCols.append(self.ui.comboBoxSortVar2.currentText())
+            sort_cols.append(self.ui.comboBoxSortVar2.currentText())
             if self.ui.check_asc2.isChecked():
-                sortOrders.append(True)
+                sort_orders.append(True)
             else:
-                sortOrders.append(False)
+                sort_orders.append(False)
+
+        str_sort_cols = ','.join('"{0}"'.format(x) for x in sort_cols)
+        str_sort_orders = ','.join('{0}'.format(x) for x in sort_orders)
 
         ## Calculate results
-        res_tmp = DataSort(df, sortCols, sortOrders)        
+        res_tmp = DataSort(df, sort_cols, sort_orders)        
         if res_tmp['out_code'] != 0:
             self.errmsg.showMessage(res_tmp['out_msg'])
             return;
@@ -295,24 +334,20 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ##-------
         ## Populate commands that will be written in a notebook
-
-        ## Add sort function definiton to notebook
-        fCode = inspect.getsource(DataSort).replace('(self, ','(')
+        ##-------
+        ## Add function definiton to notebook
+        fCode = inspect.getsource(DataSort)
         self.cmds.add_funcdef('DataSort', ['', fCode, ''])
 
         ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Sort dataset')
-
         dset_name = self.data_model_arr.dataset_names[self.active_index]
-        str_sortCols = '[' +  ','.join('"{0}"'.format(x) for x in sortCols) + ']'
-        cmds.append('sortCols = ' + str_sortCols)
-
-        str_sortOrders = '[' +  ','.join('{0}'.format(x) for x in sortOrders) + ']'
-        cmds.append('sortOrders = ' + str_sortOrders)
-
-        cmds.append(dset_name + ' = DataSort(' + dset_name + ', ' + str_sortCols + ', ' + str_sortOrders + ')')
-
+        cmds.append('str_sort_cols = [' + str_sort_cols + ']')
+        cmds.append('str_sort_orders = [' + str_sort_orders + ']')
+        cmds.append('res_tmp = DataSort(' + dset_name + ', str_sort_cols, str_sort_orders)')
+        cmds.append(dset_name + ' = res_tmp["df_out"]')
+        cmds.append(dset_name + '.head()') 
         self.cmds.add_cmd(cmds)
 
     def OnFilterVarChanged(self):
@@ -344,7 +379,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ## Filter for non-numeric data
         if self.filter_column_type == 'CAT':
-            val_uniq = df.unique()
+            val_uniq = df[selcol].unique()
             num_uniq = len(val_uniq)
 
             ## Select values if #unique values for the field is less than set threshold
@@ -372,6 +407,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             vmin = float(self.ui.edit_minval.text())
             vmax = float(self.ui.edit_maxval.text())
             fvals = [vmin, vmax]
+            str_fvals = ','.join('{0}'.format(x) for x in fvals)
         
         if self.filter_column_type == 'CAT':
             fvals = self.ui.comboBoxCategoricalVars.listCheckedItems()
@@ -396,18 +432,22 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ##-------
         ## Populate commands that will be written in a notebook
+        ##-------
+        ## Add function definiton to notebook
+        fCode = inspect.getsource(DataFilter)
+        self.cmds.add_funcdef('DataFilter', ['', fCode, ''])
+
+        ## Add cmds to call the function
         cmds = ['']
-        cmds.append('# Filter dataset')        
-        dset_name = self.data_model_arr.dataset_names[self.active_index]        
-        if self.filter_column_type == 'NUM':
-            filterTxt = '[(' + dset_name + '["' + fvar + '"] >= ' + str(vmin) + ') & (' + \
-                        dset_name + '["' + fvar + '"] <= ' + str(vmax) + ')]'
-        if self.filter_column_type == 'CAT':
-            filterTxt = '[' + dset_name + '["' + fvar + '"].isin([' + str_fvals + '])]'
-        cmds.append(dset_name + ' = ' + dset_name + filterTxt)
-        cmds.append(dset_name + '.head()')
-        cmds.append('')
+        cmds.append('# Filter dataset')
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
+        cmds.append('fvar = "' + fvar + '"')
+        cmds.append('str_fvals = [' + str_fvals + ']')
+        cmds.append('res_tmp = DataFilter(' + dset_name + ', fvar, str_fvals)')
+        cmds.append(dset_name + ' = res_tmp["df_out"]')
+        cmds.append(dset_name + '.head()') 
         self.cmds.add_cmd(cmds)
+
         
     def OnSelColBtnClicked(self): 
 
@@ -415,11 +455,11 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         df = self.data_model_arr.datasets[self.active_index].data
 
         ## Get user selections
-        selVars = self.ui.comboBoxSelVar.listCheckedItems()
-        str_selVars = ','.join('"{0}"'.format(x) for x in selVars)
+        sel_vars = self.ui.comboBoxSelVar.listCheckedItems()
+        str_sel_vars = ','.join('"{0}"'.format(x) for x in sel_vars)
 
         ## Calculate results
-        res_tmp = DataSelectColumns(df, selVars)
+        res_tmp = DataSelectColumns(df, sel_vars)
         if res_tmp['out_code'] != 0:
             self.errmsg.showMessage(res_tmp['out_msg'])
             return;    
@@ -437,14 +477,20 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         
         ##-------
         ## Populate commands that will be written in a notebook
-        dset_name = self.data_model_arr.dataset_names[self.active_index]        
+        ##-------
+        ## Add function definiton to notebook
+        fCode = inspect.getsource(DataSelectColumns)
+        self.cmds.add_funcdef('DataSelectColumns', ['', fCode, ''])
+
+        ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Select columns')                
-        cmds.append(dset_name + ' = ' + dset_name + '[[' + str_selVars + ']]')
-        cmds.append(dset_name + '.head()')
-        cmds.append('')
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
+        cmds.append('str_sel_vars = [' + str_sel_vars + ']')
+        cmds.append('res_tmp = DataSelectColumns(' + dset_name + ', str_sel_vars)')
+        cmds.append(dset_name + ' = res_tmp["df_out"]')
+        cmds.append(dset_name + '.head()') 
         self.cmds.add_cmd(cmds)
-
 
     def PopulateTable(self, data):
         
@@ -479,8 +525,8 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Read selected variable category, find variables in that category, add them to combo box
         selCat = self.ui.comboBoxSortCat1.currentText()
         df_tmp = self.data_model_arr.datasets[self.active_index]
-        selVars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
-        self.PopulateComboBox(self.ui.comboBoxSortVar1, selVars)
+        sel_vars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
+        self.PopulateComboBox(self.ui.comboBoxSortVar1, sel_vars)
         
         self.statusbar.showMessage('User selected data category: ' + selCat, 2000)        
 
@@ -489,8 +535,8 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Read selected variable category, find variables in that category, add them to combo box
         selCat = self.ui.comboBoxSortCat2.currentText()
         df_tmp = self.data_model_arr.datasets[self.active_index]
-        selVars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
-        self.PopulateComboBox(self.ui.comboBoxSortVar2, selVars)
+        sel_vars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
+        self.PopulateComboBox(self.ui.comboBoxSortVar2, sel_vars)
 
         self.statusbar.showMessage('User selected data category: ' + selCat, 2000)        
 

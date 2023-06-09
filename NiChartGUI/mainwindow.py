@@ -112,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
             #newAction.setShortcut('Ctrl+N')
             #newAction.setStatusTip('New document')
 
-            newAction.setChecked(True)      ## First tab is visible by default
+            newAction.setChecked(True)      ## Initially tabs are visible
             
             ## The "function factory" call is an alternative to using a lambda function
             ##   The makeXXX function factory takes an arg and returns a function XXX
