@@ -147,6 +147,40 @@
                                         
                                     </layout>
                                     </item>
+                                    
+                                    <item>
+                                        <layout  class="QHBoxLayout"  name="hlTmp">
+
+                                            <item>
+                                                <spacer  name="horizontalSpacer_2">
+                                                    <property  name="orientation">
+                                                    <enum>Qt::Horizontal</enum>
+                                                    </property>
+                                                    
+                                                    <property name="sizeType">
+                                                        <enum>QSizePolicy::Fixed</enum>
+                                                    </property>
+                                                    
+                                                    <property  name="sizeHint"  stdset="0">
+                                                    <size>
+                                                        <width>30</width>
+                                                        <height>20</height>
+                                                    </size>
+                                                    </property>
+                                                </spacer>
+                                            </item>
+
+                                            <item>
+                                                <widget  class="QCheckBox"  name="check_createnew">
+                                                    <property  name="text">
+                                                    <string>Create New Dataset</string>
+                                                    </property>
+                                                </widget>
+                                            </item>
+                                            
+                                        </layout>
+                                    </item>
+                                    
                                 </layout>
                             
                             </widget>
@@ -341,9 +375,9 @@
                                         </item>
                                     </layout>
                                 </item>
-
+                                
                                 <item>
-                                    <layout  class="QHBoxLayout"  name="hlSortBtn">
+                                    <layout  class="QHBoxLayout"  name="hlMergeBtn">
                                     <item>
                                         <spacer  name="horizontalSpacer_8">
                                         <property  name="orientation">

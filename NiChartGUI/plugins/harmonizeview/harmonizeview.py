@@ -53,39 +53,39 @@ class HarmonizeView(QtWidgets.QWidget,BasePlugin):
         self.PopulateComboBox(self.ui.comboBoxAction, ['LearnModel', 'ApplyModel'], '--action name--')
         
         ## Panel for primary key
-        self.ui.comboBoxPrimaryKeyVar = QComboBox(self.ui)
-        self.ui.comboBoxPrimaryKeyVar.setEditable(False)
-        self.ui.vlPrimaryKeyVar.addWidget(self.ui.comboBoxPrimaryKeyVar)
+        self.ui.comboPrimaryKeyVar = QComboBox(self.ui)
+        self.ui.comboPrimaryKeyVar.setEditable(False)
+        self.ui.vlPrimaryKeyVar.addWidget(self.ui.comboPrimaryKeyVar)
         
         ## Panel for batch var
-        self.ui.comboBoxBatchVar = QComboBox(self.ui)
-        self.ui.comboBoxBatchVar.setEditable(False)
-        self.ui.vlBatchVar.addWidget(self.ui.comboBoxBatchVar)
+        self.ui.comboBatchVar = QComboBox(self.ui)
+        self.ui.comboBatchVar.setEditable(False)
+        self.ui.vlBatchVar.addWidget(self.ui.comboBatchVar)
 
         ## Panel for numeric vars
-        self.ui.comboBoxNumVars = CheckableQComboBox(self.ui)
-        self.ui.comboBoxNumVars.setEditable(False)
-        self.ui.vlNumVars.addWidget(self.ui.comboBoxNumVars)
+        self.ui.comboNumVars = CheckableQComboBox(self.ui)
+        self.ui.comboNumVars.setEditable(False)
+        self.ui.vlNumVars.addWidget(self.ui.comboNumVars)
 
         ## Panel for cat vars
-        self.ui.comboBoxCatVars = CheckableQComboBox(self.ui)
-        self.ui.comboBoxCatVars.setEditable(False)
-        self.ui.vlCatVars.addWidget(self.ui.comboBoxCatVars)
+        self.ui.comboCatVars = CheckableQComboBox(self.ui)
+        self.ui.comboCatVars.setEditable(False)
+        self.ui.vlCatVars.addWidget(self.ui.comboCatVars)
 
         ## Panel for spline vars
-        self.ui.comboBoxSplineVars = CheckableQComboBox(self.ui)
-        self.ui.comboBoxSplineVars.setEditable(False)
-        self.ui.vlSplineVars.addWidget(self.ui.comboBoxSplineVars)
+        self.ui.comboSplineVars = CheckableQComboBox(self.ui)
+        self.ui.comboSplineVars.setEditable(False)
+        self.ui.vlSplineVars.addWidget(self.ui.comboSplineVars)
 
         ## Panel for ignore vars
-        self.ui.comboBoxIgnoreVars = CheckableQComboBox(self.ui)
-        self.ui.comboBoxIgnoreVars.setEditable(False)
-        self.ui.vlIgnoreVars.addWidget(self.ui.comboBoxIgnoreVars)
+        self.ui.comboIgnoreVars = CheckableQComboBox(self.ui)
+        self.ui.comboIgnoreVars.setEditable(False)
+        self.ui.vlIgnoreVars.addWidget(self.ui.comboIgnoreVars)
 
         ## Panel for target vars
-        self.ui.comboBoxTargetVars = CheckableQComboBox(self.ui)
-        self.ui.comboBoxTargetVars.setEditable(False)
-        self.ui.vlTargetVars.addWidget(self.ui.comboBoxTargetVars)
+        self.ui.comboTargetVars = CheckableQComboBox(self.ui)
+        self.ui.comboTargetVars.setEditable(False)
+        self.ui.vlTargetVars.addWidget(self.ui.comboTargetVars)
 
         ## Set default values for text fields
         self.placeholder_txt_var = '--var name--'
@@ -224,13 +224,13 @@ class HarmonizeView(QtWidgets.QWidget,BasePlugin):
 
         if self.selAction == 'LearnModel':
             ## Read args
-            key_var = self.ui.comboBoxPrimaryKeyVar.currentText()
-            batch_var = self.ui.comboBoxBatchVar.currentText()
-            num_vars = self.ui.comboBoxNumVars.listCheckedItems()
-            cat_vars = self.ui.comboBoxCatVars.listCheckedItems()
-            spline_vars = self.ui.comboBoxSplineVars.listCheckedItems()
-            ignore_vars = self.ui.comboBoxIgnoreVars.listCheckedItems()
-            target_vars = self.ui.comboBoxTargetVars.listCheckedItems()
+            key_var = self.ui.comboPrimaryKeyVar.currentText()
+            batch_var = self.ui.comboBatchVar.currentText()
+            num_vars = self.ui.comboNumVars.listCheckedItems()
+            cat_vars = self.ui.comboCatVars.listCheckedItems()
+            spline_vars = self.ui.comboSplineVars.listCheckedItems()
+            ignore_vars = self.ui.comboIgnoreVars.listCheckedItems()
+            target_vars = self.ui.comboTargetVars.listCheckedItems()
             out_model_file = os.path.join(self.outdir, self.ui.edit_outMdlName.text())
 
             ## Check args
@@ -297,13 +297,13 @@ class HarmonizeView(QtWidgets.QWidget,BasePlugin):
 
     def UpdatePanels(self, colNames):
         
-        self.PopulateComboBox(self.ui.comboBoxPrimaryKeyVar, colNames, self.placeholder_txt_var)
-        self.PopulateComboBox(self.ui.comboBoxBatchVar, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxNumVars, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxCatVars, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxSplineVars, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxIgnoreVars, colNames, '--var name--')
-        self.PopulateComboBox(self.ui.comboBoxTargetVars, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboPrimaryKeyVar, colNames, self.placeholder_txt_var)
+        self.PopulateComboBox(self.ui.comboBatchVar, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboNumVars, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboCatVars, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboSplineVars, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboIgnoreVars, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboTargetVars, colNames, '--var name--')
 
 
 

@@ -154,6 +154,40 @@
                                 
                             </layout>
                             </item>
+                            
+                            <item>
+                                <layout  class="QHBoxLayout"  name="hlTmp">
+
+                                    <item>
+                                        <spacer  name="horizontalSpacer_2">
+                                            <property  name="orientation">
+                                            <enum>Qt::Horizontal</enum>
+                                            </property>
+                                            
+                                            <property name="sizeType">
+                                                <enum>QSizePolicy::Fixed</enum>
+                                            </property>
+                                            
+                                            <property  name="sizeHint"  stdset="0">
+                                            <size>
+                                                <width>30</width>
+                                                <height>20</height>
+                                            </size>
+                                            </property>
+                                        </spacer>
+                                    </item>
+
+                                    <item>
+                                        <widget  class="QCheckBox"  name="check_createnew">
+                                            <property  name="text">
+                                            <string>Create New Dataset</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    
+                                </layout>
+                            </item>
+                            
                         </layout>
                         
                         </widget>
@@ -176,7 +210,35 @@
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Outcome Variables</string>
+                                <string>Primary Key Var</string>
+                                </property>
+                            </widget>
+                            </item>
+                            
+                            <item>
+                            <layout  class="QHBoxLayout"  name="horizontalLayout_5">
+                                <item>
+                                <spacer  name="horizontalSpacer_5">
+                                    <property  name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    
+                                    <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                    </property>
+                                    
+                                </spacer>
+                                </item>
+                                <item>
+                                    <layout  class="QVBoxLayout"  name="vlPrimaryKeyVar"/>
+                                </item>
+                            </layout>
+                            </item>
+                            
+                            <item>
+                            <widget  class="QLabel"  name="label_select">
+                                <property  name="text">
+                                <string>Target Variables</string>
                                 </property>
                             </widget>
                             </item>
@@ -236,7 +298,7 @@
                                 </spacer>
                                 </item>
                                 <item>
-                                    <widget  class="QLineEdit"  name="edit_outSuff">
+                                    <widget  class="QLineEdit"  name="edit_out_suff">
                                     </widget>
                                 </item>
                             </layout>

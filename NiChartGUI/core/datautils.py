@@ -194,13 +194,18 @@ def DataConcat(df1, df2):
     
     return dfOut
 
-def DataAdjCov(df, target_vars, cov_corr_vars, cov_keep_vars=[], 
-               selCol='', selVals = [], out_suff = 'COVADJ'):       
+def DataAdjCov(df, key_var, target_vars, cov_corr_vars, cov_keep_vars=[], 
+               sel_col='', sel_vals = [], out_suff = 'COVADJ'):       
     '''Apply a linear regression model and correct for covariates
     It runs independently for each outcome variable
     The estimation is done on the selected subset and then applied to all samples
     The user can indicate covariates that will be corrected and not
     '''
+    if key_var == '':
+        out_code = 1        
+        out_msg = 'WARNING: Please select primary key variable!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
+    
     # Combine covariates (to keep + to correct)
     if cov_keep_vars is []:
         covList = cov_corr_vars;
@@ -211,7 +216,7 @@ def DataAdjCov(df, target_vars, cov_corr_vars, cov_keep_vars=[],
 
     # Prep data
     TH_MAX_NUM_CAT = 20     ## FIXME: This should be a global var
-    dfCovs = []
+    df_covs = []
     isCorrArr = []
     for i, tmpVar in enumerate(covList):
         ## Detect if var is categorical
@@ -221,41 +226,118 @@ def DataAdjCov(df, target_vars, cov_corr_vars, cov_keep_vars=[],
         ## Create dummy vars for categorical data
         if is_num == False:
             dfDummy = pd.get_dummies(df[tmpVar], prefix=tmpVar, drop_first=True)
-            dfCovs.append(dfDummy)
+            df_covs.append(dfDummy)
             isCorrArr = isCorrArr + list(np.zeros(dfDummy.shape[1]).astype(int)+isCorr[i])
         else:
-            dfCovs.append(df[tmpVar])
+            df_covs.append(df[tmpVar])
             isCorrArr.append(isCorr[i])
-    dfCovs = pd.concat(dfCovs, axis=1)
+    df_covs = pd.concat(df_covs, axis=1)
     
     ## Get cov names
-    covVars = dfCovs.columns.tolist()
-    str_covVars = ' + '.join(covVars)
+    cov_vars = df_covs.columns.tolist()
+    str_cov_vars = ' + '.join(cov_vars)
     
     ## Get data with all vars
-    if selVals == []:
-        df_out = pd.concat([df[target_vars], dfCovs], axis=1)
-        dfTrain = df_out
+    if sel_vals == []:
+        df_train = df
     else:
-        df_out = pd.concat([df[[selCol] + target_vars], dfCovs], axis=1)
-        dfTrain = df_out[df_out[selCol].isin(selVals)]
-        
+        df_train = df[df[sel_col].isin(sel_vals)]
+    
     ## Fit and apply model for each outcome var
-    out_vars = []
-    for i, tmpOutVar in enumerate(target_vars):
+    df_out = df[[key_var]].copy()
+    for i, tmp_out_var in enumerate(target_vars):
 
         ## Fit model
-        str_model = tmpOutVar + '  ~ ' + str_covVars
-        mod = sm.ols(str_model, data=dfTrain)
+        str_model = tmp_out_var + '  ~ ' + str_cov_vars
+        mod = sm.ols(str_model, data = df_train)
         res = mod.fit()
 
         ## Apply model
-        corrVal = df_out[tmpOutVar]
-        for j, tmpCovVar in enumerate(covVars):
+        corrVal = df[tmp_out_var]
+        for j, tmpCovVar in enumerate(cov_vars):
             if isCorrArr[j] == 1:
                 corrVal = corrVal - df[tmpCovVar] * res.params[tmpCovVar]
-        df_out[tmpOutVar + '_' + out_suff] = corrVal
-        out_vars.append(tmpOutVar + out_suff)
+        df_out[tmp_out_var + '_' + out_suff] = corrVal
+        
+    out_code = 0
+    out_msg = 'Created covariate adjusted data'
+    return {'out_code' : out_code, 'out_msg' : out_msg, 'df_out' : df_out}
+
+
+def DataAdjCov2(df, key_var, target_vars, cov_corr_vars, cov_keep_vars=[], 
+               sel_col='', sel_vals = [], out_suff = 'COVADJ'):       
+    '''Apply a linear regression model and correct for covariates
+    It runs independently for each outcome variable
+    The estimation is done on the selected subset and then applied to all samples
+    The user can indicate covariates that will be corrected and not
+    '''
+
+    if key_var == '':
+        out_code = 1        
+        out_msg = 'WARNING: Please select primary key variable!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
+    
+    # Combine covariates (to keep + to correct)
+    if cov_keep_vars is []:
+        covList = cov_corr_vars;
+        isCorr = list(np.ones(len(cov_corr_vars)).astype(int))
+    else:
+        covList = cov_keep_vars + cov_corr_vars;
+        isCorr = list(np.zeros(len(cov_keep_vars)).astype(int)) + list(np.ones(len(cov_corr_vars)).astype(int))
+
+    # Prep data
+    TH_MAX_NUM_CAT = 20     ## FIXME: This should be a global var
+    df_covs = []
+    isCorrArr = []
+    for i, tmpVar in enumerate(covList):
+        ## Detect if var is categorical
+        is_num = pd.to_numeric(df[tmpVar].dropna(), errors='coerce').notnull().all()
+        if df[tmpVar].unique().shape[0] < TH_MAX_NUM_CAT:
+            is_num = False
+        ## Create dummy vars for categorical data
+        if is_num == False:
+            dfDummy = pd.get_dummies(df[tmpVar], prefix=tmpVar, drop_first=True)
+            df_covs.append(dfDummy)
+            isCorrArr = isCorrArr + list(np.zeros(dfDummy.shape[1]).astype(int)+isCorr[i])
+        else:
+            df_covs.append(df[tmpVar])
+            isCorrArr.append(isCorr[i])
+    df_covs = pd.concat(df_covs, axis=1)
+    
+    ## Get cov names
+    cov_vars = df_covs.columns.tolist()
+    str_cov_vars = ' + '.join(cov_vars)
+    
+    ## Get data with all vars
+    if sel_vals == []:
+        df_out = pd.concat([df[target_vars], df_covs], axis=1)
+        df_train = df_out
+    else:
+        df_out = pd.concat([df[[sel_col] + target_vars], df_covs], axis=1)
+        df_train = df_out[df_out[sel_col].isin(sel_vals)]
+        
+    ## Fit and apply model for each outcome var
+    out_vars = []
+    for i, tmp_out_var in enumerate(target_vars):
+
+        ## Fit model
+        str_model = tmp_out_var + '  ~ ' + str_cov_vars
+        mod = sm.ols(str_model, data=df_train)
+        res = mod.fit()
+
+        ## Apply model
+        corrVal = df_out[tmp_out_var]
+        for j, tmpCovVar in enumerate(cov_vars):
+            if isCorrArr[j] == 1:
+                corrVal = corrVal - df[tmpCovVar] * res.params[tmpCovVar]
+        df_out[tmp_out_var + '_' + out_suff] = corrVal
+        out_vars.append(tmp_out_var + out_suff)
+        
+    logger.warning(df_out)
+    logger.warning([key_var] + out_vars)
+    input()
+    
+    df_out = df_out[[key_var] + out_vars]
         
     out_code = 0
     out_msg = 'Created covariate adjusted data'
@@ -265,23 +347,28 @@ def DataAdjCov(df, target_vars, cov_corr_vars, cov_keep_vars=[],
 
 
 ## Normalize data by the given variable
-def DataNormalize(df, sel_vars, norm_var, out_suff):
+def DataNormalize(df, key_var, target_vars, norm_var, out_suff):
     '''Normalize data
     '''
-    if len(sel_vars) == 0:
+    if key_var == '':
         out_code = 1        
-        out_msg = 'WARNING: Please select column(s) to normalize!'
+        out_msg = 'WARNING: Please select primary key variable!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
+
+    if len(target_vars) == 0:
+        out_code = 2        
+        out_msg = 'WARNING: Please select target variables!'
         return {'out_code' : out_code, 'out_msg' : out_msg}
 
     if norm_var == '':
-        out_code = 2        
+        out_code = 3        
         out_msg = 'WARNING: Please select column to normalize by!'
         return {'out_code' : out_code, 'out_msg' : out_msg}
     
-    df_out = 100 * df[sel_vars].div(df[norm_var], axis=0)
+    df_out = 100 * df[target_vars].div(df[norm_var], axis=0)
     df_out = df_out.add_suffix('_' + out_suff)
     out_vars = df_out.columns.tolist()
-    df_out = pd.concat([df, df_out], axis=1)        
+    df_out = pd.concat([df[[key_var]], df_out], axis=1)        
 
     out_code = 0
     out_msg = 'Created normalized data'
@@ -289,15 +376,15 @@ def DataNormalize(df, sel_vars, norm_var, out_suff):
 
 
 ## Normalize data by the given variable
-def DataDrop(df, sel_vars):
+def DataDrop(df, target_vars):
     '''Drop duplicates from data
     '''
-    if len(sel_vars) == 0:
+    if len(target_vars) == 0:
         out_code = 1        
         out_msg = 'WARNING: Please select variable(s)!'
         return {'out_code' : out_code, 'out_msg' : out_msg}
     
-    df_out = df.drop_duplicates(subset = sel_vars)
+    df_out = df.drop_duplicates(subset = target_vars)
     
     out_code = 0
     out_msg = 'Created data without duplicates'

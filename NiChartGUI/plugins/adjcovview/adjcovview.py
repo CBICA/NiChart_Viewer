@@ -17,7 +17,7 @@ import pandas as pd
 from matplotlib.cm import get_cmap
 from matplotlib.lines import Line2D
 import statsmodels.formula.api as sm
-from NiChartGUI.core.model.datamodel import PandasModel
+from NiChartGUI.core.model.datamodel import DataModel, DataModelArr, PandasModel
 
 from NiChartGUI.core.datautils import *
 
@@ -50,7 +50,7 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboAction.setEditable(False)
         self.ui.vlAction.addWidget(self.ui.comboAction)
         self.PopulateComboBox(self.ui.comboAction, ['Normalize Data', 'Adjust Data'], '--action--')        
-        
+
         ## Panel for norm var
         self.ui.comboNormVar = QComboBox(self.ui)
         self.ui.comboNormVar.setEditable(False)
@@ -75,6 +75,11 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboSelVal.setEditable(False)
         self.ui.vlComboSel.addWidget(self.ui.comboSelVal)
 
+        ## Panel for primary key
+        self.ui.comboPrimaryKeyVar = QComboBox(self.ui)
+        self.ui.comboPrimaryKeyVar.setEditable(False)
+        self.ui.vlPrimaryKeyVar.addWidget(self.ui.comboPrimaryKeyVar)
+
         ## Panel for outcome vars
         self.ui.comboOutVar = CheckableQComboBox(self.ui)
         self.ui.comboOutVar.setEditable(False)
@@ -84,6 +89,9 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.ui.wNormVars.hide()
         self.ui.wAdjustVars.hide()
         self.ui.wOutVars.hide()
+
+        ## Default value in adj cov view is to create new dset (not to overwrite the active dset)
+        self.ui.check_createnew.setCheckState(QtCore.Qt.Checked)
 
         self.ui.edit_activeDset.setReadOnly(True)
 
@@ -150,26 +158,34 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         '''
         ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
+        dset_name = self.data_model_arr.dataset_names[self.active_index]        
 
         ## Get user selections
-        normVar = self.ui.comboNormVar.currentText()
-        outVars = self.ui.comboOutVar.listCheckedItems()
-        outSuff = self.ui.edit_outSuff.text()
-        if outSuff == '':
-            outSuff = 'NORM'
-        if outSuff[0] == '_':
-            outSuff = outSuff[1:]
+        key_var = self.ui.comboPrimaryKeyVar.currentText()
+        norm_var = self.ui.comboNormVar.currentText()
+        out_vars = self.ui.comboOutVar.listCheckedItems()
+        out_suff = self.ui.edit_out_suff.text()
+        if out_suff == '':
+            out_suff = 'NORM'
+        if out_suff[0] == '_':
+            out_suff = out_suff[1:]
 
         ## Calculate results
-        res_tmp = DataNormalize(df, outVars, normVar, outSuff)
+        res_tmp = DataNormalize(df, key_var, out_vars, norm_var, out_suff)
         if res_tmp['out_code'] != 0:
             self.errmsg.showMessage(res_tmp['out_msg'])
             return;
         df_out = res_tmp['df_out']
         out_vars = res_tmp['out_vars']
 
-        ## Update data
-        self.data_model_arr.datasets[self.active_index].data = df_out
+        ## Create new dataset or update current active dataset
+        if self.ui.check_createnew.isChecked():
+            dmodel = DataModel(df_out, dset_name + '_Normalized')
+            self.data_model_arr.AddDataset(dmodel)
+            self.data_model_arr.OnDataChanged()
+
+        else:
+            self.data_model_arr.datasets[self.active_index].data = df_out
             
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
@@ -180,7 +196,6 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         
         ##-------
         ## Populate commands that will be written in a notebook
-        dset_name = self.data_model_arr.dataset_names[self.active_index]        
 
         ## Add NormalizeData function definiton to notebook
         fCode = inspect.getsource(DataNormalize).replace('(self, ','(')
@@ -190,14 +205,14 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         cmds = ['']
         cmds.append('# Normalize data')
 
-        str_outVars = '[' + ','.join('"{0}"'.format(x) for x in outVars) + ']'
-        cmds.append('outVars = ' + str_outVars)
+        str_out_vars = '[' + ','.join('"{0}"'.format(x) for x in out_vars) + ']'
+        cmds.append('out_vars = ' + str_out_vars)
 
-        cmds.append('normVar = "' + normVar + '"')
+        cmds.append('norm_var = "' + norm_var + '"')
         
-        cmds.append('outSuff  = "' + outSuff + '"')
+        cmds.append('out_suff  = "' + out_suff + '"')
         
-        cmds.append(dset_name + ', outVarNames = NormalizeData(' + dset_name + ', outVars, normVar, outSuff)')
+        cmds.append(dset_name + ', outVarNames = NormalizeData(' + dset_name + ', out_vars, norm_var, out_suff)')
         
         cmds.append(dset_name + '[outVarNames].head()')
         cmds.append('')
@@ -208,32 +223,40 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         
         ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
+        dset_name = self.data_model_arr.dataset_names[self.active_index]        
 
         ## Get user selections
-        outVars = self.ui.comboOutVar.listCheckedItems()
-        covKeepVars = self.ui.comboCovKeepVar.listCheckedItems()
-        covCorrVars = self.ui.comboCovCorrVar.listCheckedItems()
-        selCol = self.ui.comboSelVar.currentText()
-        selVals = self.ui.comboSelVal.listCheckedItems()
-        if selVals == []:
-            selCol = ''
-        outSuff = self.ui.edit_outSuff.text()
-        if outSuff == '':
-            outSuff = 'ADJCOV'
-        if outSuff[0] == '_':
-            outSuff = outSuff[1:]
-        outCat = outSuff
+        key_var = self.ui.comboPrimaryKeyVar.currentText()
+        out_vars = self.ui.comboOutVar.listCheckedItems()
+        cov_keep_vars = self.ui.comboCovKeepVar.listCheckedItems()
+        cov_corr_vars = self.ui.comboCovCorrVar.listCheckedItems()
+        sel_col = self.ui.comboSelVar.currentText()
+        sel_vals = self.ui.comboSelVal.listCheckedItems()
+        if sel_vals == []:
+            sel_col = ''
+        out_suff = self.ui.edit_out_suff.text()
+        if out_suff == '':
+            out_suff = 'ADJCOV'
+        if out_suff[0] == '_':
+            out_suff = out_suff[1:]
+        outCat = out_suff
         
         ## Calculate results
-        res_tmp = DataAdjCov(df, outVars, covCorrVars, covKeepVars, selCol, selVals, outSuff)
+        res_tmp = DataAdjCov(df, key_var, out_vars, cov_corr_vars, cov_keep_vars, sel_col, 
+                             sel_vals, out_suff)
         if res_tmp['out_code'] != 0:
             self.errmsg.showMessage(res_tmp['out_msg'])
             return;
         df_out = res_tmp['df_out']
-        out_vars = res_tmp['out_vars']
 
-        ## Update data
-        self.data_model_arr.datasets[self.active_index].data = df_out
+        ## Create new dataset or update current active dataset
+        if self.ui.check_createnew.isChecked():
+            dmodel = DataModel(df_out, dset_name + '_CovAdjusted')
+            self.data_model_arr.AddDataset(dmodel)
+            self.data_model_arr.OnDataChanged()
+
+        else:
+            self.data_model_arr.datasets[self.active_index].data = df_out
             
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
@@ -244,7 +267,6 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         
         ##-------
         ## Populate commands that will be written in a notebook
-        dset_name = self.data_model_arr.dataset_names[self.active_index]        
 
         ## Add adjcov function definiton to notebook
         fCode = inspect.getsource(DataAdjCov).replace('(self, ','(')
@@ -254,23 +276,23 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         cmds = ['']
         cmds.append('# Adj covariates')
 
-        str_outVars = '[' + ','.join('"{0}"'.format(x) for x in outVars) + ']'
-        cmds.append('outVars = ' + str_outVars)
+        str_out_vars = '[' + ','.join('"{0}"'.format(x) for x in out_vars) + ']'
+        cmds.append('out_vars = ' + str_out_vars)
 
-        str_covCorrVars = '[' + ','.join('"{0}"'.format(x) for x in covCorrVars) + ']'
-        cmds.append('covCorrVars = ' + str_covCorrVars)
+        str_cov_corr_vars = '[' + ','.join('"{0}"'.format(x) for x in cov_corr_vars) + ']'
+        cmds.append('cov_corr_vars = ' + str_cov_corr_vars)
 
-        str_covKeepVars = '[' + ','.join('"{0}"'.format(x) for x in covKeepVars) + ']'
-        cmds.append('covKeepVars = ' + str_covKeepVars)
+        str_cov_keep_vars = '[' + ','.join('"{0}"'.format(x) for x in cov_keep_vars) + ']'
+        cmds.append('cov_keep_vars = ' + str_cov_keep_vars)
 
-        cmds.append('selCol  = "' + selCol + '"')
+        cmds.append('sel_col  = "' + sel_col + '"')
 
-        str_selVals = '[' + ','.join('"{0}"'.format(x) for x in selVals) + ']'
-        cmds.append('selVals = ' + str_selVals)
+        str_sel_vals = '[' + ','.join('"{0}"'.format(x) for x in sel_vals) + ']'
+        cmds.append('sel_vals = ' + str_sel_vals)
         
-        cmds.append('outSuff  = "' + outSuff + '"')
+        cmds.append('out_suff  = "' + out_suff + '"')
         
-        cmds.append(dset_name + ', outVarNames = DataAdjCov(' + dset_name + ', outVars, covCorrVars, covKeepVars, selCol, selVals, outSuff)')
+        cmds.append(dset_name + ', outVarNames = DataAdjCov(' + dset_name + ', out_vars, cov_corr_vars, cov_keep_vars, sel_col, sel_vals, out_suff)')
         
         cmds.append(dset_name + '[outVarNames].head()')
         cmds.append('')
@@ -376,14 +398,14 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
     
     def OnSelIndexChanged(self):
         
-        selCol = self.ui.comboSelVar.currentText()
-        selColVals = self.data_model_arr.datasets[self.active_index].data[selCol].unique()
+        sel_col = self.ui.comboSelVar.currentText()
+        sel_colVals = self.data_model_arr.datasets[self.active_index].data[sel_col].unique()
         
-        if len(selColVals) < self.TH_NUM_UNIQ:
+        if len(sel_colVals) < self.TH_NUM_UNIQ:
             self.ui.comboSelVal.show()
-            self.PopulateComboBox(self.ui.comboSelVal, selColVals)
+            self.PopulateComboBox(self.ui.comboSelVal, sel_colVals)
         else:
-            print('Too many unique values for selection, skip : ' + str(len(selColVals)))
+            print('Too many unique values for selection, skip : ' + str(len(sel_colVals)))
 
     
     def OnDataChanged(self):
@@ -409,7 +431,8 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
             self.UpdatePanels(colNames)
 
     def UpdatePanels(self, colNames):
-        
+
+        self.PopulateComboBox(self.ui.comboPrimaryKeyVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboOutVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboCovKeepVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboCovCorrVar, colNames, '--var name--')

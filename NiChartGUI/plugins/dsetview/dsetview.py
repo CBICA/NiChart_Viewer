@@ -10,7 +10,7 @@ from NiChartGUI.core import iStagingLogger
 from NiChartGUI.core.gui.SearchableQComboBox import SearchableQComboBox
 from NiChartGUI.core.gui.CheckableQComboBox import CheckableQComboBox
 from NiChartGUI.core.plotcanvas import PlotCanvas
-from NiChartGUI.core.model.datamodel import PandasModel
+from NiChartGUI.core.model.datamodel import DataModel, DataModelArr, PandasModel
 
 from NiChartGUI.core.datautils import *
 
@@ -127,7 +127,12 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.edit_fname.setStyleSheet("border: 0px; background-color: rgb(235, 235, 245)")
         self.ui.edit_dshape.setReadOnly(True)
         self.ui.edit_dshape.setStyleSheet("border: 0px; background-color: rgb(235, 235, 245)")
+        
+        ## Default value in dset view is to overwrite the active dset (not to create new dset)
+        self.ui.check_createnew.setCheckState(QtCore.Qt.Unchecked)
+
         self.ui.wOptions.hide()
+        
     
     def SetupConnections(self):
         '''Connect user actions to specific functions
@@ -161,21 +166,29 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Show panel for the selected action
         self.selAction = self.ui.comboAction.currentText()
         if self.selAction == 'Show Data':
+            self.ui.check_createnew.setCheckState(QtCore.Qt.Unchecked)
+            self.ui.check_createnew.setEnabled(False)
             self.ui.wShowTable.show()
         
         if self.selAction == 'Show Stats':
+            self.ui.check_createnew.setCheckState(QtCore.Qt.Unchecked)
+            self.ui.check_createnew.setEnabled(False)
             self.ui.wShowStats.show()
 
         if self.selAction == 'Sort Data':
+            self.ui.check_createnew.setEnabled(True)
             self.ui.wSort.show()
 
         if self.selAction == 'Filter Data':
+            self.ui.check_createnew.setEnabled(True)
             self.ui.wFilter.show()
 
         if self.selAction == 'Select Columns':
+            self.ui.check_createnew.setEnabled(True)
             self.ui.wSelectCol.show()
                 
         if self.selAction == 'Drop Duplicates':
+            self.ui.check_createnew.setEnabled(True)
             self.ui.wDrop.show()
         
         self.statusbar.showMessage('Action selected: ' + self.selAction, 2000)
@@ -250,6 +263,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         '''
         ## Get data
         df = self.data_model_arr.datasets[self.active_index].data   
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
 
         ## Get user selections
         sel_vars = self.ui.comboBoxSelDuplVar.listCheckedItems()
@@ -262,6 +276,15 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             return;
         df_out = res_tmp['df_out']
         df_out = df.drop_duplicates(subset=sel_vars)
+
+        ## Create new dataset or update current active dataset
+        if self.ui.check_createnew.isChecked():
+            dmodel = DataModel(df_out, dset_name + '_DuplDropped')
+            self.data_model_arr.AddDataset(dmodel)
+            self.data_model_arr.OnDataChanged()
+
+        else:
+            self.data_model_arr.datasets[self.active_index].data = df_out
 
         ## Update data
         self.data_model_arr.datasets[self.active_index].data = df_out
@@ -283,7 +306,6 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Drop duplicates')        
-        dset_name = self.data_model_arr.dataset_names[self.active_index]
         cmds.append('sel_vars = [' + str_sel_vars + ']')
         cmds.append('res_tmp = DataDrop(' + dset_name + ', sel_vars)')
         cmds.append(dset_name + '_stats = res_tmp["df_out"]')
@@ -295,6 +317,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         '''
         ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
         
         ## Get user selections
         sort_cols = []
@@ -321,9 +344,15 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             self.errmsg.showMessage(res_tmp['out_msg'])
             return;
         df_out = res_tmp['df_out']
-    
-        ## Update data
-        self.data_model_arr.datasets[self.active_index].data = df_out
+
+        ## Create new dataset or update current active dataset
+        if self.ui.check_createnew.isChecked():
+            dmodel = DataModel(df_out, dset_name + '_Sorted')
+            self.data_model_arr.AddDataset(dmodel)
+            self.data_model_arr.OnDataChanged()
+
+        else:
+            self.data_model_arr.datasets[self.active_index].data = df_out
             
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
@@ -342,7 +371,6 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Sort dataset')
-        dset_name = self.data_model_arr.dataset_names[self.active_index]
         cmds.append('str_sort_cols = [' + str_sort_cols + ']')
         cmds.append('str_sort_orders = [' + str_sort_orders + ']')
         cmds.append('res_tmp = DataSort(' + dset_name + ', str_sort_cols, str_sort_orders)')
@@ -395,6 +423,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         '''
         ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
 
         ## Get user selections
         fvar = self.ui.comboBoxFilterVar.currentText()
@@ -420,8 +449,14 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             return;
         df_out = res_tmp['df_out']
         
-        ## Update data
-        self.data_model_arr.datasets[self.active_index].data = df_out
+        ## Create new dataset or update current active dataset
+        if self.ui.check_createnew.isChecked():
+            dmodel = DataModel(df_out, dset_name + '_Filtered')
+            self.data_model_arr.AddDataset(dmodel)
+            self.data_model_arr.OnDataChanged()
+
+        else:
+            self.data_model_arr.datasets[self.active_index].data = df_out
             
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
@@ -440,7 +475,6 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Filter dataset')
-        dset_name = self.data_model_arr.dataset_names[self.active_index]
         cmds.append('fvar = "' + fvar + '"')
         cmds.append('str_fvals = [' + str_fvals + ']')
         cmds.append('res_tmp = DataFilter(' + dset_name + ', fvar, str_fvals)')
@@ -453,6 +487,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
+        dset_name = self.data_model_arr.dataset_names[self.active_index]
 
         ## Get user selections
         sel_vars = self.ui.comboBoxSelVar.listCheckedItems()
@@ -465,9 +500,15 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             return;    
         df_out = res_tmp['df_out']
 
-        ## Update data
-        self.data_model_arr.datasets[self.active_index].data = df_out
-            
+        ## Create new dataset or update current active dataset
+        if self.ui.check_createnew.isChecked():
+            dmodel = DataModel(df_out, dset_name + '_ColsSelected')
+            self.data_model_arr.AddDataset(dmodel)
+            self.data_model_arr.OnDataChanged()
+
+        else:
+            self.data_model_arr.datasets[self.active_index].data = df_out
+
         ## Call signal for change in data
         self.data_model_arr.OnDataChanged()        
         
@@ -485,7 +526,6 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Select columns')                
-        dset_name = self.data_model_arr.dataset_names[self.active_index]
         cmds.append('str_sel_vars = [' + str_sel_vars + ']')
         cmds.append('res_tmp = DataSelectColumns(' + dset_name + ', str_sel_vars)')
         cmds.append(dset_name + ' = res_tmp["df_out"]')

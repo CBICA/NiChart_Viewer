@@ -10,7 +10,7 @@ from NiChartGUI.core.baseplugin import BasePlugin
 from NiChartGUI.core import iStagingLogger
 from NiChartGUI.core.gui.SearchableQComboBox import SearchableQComboBox
 from NiChartGUI.core.gui.CheckableQComboBox import CheckableQComboBox
-from NiChartGUI.core.model.datamodel import PandasModel
+from NiChartGUI.core.model.datamodel import DataModel, DataModelArr, PandasModel
 
 logger = iStagingLogger.get_logger(__name__)
 
@@ -58,7 +58,9 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboBoxConcatDset2 = QComboBox(self.ui)
         self.ui.hlConcatDset2.addWidget(self.ui.comboBoxConcatDset2)
 
-
+        ## Default value in merge view is to create a new dset (not to overwrite the active dset)
+        self.ui.check_createnew.setCheckState(QtCore.Qt.Checked)
+                
         self.ui.wOptions.setMaximumWidth(300)
         
         self.ui.edit_activeDset.setReadOnly(True)
@@ -66,7 +68,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         ## Panel are shown based on selected actions
         self.ui.wMerge.hide()
         self.ui.wConcat.hide()
-    
+        self.ui.check_createnew.hide()    
 
     def SetupConnections(self):
         self.data_model_arr.active_dset_changed.connect(lambda: self.OnDataChanged())        
@@ -90,14 +92,14 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.selAction = self.ui.comboAction.currentText()
 
         if self.selAction == 'Merge':
+            self.ui.check_createnew.show()
             self.ui.wMerge.show()
         
         if self.selAction == 'Concat':
+            self.ui.check_createnew.show()
             self.ui.wConcat.show()
 
         self.statusbar.showMessage('Action selected: ' + self.selAction, 2000)
-
-
 
     def OnConcatDset2Changed(self):
         logger.info('Dataset2 selection changed')
@@ -136,8 +138,14 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         ## Apply merge
         df_out = DataMerge(dfCurr, dfDset2, mergeOn1, mergeOn2)
 
-        # Set updated dset
-        self.data_model_arr.datasets[self.active_index].data = df_out
+        ## Create new dataset or update current active dataset
+        if self.ui.check_createnew.isChecked():
+            dmodel = DataModel(df_out, dset_name + '+' + dset_name2)
+            self.data_model_arr.AddDataset(dmodel)
+            self.data_model_arr.OnDataChanged()
+
+        else:
+            self.data_model_arr.datasets[self.active_index].data = df_out
 
         ## Display the table
         self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)        

@@ -118,7 +118,7 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
             self.ui.wYVar.hide()
             self.ui.wPlotBtn.show()
 
-        self.statusbar.showMessage('New plot type selected: ' + self.selPlotType, 2000)
+        self.statusbar.showMessage('Plot type changed to: ' + self.selPlotType, 2000)
 
     def OnFilterIndexChanged(self):
         
@@ -128,12 +128,12 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         selFilter = self.ui.comboFilterVar.currentText()
         selFilterVals = self.data_model_arr.datasets[self.active_index].data[selFilter].unique()
         
-        if len(selFilterVals) < TH_NUM_UNIQ:
-            self.PopulateComboBox(self.ui.comboFilterVal, selFilterVals)
-            self.ui.comboFilterVal.show()
-            
-        else:
-            print('Too many unique values for selection, skip : ' +  selFilter + ' ' + str(len(selFilterVals)))
+        if len(selFilterVals) > TH_NUM_UNIQ:
+            self.errmsg.showMessage('Too many unique values for selection (' + 
+                                    str(len(selFilterVals)) + '), skip')
+            return;
+        self.PopulateComboBox(self.ui.comboFilterVal, selFilterVals)
+        self.ui.comboFilterVal.show()
 
     def OnHueIndexChanged(self):
         
@@ -142,98 +142,94 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         selHue = self.ui.comboHueVar.currentText()
         selHueVals = self.data_model_arr.datasets[self.active_index].data[selHue].unique()
         
-        if len(selHueVals) < TH_NUM_UNIQ:
-            self.PopulateComboBox(self.ui.comboHueVal, selHueVals)
-            self.ui.comboHueVal.show()
+        if len(selHueVals) > TH_NUM_UNIQ:
+            self.errmsg.showMessage('Too many unique values for selection (' + 
+                                    str(len(selHueVals)) + '), skip')
+            return
+        self.PopulateComboBox(self.ui.comboHueVal, selHueVals)
+        self.ui.comboHueVal.show()
             
-        else:
-            print('Too many unique values for selection, skip : ' + str(len(selHueVals)))
-
     def OnPlotBtnClicked(self):
 
         dset_name = self.data_model_arr.dataset_names[self.active_index]        
 
-        ## Read data
+        ## Get data
         df = self.data_model_arr.datasets[self.active_index].data
-        
-        ## Read user selections for the plot
-        xVar = self.ui.comboXVar.currentText()
-        hueVar = self.ui.comboHueVar.currentText()
+
+        ## Get user selections
+        x_var = self.ui.comboXVar.currentText()
+        hue_var = self.ui.comboHueVar.currentText()
         hueVals = self.ui.comboHueVal.listCheckedItems()
         filterVar = self.ui.comboFilterVar.currentText()
         filterVals = self.ui.comboFilterVal.listCheckedItems()
         if (filterVar == '--var name--') | (filterVals == []):
             filterVar = ''
-        if (hueVar == '--var name--') | (hueVals == []):
-            hueVar = ''
+        if (hue_var == '--var name--') | (hueVals == []):
+            hue_var = ''
 
         ## Filter data
-        res_tmp = FilterData(df, filterVar, filterVals)
-        df_out = res_tmp['df_out']
-        res_tmp = FilterData(df_out, hueVar, hueVals)
-        df_out = res_tmp['df_out']
+        df_out = df
+        res_tmp = DataFilter(df, filterVar, filterVals)
+        if res_tmp['out_code'] == 0:
+            df_out = res_tmp['df_out']
+        res_tmp = DataFilter(df_out, hue_var, hueVals)
+        if res_tmp['out_code'] == 0:
+            df_out = res_tmp['df_out']
 
         ## Prepare plot canvas  
         self.plotCanvas = PlotCanvas(self.ui)
         self.plotCanvas.axes = self.plotCanvas.fig.add_subplot(111)
+        if self.selPlotType == 'RegPlot':
+            ## Read y var for reg plot
+            y_var = self.ui.comboYVar.currentText()
+            ## Plot data
+            DataPlotScatter(self.plotCanvas.axes, df_out, x_var, y_var, hue_var)
 
+        if self.selPlotType == 'DistPlot':
+            ## Plot data
+            DataPlotDist(self.plotCanvas.axes, df_out, x_var, hue_var)
+        self.plotCanvas.draw()
+
+        ## Set data view to plot canvas
         sub = QMdiSubWindow()
         sub.setWidget(self.plotCanvas)
         self.mdi.addSubWindow(sub)        
-
-        if self.selPlotType == 'RegPlot':
-
-            ## Read y var for reg plot
-            yVar = self.ui.comboYVar.currentText()
-        
-            ## Plot data
-            PlotData(self.plotCanvas.axes, df_out, xVar, yVar, hueVar)
-
-        if self.selPlotType == 'DistPlot':
-
-            ## Plot data
-            PlotDist(self.plotCanvas.axes, df_out, xVar, hueVar)
-            
-        self.plotCanvas.draw()
-
         sub.show()
         self.mdi.tileSubWindows()
-        
-        self.statusbar.showMessage('Displaying plot')
-
         
         ##-------
         ## Populate commands that will be written in a notebook
         dset_name = self.data_model_arr.dataset_names[self.active_index]       
 
         ## Add function definitons to notebook
-        fCode = inspect.getsource(hue_regplot).replace('(self, ','(')
+        fCode = inspect.getsource(hue_regplot)
         self.cmds.add_funcdef('hue_regplot', ['', fCode, ''])
 
-        fCode = inspect.getsource(PlotData).replace('(self, ','(').replace('self.','').replace('ax=axes','')
-        self.cmds.add_funcdef('PlotData', ['', fCode, ''])
+        #fCode = inspect.getsource(DataPlotScatter).replace('ax=axes','')
+        fCode = inspect.getsource(DataPlotScatter)
+        self.cmds.add_funcdef('DataPlotScatter', ['', fCode, ''])
 
-        fCode = inspect.getsource(PlotDist).replace('(self, ','(').replace('self.','').replace('ax=axes','')
-        self.cmds.add_funcdef('PlotDist', ['', fCode, ''])
+        fCode = inspect.getsource(DataPlotDist)
+        self.cmds.add_funcdef('DataPlotDist', ['', fCode, ''])
 
 
         ## Add cmds to call the function
         cmds = ['']
         cmds.append('# Plot data')
-        cmds.append('xVar = "' + xVar + '"')
+        cmds.append('x_var = "' + x_var + '"')
         if self.selPlotType == 'RegPlot':
-            cmds.append('yVar = "' + yVar + '"')
+            cmds.append('y_var = "' + y_var + '"')
         cmds.append('filterVar = "' + filterVar + '"')
-        str_filterVals = '[' + ','.join('"{0}"'.format(x) for x in filterVals) + ']'
-        cmds.append('filterVals = ' + str_filterVals)
-        cmds.append('hueVar = "' + hueVar + '"')
-        str_hueVals = '[' + ','.join('"{0}"'.format(x) for x in hueVals) + ']'
-        cmds.append('hueVals = ' + str_hueVals)
+        str_filter_vals = '[' + ','.join('"{0}"'.format(x) for x in filterVals) + ']'
+        cmds.append('filterVals = ' + str_filter_vals)
+        cmds.append('hue_var = "' + hue_var + '"')
+        str_hue_vals = '[' + ','.join('"{0}"'.format(x) for x in hueVals) + ']'
+        cmds.append('hueVals = ' + str_hue_vals)
         cmds.append('f, axes = plt.subplots(1, 1, figsize=(5, 4), dpi=100)')
         if self.selPlotType == 'RegPlot':
-            cmds.append('axes = PlotData(axes, ' + dset_name + ', xVar, yVar, hueVar)')
+            cmds.append('axes = DataPlotScatter(axes, ' + dset_name + ', x_var, y_var, hue_var)')
         if self.selPlotType == 'DistPlot':
-            cmds.append('axes = PlotDist(axes, ' + dset_name + ', xVar, hueVar)')
+            cmds.append('axes = DataPlotDist(axes, ' + dset_name + ', x_var, hue_var)')
         cmds.append('')
         self.cmds.add_cmd(cmds)
         #-------
