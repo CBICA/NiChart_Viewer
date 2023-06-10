@@ -36,7 +36,7 @@ class CmdModel(QObject):
 
 
     def add_hdr(self):
-        currTime = time.strftime('%l:%M%p %Z on %b %d, %Y')
+        currTime = time.strftime('%H:%M%p %Z on %b %d, %Y')
         self.hdr_cmds.append('     ' + currTime)
         self.hdr_cmds.append('#### Import statements')
         self.hdr_cmds.append('')
