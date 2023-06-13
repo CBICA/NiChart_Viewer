@@ -209,7 +209,7 @@ class HarmonizeView(QtWidgets.QWidget,BasePlugin):
 
             ## Round values 
             ## FIXME this should be only in the view, not applied to data
-            dfOut = dfOut.round(3)
+            dfOut = dfOut.head(50).round(3)
             
             ## Add data to table
             self.PopulateTable(dfOut)

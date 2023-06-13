@@ -439,6 +439,8 @@ class AdjCovView(QtWidgets.QWidget,BasePlugin):
         self.PopulateComboBox(self.ui.comboSelVar, colNames, '--var name--')
         self.PopulateComboBox(self.ui.comboNormVar, colNames, '--var name--')
 
+        self.ui.comboOutVar.checkAllItems()
+
         self.ui.comboSelVal.hide()
 
 

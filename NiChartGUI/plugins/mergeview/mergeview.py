@@ -68,7 +68,6 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         ## Panel are shown based on selected actions
         self.ui.wMerge.hide()
         self.ui.wConcat.hide()
-        self.ui.check_createnew.hide()    
 
     def SetupConnections(self):
         self.data_model_arr.active_dset_changed.connect(lambda: self.OnDataChanged())        
@@ -92,11 +91,9 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.selAction = self.ui.comboAction.currentText()
 
         if self.selAction == 'Merge':
-            self.ui.check_createnew.show()
             self.ui.wMerge.show()
         
         if self.selAction == 'Concat':
-            self.ui.check_createnew.show()
             self.ui.wConcat.show()
 
         self.statusbar.showMessage('Action selected: ' + self.selAction, 2000)

@@ -2,7 +2,7 @@ cycler==0.10.0
 joblib==1.0.1
 matplotlib>=3.4.2
 nibabel==3.2.1
-numpy>=1.21
+numpy==1.24.3
 git+https://github.com/rpomponio/neuroHarmonize@refs/pull/26/head
 pandas==2.0.1
 Pillow>=9.0.0

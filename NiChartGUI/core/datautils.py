@@ -29,6 +29,10 @@ logger = iStagingLogger.get_logger(__name__)
 def hue_regplot(data, x, y, hue, palette=None, **kwargs):
     '''Plotting
     '''
+    
+    data[x] = data[x].astype(float)
+    data[y] = data[y].astype(float)
+    
     regplots = []
     levels = data[hue].unique()
     if palette is None:
@@ -365,7 +369,9 @@ def DataNormalize(df, key_var, target_vars, norm_var, out_suff):
         out_msg = 'WARNING: Please select column to normalize by!'
         return {'out_code' : out_code, 'out_msg' : out_msg}
     
-    df_out = 100 * df[target_vars].div(df[norm_var], axis=0)
+    df_out = df[norm_var].mean() * df[target_vars].div(df[norm_var], axis=0)
+    #df_out = 100 * df[target_vars].div(df[norm_var], axis=0)   
+    
     df_out = df_out.add_suffix('_' + out_suff)
     out_vars = df_out.columns.tolist()
     df_out = pd.concat([df[[key_var]], df_out], axis=1)        
