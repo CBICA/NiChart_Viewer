@@ -3,13 +3,13 @@ from PyQt5 import QtGui, QtCore, QtWidgets, uic
 from PyQt5.QtWidgets import QMdiArea, QMdiSubWindow, QTextEdit, QComboBox
 import sys, os
 import pandas as pd
-from NiChartGUI.core.dataio import DataIO
+from NiChart_Viewer.core.dataio import DataIO
 # import dtale
-from NiChartGUI.core.baseplugin import BasePlugin
-from NiChartGUI.core import iStagingLogger
-from NiChartGUI.core.gui.SearchableQComboBox import SearchableQComboBox
-from NiChartGUI.core.gui.CheckableQComboBox import CheckableQComboBox
-from NiChartGUI.core.plotcanvas import PlotCanvas
+from NiChart_Viewer.core.baseplugin import BasePlugin
+from NiChart_Viewer.core import iStagingLogger
+from NiChart_Viewer.core.gui.SearchableQComboBox import SearchableQComboBox
+from NiChart_Viewer.core.gui.CheckableQComboBox import CheckableQComboBox
+from NiChart_Viewer.core.plotcanvas import PlotCanvas
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,8 +17,8 @@ import pandas as pd
 from matplotlib.cm import get_cmap
 from matplotlib.lines import Line2D
 
-#from NiChartGUI.core import datautils
-from NiChartGUI.core.datautils import *
+#from NiChart_Viewer.core import datautils
+from NiChart_Viewer.core.datautils import *
 
 import inspect
 

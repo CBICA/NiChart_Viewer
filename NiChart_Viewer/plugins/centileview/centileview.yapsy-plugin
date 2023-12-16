@@ -1,15 +1,18 @@
 [Core]
-Name = Spare View
-Module = spareview
+Name = Centile View
+Module = centileview
 
 [Documentation]
 Author = Guray Erus
 Version = 0.1
 Website = 
 Description = ---------- Description ----------
-    Plugin for calculating the SPARE scores
+    Centile plot of variables
     ---------- Options ----------
+    X Var: Age
+    Y Var: Variable to display on y axis
+    Centile type: centile
 
 [Tab]
 #tab position starts from 0
-Position = 4
+Position = 10

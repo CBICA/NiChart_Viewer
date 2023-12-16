@@ -2,7 +2,7 @@
 """
 contact: software@cbica.upenn.edu
 Copyright (c) 2018 University of Pennsylvania. All rights reserved.
-Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChartGUI/blob/main/LICENSE
+Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChart_Viewer/blob/main/LICENSE
 """
 
 import pandas as pd
@@ -13,7 +13,7 @@ import os, sys
 import joblib
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
-from NiChartGUI.core import iStagingLogger
+from NiChart_Viewer.core import iStagingLogger
 
 logger = iStagingLogger.get_logger(__name__)
 

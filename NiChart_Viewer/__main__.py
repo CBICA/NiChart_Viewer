@@ -2,17 +2,17 @@
 """
 contact: software@cbica.upenn.edu
 Copyright (c) 2018 University of Pennsylvania. All rights reserved.
-Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChartGUI/blob/main/LICENSE
+Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChart_Viewer/blob/main/LICENSE
 """
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import argparse
 import os, sys
-from NiChartGUI.mainwindow import MainWindow
-from NiChartGUI.NiChartGUICmdApp import NiChartGUICmdApp
+from NiChart_Viewer.mainwindow import MainWindow
+from NiChart_Viewer.NiChart_Viewer_CmdApp import NiChart_Viewer_CmdApp
 
 def main():
-    parser = argparse.ArgumentParser(description='NiChartGUI Data Visualization and Preparation')
+    parser = argparse.ArgumentParser(description='NiChart_Viewer Data Visualization and Preparation')
     parser.add_argument('--data_file', type=str, help='Data file containing data frame.', default=None, required=False)
     parser.add_argument('--harmonization_model_file', type=str, help='Harmonization model file.', default=None, required=False)
     parser.add_argument('--SPARE_model_file', type=str, help='Model file for SPARE-scores.', default=None, required=False)
@@ -38,7 +38,7 @@ def main():
             if((data_file == None) or (SPARE_model_file == None) or (output_file == None)):
                 print("Please provide '--data_file', '--SPARE_model_file' and '--output_file_name' to compute spares.")
                 exit()
-            NiChartGUICmdApp().ComputeSpares(data_file,SPARE_model_file,output_file)
+            NiChart_Viewer_CmdApp().ComputeSpares(data_file,SPARE_model_file,output_file)
     else:
         app = QtWidgets.QApplication(sys.argv)
         

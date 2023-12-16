@@ -4,64 +4,65 @@ requires = ["setuptools", "wheel", "poetry-core @ git+https://github.com/python-
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "NiChartGUI"
+name = "NiChart_Viewer"
 version = "0.0.1"
-description = "Graphical tool for running NiChartGUI Pipelines"
+description = "Graphical tool for running NiChart_Viewer Pipelines"
 authors = [
 ]
 keywords = ["neuro-imaging", "MRI", "big data"]
 
 readme = "README.md"
 
-include = ["NiChartGUI/plugins/data/MUSE_ROI_Dictionary.csv",
-           "NiChartGUI/**/*.ui",
-           "NiChartGUI/**/*.yapsy-plugin",
+include = ["NiChart_Viewer/plugins/data/MUSE_ROI_Dictionary.csv",
+           "NiChart_Viewer/**/*.ui",
+           "NiChart_Viewer/**/*.yapsy-plugin",
            "*.png"]
 packages = [
-    {include = "NiChartGUI"}
+    {include = "NiChart_Viewer"}
 ]
 
 
 [tool.briefcase]
-project_name = "NiChartGUI"
-name = "[NiChartGUI]"
+project_name = "NiChart_Viewer"
+name = "[NiChart_Viewer]"
 bundle = "com.example"
 version = "0.1"
-description = "BrainChart Utility and Analysis Package"
+description = "NiChart Data Viewer"
 authors = [
+    "Guray Erus <guray.erus@pennmedicine.upenn.edu>",
     "Ahmed Abdulkadir <Ahmed.Abdulkadir@pennmedicine.upenn.edu>",
     "Ashish Singh <Ashish.Singh@pennmedicine.upenn.edu>",
     "Randa Melhem <Randa.Melhem@Pennmedicine.upenn.edu>"
 ]
 keywords = ["neuro-imaging", "MRI", "big data"]
 readme = "README.md"
-icon = "NiChartGUI/resources/icon"
-installer_icon = "NiChartGUI/resources/icon"
-include = ["NiChartGUI/plugins/data/MUSE_ROI_Dictionary.csv",
-           "NiChartGUI/**/*.ui",
-           "NiChartGUI/**/*.yapsy-plugin",
+icon = "NiChart_Viewer/resources/icon"
+installer_icon = "NiChart_Viewer/resources/icon"
+include = ["NiChart_Viewer/plugins/data/MUSE_ROI_Dictionary.csv",
+           "NiChart_Viewer/**/*.ui",
+           "NiChart_Viewer/**/*.yapsy-plugin",
            "*.png"]
 packages = [
-    {include = "NiChartGUI"}
+    {include = "NiChart_Viewer"}
 ]
 
 
-[tool.briefcase.app.NiChartGUI.macOS]
+[tool.briefcase.app.NiChart_Viewer.macOS]
 requires = []
 
-[tool.briefcase.app.NiChartGUI.linux]
+[tool.briefcase.app.NiChart_Viewer.linux]
 requires = []
 system_requires = []
 
-[tool.briefcase.app.NiChartGUI.windows]
+[tool.briefcase.app.NiChart_Viewer.windows]
 requires = []
 
 
-[tool.briefcase.app.NiChartGUI]
-formal_name = "NiChartGUI"
+[tool.briefcase.app.NiChart_Viewer]
+formal_name = "NiChart_Viewer"
 description = "The coolest app ever"
-icon = "NiChartGUI/resources/icon" # Briecase will choose the right extension depending the os (png,ico,...)
-sources = ['NiChartGUI']
+icon = "NiChart_Viewer/resources/icon" # Briecase will choose the right extension depending the os (png,ico,...)
+sources = ['NiChart_Viewer']
 requires = ['cycler==0.10.0',
 'joblib==1.0.1',
 'MarkupSafe==2.0.1',
@@ -121,10 +122,10 @@ pytest = "7.0.1"
 pytest-qt = "4.0.2"
 
 [tool.poetry.urls]
-homepage = "https://cbica.github.io/NiChartGUI"
-repository = "https://github.com/CBICA/NiChartGUI"
-documentation = "https://cbica.github.io/NiChartGUI"
+homepage = "https://cbica.github.io/NiChart_Viewer"
+repository = "https://github.com/CBICA/NiChart_Viewer"
+documentation = "https://cbica.github.io/NiChart_Viewer"
 
 
 [tool.poetry.scripts]
-NiChartGUI = "NiChartGUI:main"
+NiChart_Viewer = "NiChart_Viewer:main"

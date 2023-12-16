@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'NiChartGUI'
+project = 'NiChart_Viewer'
 copyright = '2022, CBICA, University of Pennsylvania'
 author = 'Ashish Singh'
 
@@ -51,7 +51,7 @@ extensions = [
     'sphinx.ext.autosectionlabel',
 ]
 
-autoapi_dirs = ['../NiChartGUI']
+autoapi_dirs = ['../NiChart_Viewer']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -104,7 +104,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_logo = "contents/images/NiChartGUI.png"
+html_logo = "contents/images/NiChart_Viewer.png"
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -120,7 +120,7 @@ html_logo = "contents/images/NiChartGUI.png"
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'NiChartGUIdoc'
+htmlhelp_basename = 'NiChart_Viewerdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -147,7 +147,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'NiChartGUI.tex', 'NiChartGUI Documentation',
+    (master_doc, 'NiChart_Viewer.tex', 'NiChart_Viewer Documentation',
      'Ashish Singh', 'manual'),
 ]
 
@@ -157,7 +157,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'NiChartGUI', 'NiChartGUI Documentation',
+    (master_doc, 'NiChart_Viewer', 'NiChart_Viewer Documentation',
      [author], 1)
 ]
 
@@ -168,7 +168,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'NiChartGUI', 'NiChartGUI Documentation',
+    (master_doc, 'NiChart_Viewer', 'NiChart_Viewer Documentation',
      author, 'Ahmed Abdulkadir', 'The neuro-imaging brain aging chart',
      'Miscellaneous'),
 ]
@@ -281,6 +281,6 @@ html_context['downloads'].append( ('epub', '/' +REPO_NAME+ '/' +current_language
  
 html_context['display_github'] = True
 html_context['github_user'] = 'CBICA'
-html_context['github_repo'] = 'NiChartGUI'
+html_context['github_repo'] = 'NiChart_Viewer'
 html_context['github_version'] = 'main/docs/'
  

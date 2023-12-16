@@ -117,7 +117,7 @@ cat > index.html <<EOF
 <!DOCTYPE html>
 <html>
    <head>
-      <title>NiChartGUI Docs</title>
+      <title>NiChart_Viewer Docs</title>
       <meta http-equiv = "refresh" content="0; url='/${REPO_NAME}/en/main/'" />
    </head>
    <body>
@@ -137,7 +137,7 @@ If you're looking to update our documentation, check the 'docs/' dir.
  
 If you are looking for documentation, please see:
  
- * https://cbica.github.io/NiChartGUI/
+ * https://cbica.github.io/NiChart_Viewer/
 EOF
 
 # copy the resulting html pages built from sphinx above to our new git repo

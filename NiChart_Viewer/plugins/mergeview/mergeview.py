@@ -4,17 +4,17 @@ from PyQt5.QtWidgets import QMdiArea, QMdiSubWindow, QTextEdit, QComboBox
 import sys, os
 import pandas as pd
 import numpy as np
-from NiChartGUI.core.dataio import DataIO
+from NiChart_Viewer.core.dataio import DataIO
 # import dtale
-from NiChartGUI.core.baseplugin import BasePlugin
-from NiChartGUI.core import iStagingLogger
-from NiChartGUI.core.gui.SearchableQComboBox import SearchableQComboBox
-from NiChartGUI.core.gui.CheckableQComboBox import CheckableQComboBox
-from NiChartGUI.core.model.datamodel import DataModel, DataModelArr, PandasModel
+from NiChart_Viewer.core.baseplugin import BasePlugin
+from NiChart_Viewer.core import iStagingLogger
+from NiChart_Viewer.core.gui.SearchableQComboBox import SearchableQComboBox
+from NiChart_Viewer.core.gui.CheckableQComboBox import CheckableQComboBox
+from NiChart_Viewer.core.model.datamodel import DataModel, DataModelArr, PandasModel
 
 logger = iStagingLogger.get_logger(__name__)
 
-from NiChartGUI.core.datautils import *
+from NiChart_Viewer.core.datautils import *
 
 class MergeView(QtWidgets.QWidget,BasePlugin):
 

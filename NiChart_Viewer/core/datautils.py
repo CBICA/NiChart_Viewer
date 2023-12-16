@@ -2,7 +2,7 @@
 """
 contact: software@cbica.upenn.edu
 Copyright (c) 2018 University of Pennsylvania. All rights reserved.
-Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChartGUI/blob/main/LICENSE
+Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChart_Viewer/blob/main/LICENSE
 """
 
 import pandas as pd
@@ -13,11 +13,11 @@ from matplotlib.lines import Line2D
 import numpy as np
 import joblib
 import os, sys
-from NiChartGUI.core import iStagingLogger
+from NiChart_Viewer.core import iStagingLogger
 from PyQt5 import QtGui, QtCore, QtWidgets, uic
 from PyQt5.QtWidgets import QMdiArea, QMdiSubWindow, QTextEdit, QComboBox, QLayout, QMessageBox, QErrorMessage
 
-#from NiChartGUI.core.datautils import *
+#from NiChart_Viewer.core.datautils import *
 
 import statsmodels.formula.api as sm
 
@@ -60,7 +60,7 @@ def DataPlotDist(axes, df, x_var, hue_var):
     axes.get_figure().set_tight_layout(True)
     axes.set(xlabel=x_var)
 
-def DataPlotScatter(axes, df, x_var, y_var, hue_var):
+def DataPlotScatter(axes, df, x_var, y_var, hue_var=''):
     '''Plot
     '''
     
@@ -77,6 +77,43 @@ def DataPlotScatter(axes, df, x_var, y_var, hue_var):
     axes.set(xlabel=x_var)
     axes.set(ylabel=y_var)
     
+def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent):
+    '''Plot
+    '''
+
+    df_tmp = df_cent[df_cent.ROI_Name == y_var]
+    cent_vals = df_tmp.columns[df_tmp.columns.str.contains('centile')].tolist()
+    df_tmp = pd.melt(df_tmp, id_vars=['Age'], value_vars = cent_vals)
+    
+    num_cent = len(cent_vals)
+    
+    tmp_pal = ['#f8baba', '#f87c7c', '#f83e3e', 
+               '#f80000',
+               '#f83e3e', '#f87c7c', '#f8baba']
+               
+    sns.lineplot(data = df_tmp, x = x_var, y = 'value', hue = 'variable', 
+                 palette = tmp_pal,
+                 ax=axes)
+
+    sns.scatterplot(data = df, x = x_var, y = y_var, ax=axes)
+
+    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_5', ax=axes)
+    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_10', ax=axes)
+    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_25', ax=axes)
+    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_50', ax=axes, )
+    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_75', ax=axes)
+    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_90', ax=axes)
+    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_95', ax=axes)
+    
+    
+    axes.yaxis.set_ticks_position('left')
+    axes.xaxis.set_ticks_position('bottom')
+    sns.despine(fig=axes.get_figure(), trim=True)
+    axes.get_figure().set_tight_layout(True)
+    axes.set(xlabel=x_var)
+    axes.set(ylabel=y_var)
+
+
 ########################################################
 ## Data manipulation functions
 

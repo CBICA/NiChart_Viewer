@@ -2,7 +2,7 @@
 """
 contact: software@cbica.upenn.edu
 Copyright (c) 2018 University of Pennsylvania. All rights reserved.
-Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChartGUI/blob/main/LICENSE
+Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChart_Viewer/blob/main/LICENSE
 """
 import time
 import pandas as pd
@@ -13,7 +13,7 @@ import json
 import joblib
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
-from NiChartGUI.core import iStagingLogger
+from NiChart_Viewer.core import iStagingLogger
 
 logger = iStagingLogger.get_logger(__name__)
 
@@ -25,8 +25,8 @@ class CmdModel(QObject):
         QObject.__init__(self)
         """The constructor."""
         
-        self.hdr_cmds = ['## NiChartGUI Notebook']
-        self.hdr_cmds.append('#### Generated automatically by NiChartGUI')
+        self.hdr_cmds = ['## NiChart_Viewer Notebook']
+        self.hdr_cmds.append('#### Generated automatically by NiChart_Viewer')
         self.add_hdr()
         
         self.funcdef_cmds = ['#### Function definitions']

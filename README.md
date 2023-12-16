@@ -6,13 +6,13 @@
   :construction: |
 |-----------------------------------------|
 
-The neuro-imaging brain aging chart **[NiChartGUI]** is a toolbox for MRI data analysis.
+NiChart viewer **[NiChart_Viewer]** is a toolbox for NiChart MRI features and biomarkers.
 
 ## Installation
 
 ```shell
-conda create -n NiChartGUI python=3.8.8  
-conda activate NiChartGUI
+conda create -n NiChart_Viewer python=3.8.8  
+conda activate NiChart_Viewer
 conda install pip
 pip install .
 ```
@@ -27,12 +27,12 @@ SPARE plugin requires installation of the NiChartSPARE package (https://github.c
 ## Usage
 
 ```shell
-NiChartGUI --data_file infile1.csv --data_file infile2.csv ...
+NiChart_Viewer --data_file infile1.csv --data_file infile2.csv ...
 ```
 
 ## Disclaimer
 - The software has been designed for research purposes only and has neither been reviewed nor approved for clinical use by the Food and Drug Administration (FDA) or by any other federal/state agency.
-- By using NiChartGUI, the user agrees to the following license: https://www.med.upenn.edu/cbica/software-agreement-non-commercial.html
+- By using NiChart_Viewer, the user agrees to the following license: https://www.med.upenn.edu/cbica/software-agreement-non-commercial.html
 
 ## Contact
-<a href="mailto:software@cbica.upenn.edu">CBICA Software</a>.
+<a href="mailto:guray.erus@pennmedicine.upenn.edu">Guray Erus</a>.

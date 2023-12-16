@@ -2,7 +2,7 @@
 """
 contact: software@cbica.upenn.edu
 Copyright (c) 2018 University of Pennsylvania. All rights reserved.
-Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChartGUI/blob/main/LICENSE
+Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChart_Viewer/blob/main/LICENSE
 """
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
@@ -10,15 +10,15 @@ from yapsy.PluginManager import PluginManager
 from yapsy.IPlugin import IPlugin
 import os, sys
 import numpy as np
-from NiChartGUI.core.dataio import DataIO
-from NiChartGUI.core.model.datamodel import DataModel, DataModelArr
-from NiChartGUI.core.model.cmdmodel import CmdModel
+from NiChart_Viewer.core.dataio import DataIO
+from NiChart_Viewer.core.model.datamodel import DataModel, DataModelArr
+from NiChart_Viewer.core.model.cmdmodel import CmdModel
 from .aboutdialog import AboutDialog
-from NiChartGUI.resources import resources
+from NiChart_Viewer.resources import resources
 from PyQt5.QtWidgets import QAction
 import pandas as pd
-from NiChartGUI.core.baseplugin import BasePlugin
-from NiChartGUI.core import iStagingLogger
+from NiChart_Viewer.core.baseplugin import BasePlugin
+from NiChart_Viewer.core import iStagingLogger
 
 logger = iStagingLogger.get_logger(__name__)
 
@@ -28,7 +28,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, dataFiles = None, dictFiles = None):
         super(MainWindow,self).__init__()
 
-        logger.info('New NiChartGUI session starting...')
+        logger.info('New NiChart_Viewer session starting...')
 
         self.SetupUi()
         self.SetupConnections()
@@ -46,7 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dataPathLast = ''
 
         ## FIXME : Tmp
-        self.dataPathLast = '/home/guraylab/AIBIL/Github/TmpPackages/20221117_NiChartGUI_TestData/TestSet_v1'      
+        self.dataPathLast = '/home/guray/Github/NiChart_Data/NiChart_Data_Consolidation_2023/output'      
 
         # Create plugin manager
         self.manager = PluginManager(categories_filter={ "Tabs": BasePlugin})
@@ -162,7 +162,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.ui.actionSave.setMenuRole(QAction.NoRole)
 
     def __del__(self):
-        logger.info('NiChartGUI session ending...')
+        logger.info('NiChart_Viewer session ending...')
 
     def SetupConnections(self):
         self.actionOpenData.triggered.connect(self.OnLoadDsetClicked)
@@ -214,9 +214,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def SetupUi(self):
         root = os.path.dirname(__file__)
         self.ui = uic.loadUi(os.path.join(root, 'mainwindow.ui'), self)
-        self.ui.setWindowTitle('NiChartGUI')
-        #self.setWindowIcon(QtGui.QIcon(":/images/NiChartGUILogo.png"))
-        self.setWindowIcon(QtGui.QIcon(os.path.join(root, 'resources', 'NiChartGUILogo.png')))
+        self.ui.setWindowTitle('NiChart_Viewer')
+        #self.setWindowIcon(QtGui.QIcon(":/images/NiChart_ViewerLogo.png"))
+        self.setWindowIcon(QtGui.QIcon(os.path.join(root, 'resources', 'NiChart_ViewerLogo.png')))
         self.aboutdialog = AboutDialog(self)
 
     def LoadDataFile(self, filename):
