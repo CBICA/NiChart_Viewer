@@ -230,6 +230,25 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             d = None
 
+        # Apply dictionary for column names
+        ## FIXME: This is fixed to a single hard-coded MUSE dictionary for now
+        ##        It will be a separate generic action in the GUI in next versions
+        if (d is not None):
+            
+            ## Read dictionary
+            d = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/shared/dictionaries/dicts_dlmuse'
+            fMuseDict = os.path.join(d, 'MUSE_ROI_Names_V2.2.csv')
+            
+            dio = DataIO()
+            df_musedict = dio.ReadCSVFile(fMuseDict)
+            
+            keys = df_musedict.MUSE_ROI_Index.astype('str').tolist()
+            values = df_musedict.MUSE_ROI_Names.astype('str').tolist()
+            musedict = dict(zip(keys, values))
+            
+            d = d.replace()
+
+
         # Load data to model
         if (d is not None):
 
