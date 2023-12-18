@@ -1,6 +1,6 @@
 [Core]
-Name = Adjust Cov View
-Module = adjcovview
+Name = ICV Normalization
+Module = icvcorrview
 
 [Documentation]
 Author = Guray Erus

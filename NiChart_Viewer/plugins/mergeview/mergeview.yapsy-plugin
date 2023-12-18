@@ -1,5 +1,5 @@
 [Core]
-Name = Merge View
+Name = Merge Datasets
 Module = mergeview
 
 [Documentation]

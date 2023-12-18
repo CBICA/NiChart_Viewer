@@ -46,7 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dataPathLast = ''
 
         ## FIXME : Tmp
-        self.dataPathLast = '/home/guray/Github/NiChart_Data/NiChart_Data_Consolidation_2023/output'      
+        self.dataPathLast = '/home/guray/Github/tmpdata'      
 
         # Create plugin manager
         self.manager = PluginManager(categories_filter={ "Tabs": BasePlugin})
@@ -236,17 +236,17 @@ class MainWindow(QtWidgets.QMainWindow):
         if (d is not None):
             
             ## Read dictionary
-            d = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/shared/dictionaries/dicts_dlmuse'
-            fMuseDict = os.path.join(d, 'MUSE_ROI_Names_V2.2.csv')
+            dict_dir = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/shared/dictionaries/dicts_dlmuse'
+            fMuseDict = os.path.join(dict_dir, 'MUSE_ROI_Names_V2.2.csv')
             
             dio = DataIO()
             df_musedict = dio.ReadCSVFile(fMuseDict)
             
             keys = df_musedict.MUSE_ROI_Index.astype('str').tolist()
-            values = df_musedict.MUSE_ROI_Names.astype('str').tolist()
+            values = df_musedict.MUSE_ROI_Name.astype('str').tolist()
             musedict = dict(zip(keys, values))
             
-            d = d.replace()
+            d = d.rename(columns = musedict)
 
 
         # Load data to model

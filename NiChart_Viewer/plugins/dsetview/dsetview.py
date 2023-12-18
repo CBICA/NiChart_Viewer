@@ -129,7 +129,12 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.edit_dshape.setStyleSheet("border: 0px; background-color: rgb(235, 235, 245)")
         
         ## Default value in dset view is to overwrite the active dset (not to create new dset)
+        self.ui.check_createnew.hide()
         self.ui.check_createnew.setCheckState(QtCore.Qt.Unchecked)
+
+        ## FIXME: not implemented yet
+        self.ui.check_all.hide()
+        self.ui.check_inv.hide()
 
         self.ui.wOptions.hide()
         
@@ -427,7 +432,8 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ## Get user selections
         fvar = self.ui.comboBoxFilterVar.currentText()
-        if len(fvar) == 0:
+
+        if (len(fvar) == 0) | (fvar == '--var name--'):
             self.errmsg.showMessage('Please select input var!')
             return;
 

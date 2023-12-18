@@ -101,7 +101,7 @@
         </action>
         <action name="actionOpenData">
             <property    name="text">
-                <string>Open Dataset</string>
+                <string>Load Dataset</string>
             </property>
         </action>
         <action name="actionSaveData">
@@ -111,7 +111,7 @@
         </action>
         <action name="actionSaveNotebook">
             <property    name="text">
-                <string>Save Notebook</string>
+                <string>Create Notebook</string>
             </property>
         </action>
         <action name="actionAbout">

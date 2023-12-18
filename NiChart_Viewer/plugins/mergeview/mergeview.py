@@ -59,6 +59,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.ui.hlConcatDset2.addWidget(self.ui.comboBoxConcatDset2)
 
         ## Default value in merge view is to create a new dset (not to overwrite the active dset)
+        self.ui.check_createnew.hide()        
         self.ui.check_createnew.setCheckState(QtCore.Qt.Checked)
                 
         self.ui.wOptions.setMaximumWidth(300)

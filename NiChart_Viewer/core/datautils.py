@@ -178,6 +178,12 @@ def DataGetStats(df, group_vars, display_vars, stat_vars):
     df_out = df[group_vars + display_vars]
     
     if len(group_vars)>0:
+
+        if df_out[group_vars].drop_duplicates().shape[0] > 20:
+            out_code = 3
+            out_msg = 'WARNING: Please check the group variables. Too many groups! (max allowed: 50)'
+            return {'out_code' : out_code, 'out_msg' : out_msg}
+
         ## Get stats
         df_out = df_out.groupby(group_vars).describe()
         
@@ -386,6 +392,28 @@ def DataAdjCov2(df, key_var, target_vars, cov_corr_vars, cov_keep_vars=[],
     
     return df_out, out_vars
 
+## Normalize data by the given variable
+def DataPercICV(df, norm_var, out_suff):
+    '''Normalize data
+    '''
+
+    if norm_var == '':
+        out_code = 3        
+        out_msg = 'WARNING: Please select column to normalize by!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
+    
+    ## Calculate percent ICV
+    df_tmp = df.select_dtypes(include=[np.number])
+    df_out = 100 * df_tmp.div(df[norm_var], axis=0)
+
+    ## Add suffix
+    df_out = df_out.add_suffix('_' + out_suff)
+    df_out = pd.concat([df, df_out], axis=1)        
+
+    out_code = 0
+    out_msg = 'Created normalized data'
+    out_vars = []
+    return {'out_code' : out_code, 'out_msg' : out_msg, 'df_out' : df_out, 'out_vars' : out_vars}
 
 ## Normalize data by the given variable
 def DataNormalize(df, key_var, target_vars, norm_var, out_suff):

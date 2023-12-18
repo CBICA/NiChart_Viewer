@@ -1,5 +1,5 @@
 [Core]
-Name = Centile View
+Name = View Centiles
 Module = centileview
 
 [Documentation]
@@ -7,7 +7,7 @@ Author = Guray Erus
 Version = 0.1
 Website = 
 Description = ---------- Description ----------
-    Centile plot of variables
+    Shows age trends of user data together with centiles for the reference data
     ---------- Options ----------
     X Var: Age
     Y Var: Variable to display on y axis
@@ -15,4 +15,4 @@ Description = ---------- Description ----------
 
 [Tab]
 #tab position starts from 0
-Position = 10
+Position = 4

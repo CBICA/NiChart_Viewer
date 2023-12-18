@@ -1,5 +1,5 @@
 [Core]
-Name = Dataset View
+Name = DATASETS
 Module = dsetview
 
 [Documentation]
