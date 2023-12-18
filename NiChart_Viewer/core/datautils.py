@@ -120,6 +120,10 @@ def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent):
 def DataFilter(df, filter_var, filter_vals):
     '''Filter
     '''
+    
+    print('TTTTT')
+    print(filter_vals)
+    
     ## Get filter values
     if len(filter_var) == 0:
         out_code = 1

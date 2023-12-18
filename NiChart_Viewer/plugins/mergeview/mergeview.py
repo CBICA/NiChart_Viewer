@@ -114,7 +114,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         
         colNames = self.data_model_arr.datasets[self.dataset2_index].data.columns.tolist()
         
-        self.PopulateComboBox(self.ui.comboBoxMergeVar2, colNames)
+        self.PopulateComboBox(self.ui.comboBoxMergeVar2, colNames, '--var name--')
         self.ui.comboBoxMergeVar2.show()
         self.ui.label_mergeon2.show()
         

@@ -230,14 +230,16 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             d = None
 
-        # Apply dictionary for column names
-        ## FIXME: This is fixed to a single hard-coded MUSE dictionary for now
+        ## FIXME: This is fixed to a single hard-coded MUSE dictionary 
+        ##        and a smaller set of ROIs for now
         ##        It will be a separate generic action in the GUI in next versions
         if (d is not None):
+
+            # Apply dictionary for column names
             
             ## Read dictionary
-            dict_dir = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/shared/dictionaries/dicts_dlmuse'
-            fMuseDict = os.path.join(dict_dir, 'MUSE_ROI_Names_V2.2.csv')
+            dict_csv = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/shared/dictionaries/dicts_dlmuse/MUSE_ROI_Names_NiChart_Selection_V2.2.csv'
+            fMuseDict = os.path.join(dict_csv)
             
             dio = DataIO()
             df_musedict = dio.ReadCSVFile(fMuseDict)
@@ -246,6 +248,12 @@ class MainWindow(QtWidgets.QMainWindow):
             values = df_musedict.MUSE_ROI_Name.astype('str').tolist()
             musedict = dict(zip(keys, values))
             
+            all_keys = all([x in d.columns for x in keys])
+            
+            print('AAAAA')
+            print(all_keys)
+            if all_keys == True: 
+                d = d[d.columns[0:1].tolist() + keys]
             d = d.rename(columns = musedict)
 
 

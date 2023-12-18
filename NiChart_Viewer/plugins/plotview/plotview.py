@@ -67,6 +67,9 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboFilterVal.setEditable(False)
         self.ui.hlComboFilterVal.addWidget(self.ui.comboFilterVal)
 
+        self.ui.label_filter.hide()
+        #self.ui.b_filter.hide()
+
         self.ui.comboFilterVal.hide()
 
         ## Panel for hue var
@@ -133,7 +136,7 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
                                     str(len(selFilterVals)) + '), skip')
             return;
         self.PopulateComboBox(self.ui.comboFilterVal, selFilterVals)
-        self.ui.comboFilterVal.show()
+        #self.ui.comboFilterVal.show()
 
     def OnHueIndexChanged(self):
         
@@ -172,9 +175,9 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         res_tmp = DataFilter(df, filterVar, filterVals)
         if res_tmp['out_code'] == 0:
             df_out = res_tmp['df_out']
-        res_tmp = DataFilter(df_out, hue_var, hueVals)
-        if res_tmp['out_code'] == 0:
-            df_out = res_tmp['df_out']
+        #res_tmp = DataFilter(df_out, hue_var, hueVals)
+        #if res_tmp['out_code'] == 0:
+            #df_out = res_tmp['df_out']
 
         ## Prepare plot canvas  
         self.plotCanvas = PlotCanvas(self.ui)
