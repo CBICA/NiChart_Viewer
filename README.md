@@ -1,14 +1,10 @@
-# [NiChart_Viewer] Neuroimaging Chart Viewer
-
-| :construction:
-  <font size="+1">This software and documentation is under development!
-  </font> 
-  :construction: |
-|-----------------------------------------|
+# Neuroimaging Chart (NiChart) Viewer
 
 NiChart viewer **[NiChart_Viewer]** is a toolbox for visualization of NiChart MRI features and biomarkers. 
 
-The current version is primarily designed for visualizing DLMUSE regions of interest (ROIs) together with age centile curves of select ROIs derived from NiChart reference data.
+## Notes
+
+The current version is primarily designed for visualizing NiChart_DLMUSE variables (regions of interest - ROIs) together with age centile curves of select ROIs derived from NiChart reference data.
 
 ## Installation
 
