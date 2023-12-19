@@ -1,6 +1,6 @@
 # Neuroimaging Chart (NiChart) Viewer
 
-![NiChart Logo](./NiChart_Viewer/resources/nichart_logo_s1.png)
+![NiChart Logo](./NiChart_Viewer/resources/nichart_viewer_logo_s1.png)
 
 NiChart viewer **[NiChart_Viewer]** is a toolbox for visualization of NiChart image descriptors and biomarkers. 
 
@@ -32,6 +32,8 @@ examples/IXI_ROIs/run_nichart_viewer_IXI.sh
 The script launches the viewer using the public IXI dataset as an example (DLMUSE ROIs + demog. file with Age and Sex columns).
 
 After launching the viewer, users can view data tables and select ROIs, correct ROIs for intra-cranial volume (ICV), merge ROI values with demographic variables (Age and Sex), view data distributions and scatter plots of variable pairs, and plot selected variables against NiChart reference centile curves
+
+![Example visualization](./NiChart_Viewer/resources/nichart_viewer_ixi_example.png)
 
 
 ## Disclaimer
