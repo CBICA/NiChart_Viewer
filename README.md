@@ -1,6 +1,8 @@
 # Neuroimaging Chart (NiChart) Viewer
 
-NiChart viewer **[NiChart_Viewer]** is a toolbox for visualization of NiChart MRI features and biomarkers. 
+![NiChart Logo](./NiChart_Viewer/resources/nichart_logo_s1.png)
+
+NiChart viewer **[NiChart_Viewer]** is a toolbox for visualization of NiChart image descriptors and biomarkers. 
 
 ## Notes
 

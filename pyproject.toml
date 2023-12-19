@@ -5,22 +5,20 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "NiChart_Viewer"
-version = "0.0.1"
-description = "Graphical tool for running NiChart_Viewer Pipelines"
+version = "1.0.1"
+description = "Viewer to visualize neuroimaging chart (NiChart) image descriptors and biomarkers"
 authors = [
 ]
 keywords = ["neuro-imaging", "MRI", "big data"]
 
 readme = "README.md"
 
-include = ["NiChart_Viewer/plugins/data/MUSE_ROI_Dictionary.csv",
-           "NiChart_Viewer/**/*.ui",
-           "NiChart_Viewer/**/*.yapsy-plugin",
+include = ["NiChart_Viewer/**/*.ui",
+           "NiChart_Viewer/**/*.yapsy-plugin", 
            "*.png"]
 packages = [
     {include = "NiChart_Viewer"}
 ]
-
 
 [tool.briefcase]
 project_name = "NiChart_Viewer"
@@ -36,8 +34,7 @@ keywords = ["neuro-imaging", "MRI", "big data"]
 readme = "README.md"
 icon = "NiChart_Viewer/resources/icon"
 installer_icon = "NiChart_Viewer/resources/icon"
-include = ["NiChart_Viewer/plugins/data/MUSE_ROI_Dictionary.csv",
-           "NiChart_Viewer/**/*.ui",
+include = ["NiChart_Viewer/**/*.ui",
            "NiChart_Viewer/**/*.yapsy-plugin",
            "*.png"]
 packages = [
@@ -58,8 +55,7 @@ requires = []
 
 [tool.briefcase.app.NiChart_Viewer]
 formal_name = "NiChart_Viewer"
-description = "Viewer to visualize neuroimaging chart (NiChart) values"
-icon = "NiChart_Viewer/resources/icon" # Briecase will choose the right extension depending the os (png,ico,...)
+description = "Viewer to visualize neuroimaging chart (NiChart) image descriptors and biomarkers"
 sources = ['NiChart_Viewer']
 requires = ['cycler==0.10.0',
 'joblib==1.0.1',
@@ -67,7 +63,6 @@ requires = ['cycler==0.10.0',
 'matplotlib>=3.4.2',
 'nibabel==3.2.1',
 'numpy>=1.21',
-'git+https://github.com/rpomponio/neuroHarmonize@refs/pull/26/head#egg=neuroHarmonize',
 'pandas==2.0.1',
 'Pillow>=9.0.0',
 'pyparsing==2.4.7',
@@ -98,7 +93,6 @@ MarkupSafe = "2.0.1"
 matplotlib = "^3.4.2"
 nibabel = "^3.2.1"
 numpy = "^1.21"
-neuroHarmonize = { git = "https://github.com/rpomponio/neuroHarmonize.git", branch = "refs/pull/26/head" }
 pandas = "2.0.1"
 Pillow = "^9.0.0"
 pyparsing = "^2.4.7"
@@ -123,7 +117,6 @@ pytest-qt = "4.0.2"
 homepage = "https://cbica.github.io/NiChart_Viewer"
 repository = "https://github.com/CBICA/NiChart_Viewer"
 documentation = "https://cbica.github.io/NiChart_Viewer"
-
 
 [tool.poetry.scripts]
 NiChart_Viewer = "NiChart_Viewer:main"

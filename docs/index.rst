@@ -1,47 +1,12 @@
 ###############################################
-**[NiChartGUI]** The neuro-imaging brain aging chart
+Neuroimaging Chart (NiChart) Viewer
 ###############################################
 
 .. warning::
-   The documentation and GUI is under active development.
-   Statistical and machine learning models will be made available once fully
-   validated.
+   The documentation and the viewer are under active development.
 
 
-The neuro-imaging brain aging chart **[NiChartGUI]** is a comprehensive solution to
-analyze standard structural and functional brain MRI data across studies.
-**[NiChartGUI]** and the associated pre-processing tools implement computational
-morphometry, functional signal analysis, quality control, statistical
-harmonization, data standardization, interactive visualization, and extraction
-of expressive imaging signatures.
-
-.. figure:: contents/images/data_integration.svg
-
-   Pipeline to obtain normative ranges and expressive signatures from standard
-   structural and functional MRI data.
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Documentation
-
-   contents/userguide
-   contents/datapreprocessing
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Applications
-
-   auto_examples/index
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Development
-
-   autoapi/index
-   contents/development
-
+**[NiChart_Viewer]** is a tool provided for interactive visualization of NiChart imaging descriptors and signatures.
 
 
 *****

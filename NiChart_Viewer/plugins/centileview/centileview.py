@@ -96,15 +96,17 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
                         'AD, Female' : 'NiChart_M_AD_Centiles',
                         'AD, Male' : 'NiChart_M_AD_Centiles'}
 
-        self.selCentileType = dict_centile[self.ui.comboCentileType.currentText()]
+        self.selCentileType = self.ui.comboCentileType.currentText()
+        self.selCentileFile = dict_centile[self.selCentileType]
         
         ## FIXME
         d = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/'
         fCentile = os.path.join(self.root_dir, 'shared', 'centiles', 'NiChartcentiles', 
-                                self.selCentileType + '.csv')
+                                self.selCentileFile + '.csv')
         
         dio = DataIO()
         self.df_cent = dio.ReadCSVFile(fCentile)
+        
 
         self.statusbar.showMessage('Centile reference changed to: ' + self.selCentileType, 8000)
             
@@ -129,7 +131,7 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
         df_out = df
         
         #DataPlotScatter(self.plotCanvas.axes, df_out, x_var, y_var)
-        DataPlotWithCentiles(self.plotCanvas.axes, df_out, x_var, y_var, self.df_cent)
+        DataPlotWithCentiles(self.plotCanvas.axes, df_out, x_var, y_var, self.df_cent, self.selCentileType)
 
         self.plotCanvas.draw()
 

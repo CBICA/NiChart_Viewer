@@ -14,7 +14,7 @@ from NiChart_Viewer.core.dataio import DataIO
 from NiChart_Viewer.core.model.datamodel import DataModel, DataModelArr
 from NiChart_Viewer.core.model.cmdmodel import CmdModel
 from .aboutdialog import AboutDialog
-from NiChart_Viewer.resources import resources
+#from NiChart_Viewer.resources import resources
 from PyQt5.QtWidgets import QAction
 import pandas as pd
 from NiChart_Viewer.core.baseplugin import BasePlugin
@@ -81,15 +81,6 @@ class MainWindow(QtWidgets.QMainWindow):
             
         ## Sort plugins based on tab position. Create a dictionary of plugins
         indSort = np.argsort(plIndTmp)
-        
-        ## FIXME Select to activate few plugins:
-        ## ['Dataset View', 'Filter View', 'Dist View', 'Plot View', 'Merge View', 'Normalize View', 'Adjust Cov View', 'Harmonize View', 'Spare View']
-        
-        #indSort = indSort[[0,3,7,8,9]]
-        #logger.info(plNameTmp)
-        #logger.info('AAAA')
-        #indSort = indSort[[0,7,8,9]]
-        #input()
         
         plTmp = np.array(plTmp)[indSort]
         plNameTmp = np.array(plNameTmp)[indSort]
@@ -245,9 +236,6 @@ class MainWindow(QtWidgets.QMainWindow):
             ## Read dictionary
             dict_csv = os.path.join(root, 'shared', 'dictionaries', 'dicts_dlmuse',
                          'MUSE_ROI_Names_NiChart_Selection_V2.2.csv')
-            
-            print('AAAAA')
-            print(dict_csv)
             
             fMuseDict = os.path.join(dict_csv)
             

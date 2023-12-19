@@ -7,7 +7,6 @@ Use of this source code is governed by license located in license file: https://
 
 import pandas as pd
 import numpy as np
-import neuroHarmonize as nh
 import importlib.resources as pkg_resources
 import os, sys
 import joblib

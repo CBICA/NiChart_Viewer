@@ -77,7 +77,7 @@ def DataPlotScatter(axes, df, x_var, y_var, hue_var=''):
     axes.set(xlabel=x_var)
     axes.set(ylabel=y_var)
     
-def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent):
+def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent, cent_type):
     '''Plot
     '''
 
@@ -104,6 +104,8 @@ def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent):
     axes.get_figure().set_tight_layout(True)
     axes.set(xlabel=x_var)
     axes.set(ylabel=y_var)
+
+    g.set_title('Centiles: ' + cent_type)
 
 
 ########################################################

@@ -7,7 +7,7 @@ Use of this source code is governed by license located in license file: https://
 
 from PyQt5 import QtCore, QtWidgets, uic
 import os
-from NiChart_Viewer.resources import resources
+#from NiChart_Viewer.resources import resources
 
 class AboutDialog(QtWidgets.QDialog):
     def __init__(self,parent=None):
