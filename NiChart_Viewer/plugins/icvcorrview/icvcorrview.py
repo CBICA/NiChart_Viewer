@@ -60,7 +60,9 @@ class IcvCorrView(QtWidgets.QWidget,BasePlugin):
         #self.ui.check_createnew.setCheckState(QtCore.Qt.Checked)
 
         self.ui.edit_activeDset.setReadOnly(True)
-
+        
+        self.ui.edit_out_suff.setText('PercICV')
+        
         self.ui.wOptions.setMaximumWidth(300)
         
 
@@ -81,7 +83,7 @@ class IcvCorrView(QtWidgets.QWidget,BasePlugin):
 
         ## Get user selections
         norm_var = self.ui.comboNormVar.currentText()        
-        out_suff = 'PercICV'
+        out_suff = self.ui.edit_out_suff.text()
         
         ## Calculate results
         res_tmp = DataPercICV(df, norm_var, out_suff)
@@ -106,7 +108,9 @@ class IcvCorrView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.OnDataChanged()        
         
         ## Display the table
-        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+#        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 8000)          
+        self.statusbar.showMessage('Dataframe updated: normalized values are added (columns with suffix: _' 
+            + out_suff + '), data size: ' + str(df_out.shape), 10000)
         WidgetShowTable(self)
         
         ##-------
@@ -182,7 +186,7 @@ class IcvCorrView(QtWidgets.QWidget,BasePlugin):
 
         ### FIXME : Data is truncated to single precision for the display
         ### Add an option in settings to let the user change this
-        data = data.round(1)
+        data = data.round(3)
 
         model = PandasModel(data)
         self.dataView = QtWidgets.QTableView()

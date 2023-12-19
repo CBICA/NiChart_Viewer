@@ -7,12 +7,11 @@ Author = Guray Erus
 Version = 0.1
 Website = 
 Description = ---------- Description ----------
-    Scatter plot of variable pairs
+    Show plots of selected variable pairs
     ---------- Options ----------
+    Plot type: Type of the plot
     X Var: Variable to display on x axis
     Y Var: Variable to display on y axis
-    Filter Var: Used to select a subset of rows for plotting (optional)
-        Required: Categorical variable with less than 20 categories 
     Hue Var: Used to select a categorical hue variable (optional)
         Users can also select the categories to include in the plot 
         Required: Categorical variable with less than 20 categories 

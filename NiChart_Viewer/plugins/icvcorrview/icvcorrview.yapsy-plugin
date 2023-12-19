@@ -7,23 +7,14 @@ Author = Guray Erus
 Version = 0.1
 Website = 
 Description = ---------- Description ----------
-    Plugin for covariate adjustment. A linear model is fit into the data for each outcome variable and covariate effects are removed.
+    Plugin for ICV correction. All numeric values in the data file are corrected 
+    by the selected ICV variable using the formula: 
+      ROI_PercICV = (ROI / ICV) * 100
+    ICV corrected values are added to the initial dataframe as additional variables
     ---------- Options ----------
-    Outcome variables: The variables that are corrected
-    Covariates (keep): Covariates that are included in the model but whose effects are not corrected
-    Covariates (corr): Covariates that are included in the model and whose effects are corrected
-    Reference Set: Data rows that are used for estimating the covariates. 
-        Reference set selection is limited to specific value(s) of a categorical variable (example: Only normal control subjects)    
-        Adjustment parameters are estimated from the reference set
-        They are then applied to correct the complete dataset 
-        (Optional - if not selected, the complete set is used as the reference set)
-    Out suffix: Suffix to add to adjusted variables 
-    Out category: Category for adjusted variables. 
-        New variables are added to the data dictionary with this category name
-    ---------- Notes ----------
-    After adjustment, the table view displays only covariates and initial and adjusted outcome variables 
-
+    ICV Column: ICV column name in data file
+    Out suffix: Suffix for the new corrected variables 
 
 [Tab]
 #tab position starts from 0
-Position = 2
+Position = 1

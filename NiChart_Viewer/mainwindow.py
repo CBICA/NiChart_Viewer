@@ -46,11 +46,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dataPathLast = ''
 
         ## FIXME : Tmp
-        self.dataPathLast = '/home/guray/Github/tmpdata'      
+        root = os.path.dirname(__file__)
+        self.root_dir = os.path.dirname(__file__)
+
+        self.dataPathLast = root
 
         # Create plugin manager
         self.manager = PluginManager(categories_filter={ "Tabs": BasePlugin})
-        root = os.path.dirname(__file__)
         self.manager.setPluginPlaces([os.path.join(root, 'plugins')])
 
         # Load plugins
@@ -66,6 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
             
             po = plugin.plugin_object
             po.data_model_arr = self.data_model_arr
+            po.root_dir = self.root_dir
             po.cmds = self.cmds
             po.statusbar = self.ui.statusbar
             po.errmsg = self.errmsg
@@ -167,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def SetupConnections(self):
         self.actionOpenData.triggered.connect(self.OnLoadDsetClicked)
         self.actionSaveData.triggered.connect(self.OnSaveDataClicked)
-        self.actionSaveNotebook.triggered.connect(self.OnSaveNotebookClicked)
+        #self.actionSaveNotebook.triggered.connect(self.OnSaveNotebookClicked)
         self.actionAbout.triggered.connect(self.OnAboutClicked)
         self.actionHelpConsole.triggered.connect(self.OnHelpConsoleChecked)
         self.ui.tabWidget.currentChanged.connect(self.OnTabChanged)
@@ -181,11 +184,11 @@ class MainWindow(QtWidgets.QMainWindow):
             tabIndex = self.IndexPlugins[pluginName]
             if checked==True:
                 self.ui.tabWidget.setTabVisible(tabIndex, True)
-                self.ui.statusbar.showMessage('Plugin activated: ' + pluginName, 2000)
+                self.ui.statusbar.showMessage('Plugin activated: ' + pluginName, 8000)
                 
             else:
                 self.ui.tabWidget.setTabVisible(tabIndex, False)
-                self.ui.statusbar.showMessage('Plugin deactivated: ' + pluginName, 2000)
+                self.ui.statusbar.showMessage('Plugin deactivated: ' + pluginName, 8000)
         
 
         return OnPluginChecked
@@ -199,16 +202,16 @@ class MainWindow(QtWidgets.QMainWindow):
         txtPlugin = list(self.Plugins.keys())[indTab]
 
         self.ui.wInfo.setText(txtHelp)
-        self.ui.statusbar.showMessage('Selected plugin: ' + txtPlugin, 2000)
+        self.ui.statusbar.showMessage('Selected plugin: ' + txtPlugin, 8000)
  
     def OnHelpConsoleChecked(self):
         if self.actionHelpConsole.isChecked():
             self.ui.wInfo.show()
-            self.ui.statusbar.showMessage('Help console activated', 2000)
+            self.ui.statusbar.showMessage('Help console activated', 8000)
 
         else:
             self.ui.wInfo.hide()
-            self.ui.statusbar.showMessage('Help console deactivated', 2000)
+            self.ui.statusbar.showMessage('Help console deactivated', 8000)
         
  
     def SetupUi(self):
@@ -221,6 +224,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def LoadDataFile(self, filename):
     
+        root = os.path.dirname(__file__)
+
         # Read data file
         dio = DataIO()
         if filename.endswith('.pkl.gz') | filename[0].endswith('.pkl'):
@@ -238,7 +243,12 @@ class MainWindow(QtWidgets.QMainWindow):
             # Apply dictionary for column names
             
             ## Read dictionary
-            dict_csv = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/shared/dictionaries/dicts_dlmuse/MUSE_ROI_Names_NiChart_Selection_V2.2.csv'
+            dict_csv = os.path.join(root, 'shared', 'dictionaries', 'dicts_dlmuse',
+                         'MUSE_ROI_Names_NiChart_Selection_V2.2.csv')
+            
+            print('AAAAA')
+            print(dict_csv)
+            
             fMuseDict = os.path.join(dict_csv)
             
             dio = DataIO()
@@ -250,8 +260,6 @@ class MainWindow(QtWidgets.QMainWindow):
             
             all_keys = all([x in d.columns for x in keys])
             
-            print('AAAAA')
-            print(all_keys)
             if all_keys == True: 
                 d = d[d.columns[0:1].tolist() + keys]
             d = d.rename(columns = musedict)
@@ -265,12 +273,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.data_model_arr.AddDataset(dmodel)
 
             self.actionSaveData.setEnabled(True)
-            self.actionSaveNotebook.setEnabled(True)
+            #self.actionSaveNotebook.setEnabled(True)
 
             ## Call signal for change in data
             self.data_model_arr.OnDataChanged()
 
-            self.ui.statusbar.showMessage('Loaded dataset: ' + filename, 2000)
+            self.ui.statusbar.showMessage('Loaded dataset: ' + filename, 8000)
 
         else:
             logger.warning('Loaded data was not valid.')
@@ -329,7 +337,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.cmds.cmds_to_notebook(filename)
         
-        self.ui.statusbar.showMessage('Notebook saved to: ' + filename, 2000)
+        self.ui.statusbar.showMessage('Notebook saved to: ' + filename, 8000)
 
 
     ## Function to write current data frame to csv file
@@ -343,7 +351,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.data_model_arr.datasets[self.data_model_arr.active_index].data.to_csv(filename, index=False)
 
-        self.ui.statusbar.showMessage('Datafile saved to: ' + filename, 2000)
+        self.ui.statusbar.showMessage('Datafile saved to: ' + filename, 8000)
 
         ##-------
         ## Populate commands that will be written in a notebook
@@ -357,7 +365,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def OnAboutClicked(self):
         self.aboutdialog.show()
-        self.ui.statusbar.showMessage('Information console activated', 2000)
+        self.ui.statusbar.showMessage('Information console activated', 8000)
         
 
     def OnCloseClicked(self):

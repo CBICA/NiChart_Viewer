@@ -1,6 +1,5 @@
 # This Python file uses the following encoding: utf-8
 """
-Author: Ashish Singh
 contact: software@cbica.upenn.edu
 Copyright (c) 2018 University of Pennsylvania. All rights reserved.
 Use of this source code is governed by license located in license file: https://github.com/CBICA/NiChart_Viewer/blob/main/LICENSE
@@ -79,7 +78,6 @@ class CheckableQComboBox(QtWidgets.QComboBox):
         #return item.checkState() == QtCore.Qt.Checked
 
     def handle_item_pressed(self, index):
-        #print('PRESSSSSSSED ')
 
         item = self.model().itemFromIndex(index)
   

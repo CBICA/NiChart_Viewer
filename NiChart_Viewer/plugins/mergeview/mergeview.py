@@ -38,7 +38,8 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboAction = QComboBox(self.ui)
         self.ui.comboAction.setEditable(False)
         self.ui.vlAction.addWidget(self.ui.comboAction)
-        self.PopulateComboBox(self.ui.comboAction, ['Concat', 'Merge'], '--action--')        
+        #self.PopulateComboBox(self.ui.comboAction, ['Concat', 'Merge'], '--action--')        
+        self.PopulateComboBox(self.ui.comboAction, ['Merge'], '--action--')        
                 
         ### Panel for dset1 merge variables selection
         self.ui.comboBoxMergeVar1 = CheckableQComboBox(self.ui)
@@ -60,7 +61,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
 
         ## Default value in merge view is to create a new dset (not to overwrite the active dset)
         self.ui.check_createnew.hide()        
-        self.ui.check_createnew.setCheckState(QtCore.Qt.Checked)
+        #self.ui.check_createnew.setCheckState(QtCore.Qt.Checked)
                 
         self.ui.wOptions.setMaximumWidth(300)
         
@@ -97,7 +98,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         if self.selAction == 'Concat':
             self.ui.wConcat.show()
 
-        self.statusbar.showMessage('Action selected: ' + self.selAction, 2000)
+        self.statusbar.showMessage('Action selected: ' + self.selAction, 8000)
 
     def OnConcatDset2Changed(self):
         logger.info('Dataset2 selection changed')
@@ -133,8 +134,13 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         dfCurr = self.data_model_arr.datasets[self.active_index].data
         dfDset2 = self.data_model_arr.datasets[self.dataset2_index].data
         
-        ## Apply merge
-        df_out = DataMerge(dfCurr, dfDset2, mergeOn1, mergeOn2)
+        ## Calculate results
+        
+        res_tmp = DataMerge(dfCurr, dfDset2, mergeOn1, mergeOn2)
+        if res_tmp['out_code'] != 0:
+            self.errmsg.showMessage(res_tmp['out_msg'])
+            return;
+        df_out = res_tmp['df_out']
 
         ## Create new dataset or update current active dataset
         if self.ui.check_createnew.isChecked():
@@ -146,7 +152,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
             self.data_model_arr.datasets[self.active_index].data = df_out
 
         ## Display the table
-        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)        
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 8000)        
         self.ShowTable()
 
         ## Call signal for change in data
@@ -188,7 +194,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.datasets[self.active_index].data = df_out
 
         ## Show table
-        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)        
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 8000)        
         self.ShowTable()
 
         ## Call signal for change in data
@@ -215,7 +221,7 @@ class MergeView(QtWidgets.QWidget,BasePlugin):
         
         ### FIXME : Data is truncated to single precision for the display
         ### Add an option in settings to let the user change this
-        data = data.round(1)
+        data = data.round(3)
         
         model = PandasModel(data)
         self.dataView = QtWidgets.QTableView()

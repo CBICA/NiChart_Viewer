@@ -29,6 +29,7 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
     def __init__(self):
         super(CentileView,self).__init__()
 
+        self.root_dir = None
         self.data_model_arr = None
         self.active_index = -1
 
@@ -46,7 +47,15 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboCentileType = QComboBox(self.ui)
         self.ui.comboCentileType.setEditable(False)
         self.ui.vlComboCentiles.addWidget(self.ui.comboCentileType)
-        self.PopulateComboBox(self.ui.comboCentileType, ['NiChart_F_CN_Centiles', 'NiChart_M_CN_Centiles'], '--centile type--')        
+        self.PopulateComboBox(self.ui.comboCentileType, ['Healthy Control',
+                                                         'Healthy Control, Female',
+                                                         'Healthy Control, Male',
+                                                         'MCI',
+                                                         'MCI, Female',
+                                                         'MCI, Male',
+                                                         'AD',
+                                                         'AD, Female',
+                                                         'AD, Male'], '--centile type--')
         
         ## Panel for Y var
         self.ui.comboYVar = QComboBox(self.ui)
@@ -73,18 +82,31 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
 
     def OnCentileTypeChanged(self):
         
+        #root = os.path.dirname(__file__)
+        
         logger.info('Centile ref data changed')
 
-        self.selCentileType = self.ui.comboCentileType.currentText()
+        dict_centile = {'Healthy Control' : 'NiChart_ALL_CN_Centiles',
+                        'Healthy Control, Female' : 'NiChart_F_CN_Centiles',
+                        'Healthy Control, Male' : 'NiChart_M_CN_Centiles',
+                        'MCI' : 'NiChart_ALL_MCI_Centiles',
+                        'MCI, Female' : 'NiChart_F_MCI_Centiles',
+                        'MCI, Male' : 'NiChart_F_MCI_Centiles',
+                        'AD' : 'NiChart_M_AD_Centiles',
+                        'AD, Female' : 'NiChart_M_AD_Centiles',
+                        'AD, Male' : 'NiChart_M_AD_Centiles'}
+
+        self.selCentileType = dict_centile[self.ui.comboCentileType.currentText()]
         
         ## FIXME
-        d = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/shared/centiles/NiChartcentiles'
-        fCentile = os.path.join(d, self.selCentileType + '.csv')
-
+        d = '/home/guray/Github/NiChart_Projects/NiChart_Viewer/'
+        fCentile = os.path.join(self.root_dir, 'shared', 'centiles', 'NiChartcentiles', 
+                                self.selCentileType + '.csv')
+        
         dio = DataIO()
         self.df_cent = dio.ReadCSVFile(fCentile)
 
-        self.statusbar.showMessage('Centile reference changed to: ' + self.selCentileType, 2000)
+        self.statusbar.showMessage('Centile reference changed to: ' + self.selCentileType, 8000)
             
     def OnPlotBtnClicked(self):
 

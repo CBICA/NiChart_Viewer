@@ -71,7 +71,7 @@
                 </property>
                 <addaction name="actionOpenData"/>
                 <addaction name="actionSaveData"/>
-                <addaction name="actionSaveNotebook"/>
+<!--                 <addaction name="actionSaveNotebook"/> -->
             </widget>
             <widget    class="QMenu"    name="menuPlugins">
                 <property    name="title">
@@ -109,11 +109,11 @@
                 <string>Save Dataset</string>
             </property>
         </action>
-        <action name="actionSaveNotebook">
+<!--        <action name="actionSaveNotebook">
             <property    name="text">
                 <string>Create Notebook</string>
             </property>
-        </action>
+        </action>-->
         <action name="actionAbout">
             <property    name="text">
                 <string>About</string>

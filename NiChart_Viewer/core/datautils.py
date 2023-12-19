@@ -81,31 +81,23 @@ def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent):
     '''Plot
     '''
 
+    tmp_pal = ["#00ff00", "#0000ff"]
+    sns.scatterplot(data = df, x = x_var, y = y_var, hue = 'Sex', palette = tmp_pal, ax=axes)
+    
     df_tmp = df_cent[df_cent.ROI_Name == y_var]
     cent_vals = df_tmp.columns[df_tmp.columns.str.contains('centile')].tolist()
     df_tmp = pd.melt(df_tmp, id_vars=['Age'], value_vars = cent_vals)
     
     num_cent = len(cent_vals)
-    
-    tmp_pal = ['#f8baba', '#f87c7c', '#f83e3e', 
-               '#f80000',
+        
+    tmp_pal = ['#f8baba', '#f87c7c', '#f83e3e', '#f80000',
                '#f83e3e', '#f87c7c', '#f8baba']
                
-    sns.lineplot(data = df_tmp, x = x_var, y = 'value', hue = 'variable', 
+    g = sns.lineplot(data = df_tmp, x = x_var, y = 'value', hue = 'variable', 
                  palette = tmp_pal,
                  ax=axes)
 
-    sns.scatterplot(data = df, x = x_var, y = y_var, ax=axes)
-
-    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_5', ax=axes)
-    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_10', ax=axes)
-    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_25', ax=axes)
-    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_50', ax=axes, )
-    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_75', ax=axes)
-    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_90', ax=axes)
-    #sns.lineplot(data = df_tmp, x = x_var, y = 'centile_95', ax=axes)
-    
-    
+    g.legend_.set_title('Sex')
     axes.yaxis.set_ticks_position('left')
     axes.xaxis.set_ticks_position('bottom')
     sns.despine(fig=axes.get_figure(), trim=True)
@@ -120,9 +112,6 @@ def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent):
 def DataFilter(df, filter_var, filter_vals):
     '''Filter
     '''
-    
-    print('TTTTT')
-    print(filter_vals)
     
     ## Get filter values
     if len(filter_var) == 0:
@@ -159,10 +148,16 @@ def DataSelectColumns(df, sel_cols):
         return {'out_code' : out_code, 'out_msg' : out_msg}
         
     ## Select columns
-    df_out = df[sel_cols]
+    try:
+        df_out = df[sel_cols]
+
+    except:
+        out_code = 2        
+        out_msg = 'ERROR: Could not select columns!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
 
     out_code = 0
-    out_msg = 'Selected columns'
+    out_msg = 'Columns selected'
     return {'out_code' : out_code, 'out_msg' : out_msg, 'df_out' : df_out}
 
 def DataGetStats(df, group_vars, display_vars, stat_vars):
@@ -231,19 +226,36 @@ def DataSort(df, sort_cols, sort_orders):
 def DataMerge(df1, df2, mergeOn1, mergeOn2):
     '''Merge datasets
     '''
-    dfOut = df1.merge(df2, left_on = mergeOn1, right_on = mergeOn2, suffixes=['','_DUPLVARINDF2'])
+
+    if (len(mergeOn1) == 0) | (len(mergeOn2) == 0):
+        out_code = 1        
+        out_msg = 'WARNING: Please select merge column(s)!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
+
+    try:
+        #df_out = df1.merge(df2, left_on = mergeOn1, right_on = mergeOn2, suffixes=['','_DUPLVARIND'])
+        df_out = df2.merge(df1, left_on = mergeOn2, right_on = mergeOn1, suffixes=['','_DUPLVARIND'])
+        
+        ## If there are additional vars with the same name, we keep only the ones from the first dataset
+        df_out = df_out[df_out.columns[df_out.columns.str.contains('_DUPLVARIND')==False]]
+
+    except:
+        out_code = 2        
+        out_msg = 'ERROR: Could not merge dataframes!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
+
+    out_code = 0
+    out_msg = 'Merged data tables'
+    return {'out_code' : out_code, 'out_msg' : out_msg, 'df_out' : df_out}
     
-    ## If there are additional vars with the same name, we keep only the ones from the first dataset
-    dfOut = dfOut[dfOut.columns[dfOut.columns.str.contains('_DUPLVARINDF2')==False]]
-    
-    return dfOut
+    return df_out
 
 def DataConcat(df1, df2):
     '''Merge datasets
     '''
-    dfOut = pd.concat([df1, df2])
+    df_out = pd.concat([df1, df2])
     
-    return dfOut
+    return df_out
 
 def DataAdjCov(df, key_var, target_vars, cov_corr_vars, cov_keep_vars=[], 
                sel_col='', sel_vals = [], out_suff = 'COVADJ'):       
@@ -405,14 +417,20 @@ def DataPercICV(df, norm_var, out_suff):
         out_code = 3        
         out_msg = 'WARNING: Please select column to normalize by!'
         return {'out_code' : out_code, 'out_msg' : out_msg}
-    
-    ## Calculate percent ICV
-    df_tmp = df.select_dtypes(include=[np.number])
-    df_out = 100 * df_tmp.div(df[norm_var], axis=0)
 
-    ## Add suffix
-    df_out = df_out.add_suffix('_' + out_suff)
-    df_out = pd.concat([df, df_out], axis=1)        
+    try:
+        ## Calculate percent ICV
+        df_tmp = df.select_dtypes(include=[np.number])
+        df_out = 100 * df_tmp.div(df[norm_var], axis=0)
+
+        ## Add suffix
+        df_out = df_out.add_suffix('_' + out_suff)
+        df_out = pd.concat([df, df_out], axis=1)        
+
+    except:
+        out_code = 2        
+        out_msg = 'ERROR: Could not perform ICV correction!'
+        return {'out_code' : out_code, 'out_msg' : out_msg}
 
     out_code = 0
     out_msg = 'Created normalized data'
@@ -450,7 +468,7 @@ def DataNormalize(df, key_var, target_vars, norm_var, out_suff):
     return {'out_code' : out_code, 'out_msg' : out_msg, 'df_out' : df_out, 'out_vars' : out_vars}
 
 
-## Normalize data by the given variable
+## Drop duplicates
 def DataDrop(df, target_vars):
     '''Drop duplicates from data
     '''
@@ -483,7 +501,7 @@ def WidgetShowTable(widget_in, df = None, dset_name = None):
     df_tmp = df.head(widget_in.data_model_arr.TABLE_MAXROWS)
 
     ## Round values for display
-    df_tmp = df_tmp.applymap(lambda x: round(x, 2) if isinstance(x, (float, int)) else x)
+    df_tmp = df_tmp.applymap(lambda x: round(x, 3) if isinstance(x, (float, int)) else x)
 
     widget_in.PopulateTable(df_tmp)
 
@@ -495,4 +513,5 @@ def WidgetShowTable(widget_in, df = None, dset_name = None):
     widget_in.mdi.addSubWindow(sub)        
     sub.show()
     widget_in.mdi.tileSubWindows()
+    
 

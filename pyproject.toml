@@ -30,9 +30,7 @@ version = "0.1"
 description = "NiChart Data Viewer"
 authors = [
     "Guray Erus <guray.erus@pennmedicine.upenn.edu>",
-    "Ahmed Abdulkadir <Ahmed.Abdulkadir@pennmedicine.upenn.edu>",
-    "Ashish Singh <Ashish.Singh@pennmedicine.upenn.edu>",
-    "Randa Melhem <Randa.Melhem@Pennmedicine.upenn.edu>"
+    "Ashish Singh <Ashish.Singh@pennmedicine.upenn.edu>"
 ]
 keywords = ["neuro-imaging", "MRI", "big data"]
 readme = "README.md"
@@ -60,7 +58,7 @@ requires = []
 
 [tool.briefcase.app.NiChart_Viewer]
 formal_name = "NiChart_Viewer"
-description = "The coolest app ever"
+description = "Viewer to visualize neuroimaging chart (NiChart) values"
 icon = "NiChart_Viewer/resources/icon" # Briecase will choose the right extension depending the os (png,ico,...)
 sources = ['NiChart_Viewer']
 requires = ['cycler==0.10.0',

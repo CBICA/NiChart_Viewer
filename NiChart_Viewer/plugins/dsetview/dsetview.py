@@ -60,9 +60,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboAction = QComboBox(self.ui)
         self.ui.comboAction.setEditable(False)
         self.ui.vlAction.addWidget(self.ui.comboAction)
-        self.PopulateComboBox(self.ui.comboAction, ['Show Data', 'Show Stats', 'Sort Data', 
-                                                    'Select Columns', 'Filter Data', 
-                                                    'Drop Duplicates'], '--action--')        
+        self.PopulateComboBox(self.ui.comboAction, ['Show Data Table', 'Select Columns'], '--action--')        
         
         ## Panel for show stats
         self.ui.comboBoxStatsGroupVar = CheckableQComboBox(self.ui)
@@ -170,7 +168,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
 
         ## Show panel for the selected action
         self.selAction = self.ui.comboAction.currentText()
-        if self.selAction == 'Show Data':
+        if self.selAction == 'Show Data Table':
             self.ui.check_createnew.setCheckState(QtCore.Qt.Unchecked)
             self.ui.check_createnew.setEnabled(False)
             self.ui.wShowTable.show()
@@ -196,13 +194,13 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
             self.ui.check_createnew.setEnabled(True)
             self.ui.wDrop.show()
         
-        self.statusbar.showMessage('Action selected: ' + self.selAction, 2000)
+        self.statusbar.showMessage('Action selected: ' + self.selAction, 8000)
         
     def OnShowTableBtnClicked(self):
         '''Function to handle show data action
         '''        
         ## Display data
-        self.statusbar.showMessage('Displaying dataframe', 2000)        
+        self.statusbar.showMessage('Displaying dataframe', 8000)        
         WidgetShowTable(self)
        
         ##-------
@@ -239,7 +237,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         df_out = res_tmp['df_out']
     
         ## Display results
-        self.statusbar.showMessage('Displaying data stats', 2000)
+        self.statusbar.showMessage('Displaying data stats', 8000)
         WidgetShowTable(self, df = df_out, dset_name = 'Data Stats')        
 
         ##-------
@@ -298,7 +296,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.OnDataChanged()        
 
         ## Display results
-        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 8000)          
         WidgetShowTable(self)
 
         ##-------
@@ -363,7 +361,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.OnDataChanged()        
         
         ## Display the table
-        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 8000)          
         WidgetShowTable(self)
 
         ##-------
@@ -468,7 +466,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.OnDataChanged()        
         
         ## Display the table
-        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 8000)          
         WidgetShowTable(self)
 
         ##-------
@@ -519,7 +517,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         self.data_model_arr.OnDataChanged()        
         
         ## Display the table
-        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 2000)          
+        self.statusbar.showMessage('Dataframe updated, size: ' + str(df_out.shape), 8000)          
         WidgetShowTable(self)
         
         ##-------
@@ -574,7 +572,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         sel_vars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
         self.PopulateComboBox(self.ui.comboBoxSortVar1, sel_vars)
         
-        self.statusbar.showMessage('User selected data category: ' + selCat, 2000)        
+        self.statusbar.showMessage('User selected data category: ' + selCat, 8000)        
 
     def OnSortCat2Changed(self):
 
@@ -584,7 +582,7 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         sel_vars = df_tmp.data_cat_map.loc[[selCat]].VarName.tolist()
         self.PopulateComboBox(self.ui.comboBoxSortVar2, sel_vars)
 
-        self.statusbar.showMessage('User selected data category: ' + selCat, 2000)        
+        self.statusbar.showMessage('User selected data category: ' + selCat, 8000)        
 
     def OnDataChanged(self):
         
@@ -658,5 +656,5 @@ class DsetView(QtWidgets.QWidget,BasePlugin):
         
         self.data_model_arr.OnDataChanged()
 
-        self.statusbar.showMessage('Selected new dataset: ' + selDsetName, 2000)
+        self.statusbar.showMessage('Selected new dataset: ' + selDsetName, 8000)
         

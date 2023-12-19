@@ -127,7 +127,7 @@
                             <item>
                             <widget  class="QLabel"  name="label_select">
                                 <property  name="text">
-                                <string>Centile Reference</string>
+                                <string>Reference Sample</string>
                                 </property>
                             </widget>
                             </item>

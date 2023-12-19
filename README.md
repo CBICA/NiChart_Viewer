@@ -1,4 +1,4 @@
-# [NiChartGUI] The neuro-imaging brain aging chart
+# [NiChart_Viewer] Neuroimaging Chart Viewer
 
 | :construction:
   <font size="+1">This software and documentation is under development!
@@ -6,29 +6,35 @@
   :construction: |
 |-----------------------------------------|
 
-NiChart viewer **[NiChart_Viewer]** is a toolbox for NiChart MRI features and biomarkers.
+NiChart viewer **[NiChart_Viewer]** is a toolbox for visualization of NiChart MRI features and biomarkers. 
+
+The current version is primarily designed for visualizing DLMUSE regions of interest (ROIs) together with age centile curves of select ROIs derived from NiChart reference data.
 
 ## Installation
 
 ```shell
-conda create -n NiChart_Viewer python=3.8.8  
+conda create -n NiChart_Viewer python=3.8.8
 conda activate NiChart_Viewer
 conda install pip
 pip install .
 ```
-
-## Note
-
-Harmonization plugin requires installation of the NiChartHarmonize package (https://github.com/gurayerus/NiChartHarmonize)
-
-SPARE plugin requires installation of the NiChartSPARE package (https://github.com/georgeaidinis/spare_score)
-
 
 ## Usage
 
 ```shell
 NiChart_Viewer --data_file infile1.csv --data_file infile2.csv ...
 ```
+
+## Quickstart
+
+```shell
+examples/IXI_ROIs/run_nichart_viewer_IXI.sh
+```
+
+The script launches the viewer using the public IXI dataset as an example (DLMUSE ROIs + demog. file with Age and Sex columns).
+
+After launching the viewer, users can view data tables and select ROIs, correct ROIs for intra-cranial volume (ICV), merge ROI values with demographic variables (Age and Sex), view data distributions and scatter plots of variable pairs, and plot selected variables against NiChart reference centile curves
+
 
 ## Disclaimer
 - The software has been designed for research purposes only and has neither been reviewed nor approved for clinical use by the Food and Drug Administration (FDA) or by any other federal/state agency.

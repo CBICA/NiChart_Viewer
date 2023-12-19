@@ -68,8 +68,8 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
         self.ui.hlComboFilterVal.addWidget(self.ui.comboFilterVal)
 
         self.ui.label_filter.hide()
-        #self.ui.b_filter.hide()
-
+        #self.ui.box_filter.hide()
+        self.ui.comboFilterVar.hide()
         self.ui.comboFilterVal.hide()
 
         ## Panel for hue var
@@ -121,7 +121,7 @@ class PlotView(QtWidgets.QWidget,BasePlugin):
             self.ui.wYVar.hide()
             self.ui.wPlotBtn.show()
 
-        self.statusbar.showMessage('Plot type changed to: ' + self.selPlotType, 2000)
+        self.statusbar.showMessage('Plot type changed to: ' + self.selPlotType, 8000)
 
     def OnFilterIndexChanged(self):
         
