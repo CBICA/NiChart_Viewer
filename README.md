@@ -26,7 +26,8 @@ NiChart_Viewer --data_file infile1.csv --data_file infile2.csv ...
 ## Quickstart
 
 ```shell
-examples/IXI_ROIs/run_nichart_viewer_IXI.sh
+cd examples/IXI_ROIs
+./run_nichart_viewer_IXI.sh
 ```
 
 The script launches the viewer using the public IXI dataset as an example (DLMUSE ROIs + demog. file with Age and Sex columns).
