@@ -1,6 +1,6 @@
 .*
 __pycache__
-NiChartGUI/tmp*
+NiChart_Viewer/tmp*
 tmp*
 test*
 !.gitignore
