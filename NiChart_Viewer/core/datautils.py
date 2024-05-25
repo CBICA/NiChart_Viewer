@@ -77,12 +77,24 @@ def DataPlotScatter(axes, df, x_var, y_var, hue_var=''):
     axes.set(xlabel=x_var)
     axes.set(ylabel=y_var)
     
-def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent, cent_type):
+def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent, cent_type, hue_var=''):
     '''Plot
     '''
 
-    tmp_pal = ["#00ff00", "#0000ff"]
-    sns.scatterplot(data = df, x = x_var, y = y_var, hue = 'Sex', palette = tmp_pal, ax=axes)
+    tmp_pal = ["#00ff00", "#0000ff", "#000000"]
+
+    tmp_pal = ["#D2D68D", "#D8534D", "#12664F", "#2DC2BD", "#FB8B24", "#F5FF90"]
+ 
+    tmp_pal = ["#00AF54", "#06070E", "#FB8B24", "#2A2B2A", "#706C61", "#FB8B24", "#E5446D"]
+
+    hue_var_default = 'Sex'
+    if hue_var not in df.columns:
+        hue_var = hue_var_default
+        
+    hue_order = df[hue_var].sort_values().unique()
+    
+    sns.scatterplot(data = df, x = x_var, y = y_var, hue = hue_var, hue_order = hue_order,
+                    palette = tmp_pal, ax=axes)
     
     df_tmp = df_cent[df_cent.ROI_Name == y_var]
     cent_vals = df_tmp.columns[df_tmp.columns.str.contains('centile')].tolist()
@@ -97,7 +109,7 @@ def DataPlotWithCentiles(axes, df, x_var, y_var, df_cent, cent_type):
                  palette = tmp_pal,
                  ax=axes)
 
-    g.legend_.set_title('Sex')
+    g.legend_.set_title(hue_var)
     axes.yaxis.set_ticks_position('left')
     axes.xaxis.set_ticks_position('bottom')
     sns.despine(fig=axes.get_figure(), trim=True)

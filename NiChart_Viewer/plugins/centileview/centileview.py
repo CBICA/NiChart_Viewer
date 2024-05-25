@@ -62,6 +62,11 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
         self.ui.comboYVar.setEditable(False)
         self.ui.vlComboY.addWidget(self.ui.comboYVar)
         
+        ## Panel for Hue var
+        self.ui.comboHueVar = QComboBox(self.ui)
+        self.ui.comboHueVar.setEditable(False)
+        self.ui.vlComboHue.addWidget(self.ui.comboHueVar)
+
         ## Options panel is not shown if there is no dataset loaded
         #self.ui.wOptions.hide()
         #self.ui.wVars.hide()
@@ -76,6 +81,8 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
     def SetupConnections(self):
 
         self.data_model_arr.active_dset_changed.connect(lambda: self.OnDataChanged())
+
+        self.ui.comboHueVar.currentIndexChanged.connect(lambda: self.OnHueIndexChanged())
 
         self.ui.comboCentileType.currentIndexChanged.connect(self.OnCentileTypeChanged)
         self.ui.plotBtn.clicked.connect(lambda: self.OnPlotBtnClicked())
@@ -120,6 +127,8 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
         ## Get user selections
         x_var = 'Age'
 
+        hue_var = self.ui.comboHueVar.currentText()
+        
         ## Prepare plot canvas  
         self.plotCanvas = PlotCanvas(self.ui)
         self.plotCanvas.axes = self.plotCanvas.fig.add_subplot(111)
@@ -133,7 +142,7 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
         self.statusbar.showMessage('Centile cols : ' + ','.join(self.df_cent.ROI_Name.unique()), 8000)
 
         #DataPlotScatter(self.plotCanvas.axes, df_out, x_var, y_var)
-        DataPlotWithCentiles(self.plotCanvas.axes, df_out, x_var, y_var, self.df_cent, self.selCentileType)
+        DataPlotWithCentiles(self.plotCanvas.axes, df_out, x_var, y_var, self.df_cent, self.selCentileType, hue_var)
 
         self.plotCanvas.draw()
 
@@ -202,10 +211,27 @@ class CentileView(QtWidgets.QWidget,BasePlugin):
 
             ## Update selection, sorting and drop duplicates panels
             self.UpdatePanels(colNames)
+            
+    def OnHueIndexChanged(self):
+        
+        TH_NUM_UNIQ = 20
+        
+        selHue = self.ui.comboHueVar.currentText()
+        #selHueVals = self.data_model_arr.datasets[self.active_index].data.unique()
+        
+        #if len(selHueVals) > TH_NUM_UNIQ:
+            #self.errmsg.showMessage('Too many unique values for selection (' + 
+                                    #str(len(selHueVals)) + '), skip')
+            #return
+        #self.PopulateComboBox(self.ui.comboHueVal, selHueVals)
+        #self.ui.comboHueVal.show()
+            
 
     def UpdatePanels(self, colNames):
         
         self.PopulateComboBox(self.ui.comboYVar, colNames, '--var name--')
+        self.PopulateComboBox(self.ui.comboHueVar, colNames, '--var name--')
+        
         
     # Add the values to comboBox
     def PopulateComboBox(self, cbox, values, strPlaceholder = None, bypassCheckable=False):
