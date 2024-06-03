@@ -10,22 +10,32 @@ The current version is primarily designed for visualizing NiChart_DLMUSE variabl
 
 ## Installation
 
-```shell
+You may directly install NiChart_Viewer as a package from PyPI, or build it from source. 
+
+```bash
 conda create -n NiChart_Viewer python=3.8.8
 conda activate NiChart_Viewer
 conda install pip
 pip install .
 ```
 
+Alternatively:
+
+```bash
+conda create -n NiChart_Viewer python=3.8.8
+conda activate NiChart_Viewer
+pip install NiChart_Viewer
+```
+
 ## Usage
 
-```shell
+```bash
 NiChart_Viewer --data_file infile1.csv --data_file infile2.csv ...
 ```
 
 ## Quickstart
 
-```shell
+```bash
 cd examples/IXI_ROIs
 ./run_nichart_viewer_IXI.sh
 ```
