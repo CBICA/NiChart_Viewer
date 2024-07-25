@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Visualization"
 ]
 
-include = ["NiChart_Viewer/**/*.ui", "NiChart_Viewer/**/*.yapsy-plugin", "*.png"]
+include = ["NiChart_Viewer/shared/*", "NiChart_Viewer/**/*.ui", "NiChart_Viewer/**/*.yapsy-plugin", "*.png"]
 packages = [
     {include = "NiChart_Viewer"}
 ]
