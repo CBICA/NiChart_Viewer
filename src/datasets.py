@@ -10,7 +10,8 @@ import tkinter as tk
 from tkinter import ttk
 
 # sets working directory to root dir
-os.chdir('../..')
+#os.chdir('../..')
+os.chdir('..')
 
 class Datasets(ctk.CTk):
     """
@@ -28,7 +29,9 @@ class Datasets(ctk.CTk):
         self.update_global = update_global
         
         # This gets the info.json data that user requests
-        self.json_file = open("src/workflow/workflows/info.json")
+        #self.json_file = open("src/workflow/workflows/info.json")
+        self.json_file = open("examples/info.json")        
+        
         self.json_data = json.load(self.json_file)
         self.studies = self.json_data["studies"]
 
