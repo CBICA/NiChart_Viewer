@@ -38,6 +38,8 @@ class Plot_Regression(ctk.CTk):
         )
         self.frame.place(relx=0.01, rely=0.02)
 
+        self.row_counter = 1
+
         def button_event():
             sns.set(style="white")
 
@@ -56,9 +58,15 @@ class Plot_Regression(ctk.CTk):
 
                 ## Add it to canvas
                 canvas = FigureCanvasTkAgg(fig, master=self.frame)
+                #canvas.get_tk_widget().grid(row=1,column=4,columnspan=3,rowspan=20)
+                canvas.get_tk_widget().grid(row=self.row_counter, column=0)
                 canvas.draw()
-                canvas.get_tk_widget().pack()
-            
+                #canvas.get_tk_widget().pack()
+                self.row_counter += 1 
+                
+                print('click ' + str(self.row_counter))
+        
+        
         self.button = ctk.CTkButton(parent, text="Plot", command=button_event)
         self.button.place(relx=0.815, rely=0.145)
 

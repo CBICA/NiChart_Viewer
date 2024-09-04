@@ -32,7 +32,6 @@ class NiChartViewer(ctk.CTk):
     def update_global(self, fname):
         self.fname = fname
         self.plot_reg.fname = fname
-        print('HELLO !!!!!!!!!!!!!!!!!!!!!!!' + self.fname   )
 
 if __name__ == "__main__":
     app = NiChartViewer()
