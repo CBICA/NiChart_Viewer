@@ -1,5 +1,7 @@
 import pandas as pd
 import streamlit as st
+from io import StringIO
+from typing import Any
 from pandas.api.types import (
     is_categorical_dtype,
     is_datetime64_any_dtype,
@@ -9,10 +11,11 @@ from pandas.api.types import (
 
 st.set_page_config(page_title="DataFrame Demo", page_icon="📊")
 
-st.markdown("# Show Data")
-st.sidebar.header("Show Data")
+st.markdown("# CSV data visualization")
+st.sidebar.header("CSV data visualization")
 st.write(
-    """View NiChart imaging variables and biomarkers
+    """
+        View NiChart imaging variables and biomarkers
     """
 )
 
@@ -92,8 +95,21 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"
-df = pd.read_csv(fname)
-df = df.head(40)
 
-st.dataframe(filter_dataframe(df))
+uploaded_file = st.file_uploader("Upload csv file")
+df = None
+if uploaded_file is not None:
+    bytes_data = uploaded_file.getvalue()
+    
+    stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+    string_data = stringio.read()
+
+    df = pd.read_csv(uploaded_file)
+    st.write(f"Selected dataframe: {uploaded_file}")
+    st.write(f"Data Shape: {df.shape}")
+
+    # save user input
+    df.to_csv('user_input.csv', header=True, index=False)
+
+    df = df.head(40)
+    st.dataframe(filter_dataframe(df))
