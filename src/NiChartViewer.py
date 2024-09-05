@@ -2,10 +2,7 @@ import streamlit as st
 from PIL import Image
 
 nicon = Image.open("../resources/nichart1.png")
-st.set_page_config(
-    page_title="NiChart Viewer",
-    page_icon=nicon,
-)
+st.set_page_config(page_title="NiChart Viewer", page_icon=nicon, layout='wide')
 
 st.write("# Welcome to NiChart Viewer! 👋")
 

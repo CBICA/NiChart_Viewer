@@ -9,7 +9,7 @@ from pandas.api.types import (
 import plotly.express as px
 
 
-st.set_page_config(page_title="DataFrame Demo", page_icon="📊")
+st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
 
 st.markdown("# Plot Data")
 st.sidebar.header("Plot Data")
