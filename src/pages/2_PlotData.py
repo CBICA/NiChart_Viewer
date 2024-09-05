@@ -54,28 +54,47 @@ st.line_chart(output_data, x="Age", y=f"{ICV_Column}")
 
 ############ SCATTER PLOT #############
 
+if 'count_scatter_plots' not in st.session_state:
+    st.session_state.count_scatter_plots = 0
+
 st.write("""
             Scatter plot
          """)
 
-#TODO: I dont know what this does, it's on the original viewer so i added it as an option
-#      so this needs to change the plot 
-reference_sample = st.selectbox(
-        "Reference Sample",
-        ("Healthy control", "Healthy control, female", "Healthy control male", "..."),
-        )
-Y_var_selector = st.selectbox(
-        "Y Var",
-        output_data.columns
-        )
-Hue_var_selector = st.selectbox(
-        "Hue Var",
-        output_data.columns
-        )
+def add_scatter_plot(index: int) -> None:
+    st.session_state.count_scatter_plots += 1
+    #TODO: I dont know what this does, it's on the original viewer so i added it as an option
+    #      so this needs to change the plot
+    reference_sample = st.selectbox(
+            "Reference Sample",
+            ("Healthy control", "Healthy control, female", "Healthy control male", "..."),
+            key=f"reference_sample_{index}"
+            )
+    Y_var_selector = st.selectbox(
+            "Y Var",
+            output_data.columns,
+            key=f"Y_var_selector_{index}"
+            )
+    Hue_var_selector = st.selectbox(
+            "Hue Var",
+            output_data.columns,
+            key=f"Hue_var_selector_{index}"
+            )
 
-scatter_plot = px.scatter(output_data, x=f'{Y_var_selector}', y=f'{Hue_var_selector}')
-scatter_plot.update_layout(title={'text':f'Scatter plot of {Y_var_selector} and Age', 'x': 0.3})
-scatter_plot
+    scatter_plot = px.scatter(output_data, x=f'{Y_var_selector}', y=f'{Hue_var_selector}')
+    scatter_plot.update_layout(title={'text':f'Scatter plot of {Y_var_selector} and {Hue_var_selector}', 'x': 0.3})
+    st.plotly_chart(scatter_plot)
+
+if st.button("Add plot"):
+    st.session_state.count_scatter_plots += 1
+
+if st.button("Reset plots"):
+    st.session_state.count_scatter_plots = 0
+
+for i in range(st.session_state.count_scatter_plots):
+    st.write(f"Scatter plot {i + 1}")
+    add_scatter_plot(i)
+
 
 ############ END OF SCATTER PLOT ##########
 
@@ -89,4 +108,4 @@ scatter_plot
 # Streamlit widgets automatically run the script from top to bottom. Since
 # this button is not connected to any other logic, it just causes a plain
 # rerun.
-st.button("Re-run")
+
