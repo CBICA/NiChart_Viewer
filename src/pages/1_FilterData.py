@@ -9,8 +9,8 @@ from pandas.api.types import (
 
 st.set_page_config(page_title="DataFrame Demo", page_icon="📊")
 
-st.markdown("# Show Data")
-st.sidebar.header("Show Data")
+st.markdown("# Filter Data")
+st.sidebar.header("Filter Data")
 st.write(
     """View NiChart imaging variables and biomarkers
     """
@@ -44,8 +44,8 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         if is_datetime64_any_dtype(df[col]):
             df[col] = df[col].dt.tz_localize(None)
 
+    # Create filters selected by the user
     modification_container = st.container()
-
     with modification_container:
         to_filter_columns = st.multiselect("Filter dataframe on", df.columns)
         for column in to_filter_columns:
@@ -90,10 +90,15 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                 if user_text_input:
                     df = df[df[column].str.contains(user_text_input)]
 
+    # Print sample size after filtering
+    df_dim1, df_dim2 = df.shape
+    st.success("Sample size is: " + str(df_dim1))
+
     return df
 
+# Input data is hardcoded here
 fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"
 df = pd.read_csv(fname)
-df = df.head(40)
+#df = df.head(40)
 
 st.dataframe(filter_dataframe(df))
