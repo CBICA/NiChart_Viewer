@@ -23,18 +23,20 @@ st.write(
 )
 st.sidebar.image("../resources/nichart1.png")
 
-with st.sidebar.expander("How to upload input files"):
+with st.sidebar:
+    st.markdown("# How to upload input files")
     st.markdown("""
-                You can upload 1 or more csv files in once, the viewer
-                will provide a dropdown selection for you to choose which 
-                csv file you want to work with.
+                You can upload 1 or more csv files in once, the viewer \
+                will provide a dropdown selection for you to choose which \
+                csv file you want to work with. \
                 """)
 
-with st.sidebar.expander("DataFrame filtering"):
+with st.sidebar:
+    st.markdown("# DataFrame filtering")
     st.markdown("""
-                The filtering is done to a subset of the csv file as the visualization
-                for such big datasets is not efficient. Have that in mind while you study the 
-                charts.
+                The filtering is done to a subset of the csv file as the visualization \
+                for such big datasets is not efficient. Have that in mind while you study the \
+                charts. \
                 """)
 
 st.sidebar.info("""

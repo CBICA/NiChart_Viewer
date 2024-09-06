@@ -23,14 +23,23 @@ def sidebar() -> None:
         Sidebar stuff
     """
     st.sidebar.image("../resources/nichart1.png")
+    with st.sidebar:
+        st.markdown("# Data visualization page")
+        st.markdown("In order to run the whole pipeline, please click on `Run options` on the left panel \
+        and provide your input and output folder, the total studies and the total cores you want \
+        the pipelines to use. Once the pipelines run, you will have all the results in the output folder \
+        you provided. Then, you can visualize all the results via the main charts on this page. \
+        ")
     with st.sidebar.expander("Run options"):
         input_folder = st.text_input("path to input folder")
         output_folder = st.text_input("path to output folder")
         studies = st.text_input("total studies")
         cores = st.text_input("total cores")
-
-        # st.write(input_folder)
-        # st.write(output_folder)
+        
+        if not os.path.exists(input_folder):
+            st.warning("Path to input folder don't exist")
+        if not os.path.exists(output_folder):
+            st.warning("Path to output folder don't exist")
 
         if st.button("Run w_sMRI"):
             st.write("Pipeline is running, please wait!")
