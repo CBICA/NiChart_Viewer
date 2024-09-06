@@ -21,6 +21,7 @@ def sidebar() -> None:
     """
         Sidebar stuff
     """
+    st.sidebar.image("../resources/nichart1.png")
     with st.sidebar.expander("Run options"):
         if st.button("Run w_sMRI"):
             st.write("Will run the w_sMRI pipeline with the input data[Data path here]")
