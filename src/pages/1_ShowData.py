@@ -140,7 +140,7 @@ def df_histchart(df: pd.DataFrame) -> Any:
     ax.set_ylabel("Frequency")
     return fig
 
-uploaded_file = st.file_uploader("Upload csv file", accept_multiple_files=True)
+uploaded_file = st.file_uploader("Upload csv files", accept_multiple_files=True)
 
 df = None
 if len(uploaded_file) != 0:

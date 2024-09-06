@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.figure_factory as ff
 import plotly.express as px
+import os
 
 st.set_page_config(page_title="Plotting Demo", page_icon="📈")
 
@@ -41,7 +42,23 @@ def sidebar() -> None:
 
 
 # Read output data 
-output_data = pd.read_csv("../example_output/out_combined/Study1_DLMUSE_All.csv")
+output_data_list = []
+output_data_hash = {}
+
+for root, dirs, files in os.walk("../user_output"):
+    for file in files:
+        if file.endswith('.csv'):
+            filepath = os.path.join(root, file)
+
+            if os.path.getsize(filepath) == 0:
+                continue
+
+            df = pd.read_csv(filepath)
+            output_data_list.append(file)
+            output_data_hash[file] = df
+
+output_data_selection = st.selectbox("Select output csv", output_data_list, index=4) # index is 4 because we only need dlmuse all for now 
+output_data = output_data_hash[output_data_selection]
 
 def distribution_plot() -> None:
     """
@@ -52,16 +69,19 @@ def distribution_plot() -> None:
                 Distribution plot
             """
     )
+    valid_columns = [col_name for col_name, col_type in output_data.dtypes.items() 
+                 if pd.api.types.is_integer_dtype(col_type) or pd.api.types.is_float_dtype(col_type)]
+    dist_selection = st.selectbox("Select element for distribution plot", valid_columns)
 
-    x1 = output_data['GM']
+    x1 = output_data[f'{dist_selection}']
     hist_data = [x1]
-    group_labels = ['GM Volume'] 
+    group_labels = [f'{dist_selection} Volume'] 
 
     dist_plot = ff.create_distplot(
             hist_data, group_labels, bin_size = [.0]
     )
 
-    dist_plot.update_layout(title={'text':'Distribution plot of GM', 'x': 0.3})
+    dist_plot.update_layout(title={'text':f'Distribution plot of {dist_selection}', 'x': 0.4})
     st.plotly_chart(dist_plot, use_container_width=True)
 
 
@@ -111,7 +131,7 @@ def scatter_plot() -> None:
                 )
 
         scatter_plot = px.scatter(output_data, x=f'{Y_var_selector}', y=f'{Hue_var_selector}')
-        scatter_plot.update_layout(title={'text':f'Scatter plot of {Y_var_selector} and {Hue_var_selector}', 'x': 0.3})
+        scatter_plot.update_layout(title={'text':f'Scatter plot of {Y_var_selector} and {Hue_var_selector}', 'x': 0.4})
         st.plotly_chart(scatter_plot)
 
     if st.button("Add plot"):
