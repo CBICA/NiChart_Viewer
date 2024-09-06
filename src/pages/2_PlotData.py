@@ -29,14 +29,15 @@ def sidebar() -> None:
         studies = st.text_input("total studies")
         cores = st.text_input("total cores")
 
-        st.write(input_folder)
-        st.write(output_folder)
+        # st.write(input_folder)
+        # st.write(output_folder)
 
         if st.button("Run w_sMRI"):
             st.write("Pipeline is running, please wait!")
-            os.system("cd ../../NiCHart_Project/src/workflow && ls")
+            os.system("cd ../../NiCHart_Project/src/workflow")
             os.system(f"cd ../../NiChart_Project && python3 run.py --dir_input {input_folder} --dir_output {output_folder} --studies {studies} --cores {cores} --conda 1")
             st.write("Run completed!")
+
         if st.button("Run Segmentation"):
             st.write("Segmentation is not yet supported. This feature will be added soon!")
 
