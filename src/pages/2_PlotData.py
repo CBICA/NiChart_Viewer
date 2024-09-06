@@ -24,12 +24,25 @@ def sidebar() -> None:
     """
     st.sidebar.image("../resources/nichart1.png")
     with st.sidebar.expander("Run options"):
+        input_folder = st.text_input("path to input folder")
+        output_folder = st.text_input("path to output folder")
+        studies = st.text_input("total studies")
+        cores = st.text_input("total cores")
+
+        st.write(input_folder)
+        st.write(output_folder)
+
         if st.button("Run w_sMRI"):
-            st.write("Will run the w_sMRI pipeline with the input data[Data path here]")
+            st.write("Pipeline is running, please wait!")
+            os.system("cd ../../NiCHart_Project/src/workflow && ls")
+            os.system(f"cd ../../NiChart_Project && python3 run.py --dir_input {input_folder} --dir_output {output_folder} --studies {studies} --cores {cores} --conda 1")
+            st.write("Run completed!")
         if st.button("Run Segmentation"):
-            st.write("will run the segmentation pipeline with the input data[Data path here]")
+            st.write("Segmentation is not yet supported. This feature will be added soon!")
 
     st.sidebar.info("""
+                    Currently, we only support the w_sMRI pipeline. Please visit the github repo for further updates regarding new features.
+
                     Note: This website is based on materials from the [NiChart Project](https://neuroimagingchart.com/).
                     The content and the logo of NiChart are intellectual property of [CBICA](https://www.med.upenn.edu/cbica/).
                     Make sure that you read the [licence](https://github.com/CBICA/NiChart_Project/blob/main/LICENSE).

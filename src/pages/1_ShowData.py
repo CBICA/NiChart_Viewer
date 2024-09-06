@@ -21,8 +21,22 @@ st.write(
         View NiChart imaging variables and biomarkers
     """
 )
-
 st.sidebar.image("../resources/nichart1.png")
+
+with st.sidebar.expander("How to upload input files"):
+    st.markdown("""
+                You can upload 1 or more csv files in once, the viewer
+                will provide a dropdown selection for you to choose which 
+                csv file you want to work with.
+                """)
+
+with st.sidebar.expander("DataFrame filtering"):
+    st.markdown("""
+                The filtering is done to a subset of the csv file as the visualization
+                for such big datasets is not efficient. Have that in mind while you study the 
+                charts.
+                """)
+
 st.sidebar.info("""
                     Note: This website is based on materials from the [NiChart Project](https://neuroimagingchart.com/).
                     The content and the logo of NiChart are intellectual property of [CBICA](https://www.med.upenn.edu/cbica/).
@@ -140,7 +154,7 @@ def df_histchart(df: pd.DataFrame) -> Any:
     ax.set_ylabel("Frequency")
     return fig
 
-uploaded_file = st.file_uploader("Upload csv files", accept_multiple_files=True)
+uploaded_file = st.file_uploader("Upload input csv files", accept_multiple_files=True)
 
 df = None
 if len(uploaded_file) != 0:
