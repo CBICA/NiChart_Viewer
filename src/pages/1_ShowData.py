@@ -10,6 +10,7 @@ from pandas.api.types import (
 )
 from typing import Any 
 import matplotlib.pyplot as plt
+import os
 
 st.set_page_config(page_title="DataFrame Demo", page_icon="📊")
 st.markdown("# CSV data visualization")
@@ -139,22 +140,25 @@ def df_histchart(df: pd.DataFrame) -> Any:
     ax.set_ylabel("Frequency")
     return fig
 
-uploaded_file = st.file_uploader("Upload csv file")
+uploaded_file = st.file_uploader("Upload csv file", accept_multiple_files=True)
+
 df = None
-if uploaded_file is not None:
-    bytes_data = uploaded_file.getvalue()
-    
-    stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-    string_data = stringio.read()
+if len(uploaded_file) != 0:
+    csv_files = []
+    csv_files_hash = {}
+    for (i, csv) in enumerate(uploaded_file):
+        df = pd.read_csv(csv)
+        os.makedirs("user_input/", exist_ok=True)
+        filepath = os.path.join("user_input/", csv.name)
+        df.to_csv(filepath, header=True, index=False)
+        csv_files.append(csv.name)
+        csv_files_hash[csv.name] = df 
 
-    df = pd.read_csv(uploaded_file)
-    st.write(f"Selected dataframe: {uploaded_file}")
-    st.write(f"Data Shape: {df.shape}")
+    csv_select = st.selectbox("Select dataset", csv_files)
+    st.write(f"Selected dataframe: {csv_select}")
+    st.write(f"Data Shape: {csv_files_hash[csv_select].shape}")
 
-    # save user input
-    df.to_csv('user_input.csv', header=True, index=False)
-
-    df_reduced = df.head(40)
+    df_reduced = csv_files_hash[csv_select].head(40)
     st.dataframe(filter_dataframe(df_reduced))
 
     piechart = df_piechart(df_reduced)
