@@ -91,7 +91,6 @@ def scatter_plot() -> None:
             """)
 
     def add_scatter_plot(index: int) -> None:
-        st.session_state.count_scatter_plots += 1
         #TODO: I dont know what this does, it's on the original viewer so i added it as an option
         #      so this needs to change the plot
         reference_sample = st.selectbox(

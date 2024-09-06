@@ -10,6 +10,19 @@ st.set_page_config(
 st.sidebar.image("../resources/nichart1.png")
 st.write("# Welcome to NiChart Viewer! 👋")
 
+st.sidebar.info("""
+                    Note: This website is based on materials from the [NiChart Project](https://neuroimagingchart.com/).
+                    The content and the logo of NiChart are intellectual property of [CBICA](https://www.med.upenn.edu/cbica/).
+                    Make sure that you read the [licence](https://github.com/CBICA/NiChart_Project/blob/main/LICENSE).
+                    """)
+
+with st.sidebar.expander("Acknowledgments"):
+    st.markdown("""
+                The CBICA Dev team
+                """)
+
+
+
 st.sidebar.success("Select a task above")
 
 st.markdown(
