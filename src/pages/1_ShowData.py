@@ -8,16 +8,20 @@ from pandas.api.types import (
     is_numeric_dtype,
     is_object_dtype,
 )
+from typing import Any 
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="DataFrame Demo", page_icon="📊")
-
 st.markdown("# CSV data visualization")
 st.sidebar.header("CSV data visualization")
+
 st.write(
     """
         View NiChart imaging variables and biomarkers
     """
 )
+
+st.sidebar.image("../resources/nichart1.png")
 
 def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -96,6 +100,33 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def df_piechart(df: pd.DataFrame) -> Any: 
+    # Let user select the column for the pie chart
+    numeric_columns = df.select_dtypes(include=['float', 'int']).columns
+
+    selection = st.selectbox("Select column for pie chart", df.columns)
+    
+    # Group by the selected column to get counts for the pie chart
+    counts = df[selection].value_counts()
+    
+    # Create a pie chart using matplotlib
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.pie(counts, labels=counts.index, autopct='%1.1f%%')
+    ax.set_title(f"Piechart of {selection}")
+    return fig
+
+def df_histchart(df: pd.DataFrame) -> Any:
+    numeric_columns = df.select_dtypes(include=['float', 'int']).columns
+    
+    selection = st.selectbox("Select column for histogram", numeric_columns)
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.hist(df[selection], bins=20, alpha=0.7, color='skyblue', edgecolor='black')
+    ax.set_title(f"Histogram of {selection}")
+    ax.set_xlabel(selection)
+    ax.set_ylabel("Frequency")
+    return fig
+
 uploaded_file = st.file_uploader("Upload csv file")
 df = None
 if uploaded_file is not None:
@@ -111,5 +142,12 @@ if uploaded_file is not None:
     # save user input
     df.to_csv('user_input.csv', header=True, index=False)
 
-    df = df.head(40)
-    st.dataframe(filter_dataframe(df))
+    df_reduced = df.head(40)
+    st.dataframe(filter_dataframe(df_reduced))
+
+    piechart = df_piechart(df_reduced)
+    st.pyplot(piechart)
+
+    histchart = df_histchart(df_reduced)
+    st.pyplot(histchart)
+
