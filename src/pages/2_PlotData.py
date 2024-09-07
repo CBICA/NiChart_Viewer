@@ -11,67 +11,76 @@ from math import ceil
 
 # Initiate Session State Values
 if 'instantiated' not in st.session_state:
-    # Answers-to-Questions is a one-to-many relationship
     st.session_state.plots = pd.DataFrame({'PID':[]})
     st.session_state.pid = 1
     st.session_state.instantiated = True
 
-# Add a new plot block to the dataframe
 def add_plot():
+    '''
+    Adds a new plot (updates a dataframe with plot ids)
+    '''
     df_p = st.session_state.plots
-    # Create answer
     df_p.loc[st.session_state.pid] = [f'Plot {st.session_state.pid}']
     st.session_state.pid += 1
-    st.text(st.session_state.pid)
 
 # Remove a plot
 def remove_plot(pid):
+    '''
+    Removes the plot with the pid (updates the plot ids dataframe)
+    '''
     df_p = st.session_state.plots
-    st.session_state.plots = df_p = df_p[df_p.PID != pid]
+    df_p = df_p[df_p.PID != pid]
+    st.session_state.plots = df_p
 
-
-
-# Display a plot
 def display_plot(pid):
+    '''
+    Displays the plot with the pid
+    '''
 
-    ## Data frame with filtered data
+    # Create a copy of dataframe for filtered data
     df_filt = df.copy()
 
+    # Main container for the plot
     plot_container = st.container(border=True)
     with plot_container:
 
+        # Tabs for parameters
         ptabs = st.tabs([":lock:", ":large_orange_circle:", ":large_yellow_circle:",
                          ":large_green_circle:", ":x:"])
+
+        # Tab 0: to hide other tabs
+
+        # Tab 1: to set plotting parameters
         with ptabs[1]:
             plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{pid}")
-            x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index=3)
-            y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index=8)
+            # x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index=3)
+            # y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index=8)
 
+            # Set index for default values
+            x_ind = df.columns.get_loc(st.session_state.xvar)
+            y_ind = df.columns.get_loc(st.session_state.yvar)
+
+            x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index = x_ind)
+            y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index = y_ind)
+
+        # Tab 2: to set data filtering parameters
         with ptabs[2]:
             df_filt = filter_dataframe(df, pid)
 
+        # Tab 3: to set centiles
         with ptabs[3]:
             cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{pid}")
 
+        # Tab 4: to reset parameters or to delete plot
         with ptabs[4]:
             st.button('Delete Plot', key=f'p_delete_{pid}',
                       on_click=remove_plot, args=[pid])
 
-            # # Display filtered dataframe
-            # my_expander = st.expander(label='Data')
-            # with my_expander:
-            #     st.dataframe(df_filt)
-
-        # my_expander = st.expander(label='Plot', expanded = True)
-        # with my_expander:
-
+        # Main plot
         scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var)
         st.plotly_chart(scatter_plot)
 
-        # st.button('Remove QnA', key=f'a_remove_{pid}', on_click=remove_plot, args=[pid])
 
-
-## Function definitions
 def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
     """
     Adds a UI on top of a dataframe to let viewers filter columns
@@ -107,7 +116,6 @@ def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
             left.write("↳")
             # Treat columns with < 10 unique values as categorical
             if is_categorical_dtype(df[column]) or df[column].nunique() < 10:
-                # widget_no = cno * 16 + vno + 1
                 widget_no = pid + '_col_' + str(vno)
                 user_cat_input = right.multiselect(
                     f"Values for {column}",
@@ -153,54 +161,45 @@ def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
 
     return df
 
+# Config page
 st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
-# st.set_page_config(page_title="DataFrame Demo", page_icon="📊")
 
-# st.markdown("# Plot Data")
-# st.sidebar.header("Plot Data")
-# st.write(
-#     """View NiChart imaging variables and biomarkers
-#     """
-# )
-
-# Set plot counter
-if 'count_scatter_plots' not in st.session_state:
-    st.session_state.count_scatter_plots = 0
-
-# Page controls in Sidebar
-with st.sidebar:
-
-    st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
-    st.write('---')
-    # Button to add new answer block
-
-    # st.button('New Plot')
-    # # st.button('New Plot', on_click=add_answer)
-
-    if st.button("Add plot"):
-        add_plot()
-        if st.session_state.count_scatter_plots < st.session_state.plot_per_raw - 1:
-            st.session_state.count_scatter_plots += 1
-
-# Input data is hardcoded here
+# FIXME: Input data is hardcoded here for now
 fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"
 df = pd.read_csv(fname)
-#df = df.head(40)
 
+# Page controls in side bar
+with st.sidebar:
 
-# Render plots
+    # Slider to set number of plots in a row
+    st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
+    st.write('---')
+
+    # Default x axis
+    st.session_state.xvar = st.selectbox("Set X Var", df.columns, key=f"x_var_init")
+    st.session_state.yvar = st.selectbox("Set Y Var", df.columns, key=f"y_var_init")
+    st.write('---')
+
+    # Button to add a new plot
+    if st.button("Add plot"):
+        add_plot()
+
+# Read plot ids
 df_p = st.session_state.plots
 p_index = df_p.PID.tolist()
 plot_per_raw = st.session_state.plot_per_raw
 
+# Render plots
+#  - iterates over plots;
+#  - for every "plot_per_raw" plots, creates a new columns block, resets column index, and displays the plot
 for i in range(0, len(p_index)):
-    cno = i % st.session_state.plot_per_raw
-    if cno == 0:
+    column_no = i % plot_per_raw
+    if column_no == 0:
         blocks = st.columns(plot_per_raw)
-    with blocks[cno]:
+    with blocks[column_no]:
         display_plot(p_index[i])
-        # display_plot(plot_index[i])
 
+# FIXME: this is for debugging for now; will be removed
 # with st.expander('Saved DataFrames'):
 with st.container():
     st.session_state.plots
