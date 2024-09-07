@@ -35,7 +35,7 @@ def sidebar() -> None:
         output_folder = st.text_input("path to output folder")
         studies = st.text_input("total studies")
         cores = st.text_input("total cores")
-        
+
         if not os.path.exists(input_folder):
             st.warning("Path to input folder don't exist")
         if not os.path.exists(output_folder):
@@ -92,13 +92,13 @@ def distribution_plot() -> None:
                 Distribution plot
             """
     )
-    valid_columns = [col_name for col_name, col_type in output_data.dtypes.items() 
+    valid_columns = [col_name for col_name, col_type in output_data.dtypes.items()
                  if pd.api.types.is_integer_dtype(col_type) or pd.api.types.is_float_dtype(col_type)]
     dist_selection = st.selectbox("Select element for distribution plot", valid_columns)
 
     x1 = output_data[f'{dist_selection}']
     hist_data = [x1]
-    group_labels = [f'{dist_selection} Volume'] 
+    group_labels = [f'{dist_selection} Volume']
 
     dist_plot = ff.create_distplot(
             hist_data, group_labels, bin_size = [.0]
