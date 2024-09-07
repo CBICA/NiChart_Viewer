@@ -119,23 +119,27 @@ for cno in range(0, st.session_state.count_scatter_plots+1):
 
     with cols[cno]:
 
-        plot_container = st.container()
+        ## Data frame with filtered data
+        df_filt = df.copy()
+
+        plot_container = st.container(border=True)
         with plot_container:
 
             st.write('Plot ' + str(cno + 1))
 
-            cols2 = st.columns([1,1,1,1])
+            my_expander = st.popover(label='Settings')
+            with my_expander:
+                tab1, tab2, tab3 = st.tabs(["Plot", "Filters", "Centiles"])
+                with tab1:
+                    plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{cno}")
+                    x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{cno}")
+                    y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{cno}")
 
-            with cols2[0]:
-                # Filter data
-                with st.popover(label='Filters'):
+                with tab2:
                     df_filt = filter_dataframe(df, cno)
 
-            with cols2[1]:
-                # Select vars
-                with st.popover(label='Filters'):
-                    df_filt2 = filter_dataframe(df, cno + 100)
-
+                with tab3:
+                    cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{cno}")
 
             # # Display filtered dataframe
             # my_expander = st.expander(label='Data')
@@ -144,7 +148,8 @@ for cno in range(0, st.session_state.count_scatter_plots+1):
 
             my_expander = st.expander(label='Plot', expanded = True)
             with my_expander:
-                scatter_plot = px.scatter(df_filt, x = 'Age', y = 'GM')
+
+                scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var)
                 st.plotly_chart(scatter_plot)
 
 
