@@ -11,8 +11,18 @@ from math import ceil
 
 # Initiate Session State Values
 if 'instantiated' not in st.session_state:
+
+    # Dataframe to keep plot ids
     st.session_state.plots = pd.DataFrame({'PID':[]})
     st.session_state.pid = 1
+
+    # Default values for plotting parameters
+    st.session_state.default_x_var = 'Age'
+    st.session_state.default_y_var = 'GM'
+    st.session_state.default_hue_var = 'Sex'
+    st.session_state.trend_types = ['none', 'ols', 'lowess']
+    st.session_state.default_trend_type = 'ols'
+
     st.session_state.instantiated = True
 
 def add_plot():
@@ -57,13 +67,15 @@ def display_plot(pid):
             # y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index=8)
 
             # Set index for default values
-            x_ind = df.columns.get_loc(st.session_state.x_var)
-            y_ind = df.columns.get_loc(st.session_state.y_var)
-            hue_ind = df.columns.get_loc(st.session_state.hue_var)
+            x_ind = df.columns.get_loc(st.session_state.default_x_var)
+            y_ind = df.columns.get_loc(st.session_state.default_y_var)
+            hue_ind = df.columns.get_loc(st.session_state.default_hue_var)
+            trend_index = st.session_state.trend_types.index(st.session_state.default_trend_type)
 
             x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index = x_ind)
             y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index = y_ind)
             hue_var = st.selectbox("Hue Var", df_filt.columns, key=f"hue_var_{pid}", index = hue_ind)
+            trend_type = st.selectbox("Trend Line", st.session_state.trend_types, key=f"trend_type_{pid}", index = trend_index)
 
         # Tab 2: to set data filtering parameters
         with ptabs[2]:
@@ -79,7 +91,10 @@ def display_plot(pid):
                       on_click=remove_plot, args=[pid])
 
         # Main plot
-        scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var, color = hue_var, trendline="ols")
+        if trend_type == 'none':
+            scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var, color = hue_var)
+        else:
+            scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var, color = hue_var, trendline = trend_type)
         st.plotly_chart(scatter_plot)
 
 
@@ -177,26 +192,30 @@ with st.sidebar:
     st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
     st.write('---')
 
-    # Default x and y axis
-    DEFAULT_XVAR = 'Age'
-    DEFAULT_YVAR = 'GM'
-    DEFAULT_HUEVAR = 'Sex'
+    # Default values for plot params
+    st.session_state.default_hue_var = 'Sex'
 
     def_ind_x = 0
-    if DEFAULT_XVAR in df.columns:
-        def_ind_x = df.columns.get_loc(DEFAULT_XVAR)
+    if st.session_state.default_x_var in df.columns:
+        def_ind_x = df.columns.get_loc(st.session_state.default_x_var)
 
     def_ind_y = 0
-    if DEFAULT_YVAR in df.columns:
-        def_ind_y = df.columns.get_loc(DEFAULT_YVAR)
+    if st.session_state.default_y_var in df.columns:
+        def_ind_y = df.columns.get_loc(st.session_state.default_y_var)
 
     def_ind_hue = 0
-    if DEFAULT_HUEVAR in df.columns:
-        def_ind_hue = df.columns.get_loc(DEFAULT_HUEVAR)
+    if st.session_state.default_hue_var in df.columns:
+        def_ind_hue = df.columns.get_loc(st.session_state.default_hue_var)
 
-    st.session_state.x_var = st.selectbox("Default X Var", df.columns, key=f"x_var_init", index = def_ind_x)
-    st.session_state.y_var = st.selectbox("Default Y Var", df.columns, key=f"y_var_init", index = def_ind_y)
-    st.session_state.hue_var = st.selectbox("Default Hue Var", df.columns, key=f"hue_var_init", index = def_ind_hue)
+    st.session_state.default_x_var = st.selectbox("Default X Var", df.columns, key=f"x_var_init",
+                                                  index = def_ind_x)
+    st.session_state.default_y_var = st.selectbox("Default Y Var", df.columns, key=f"y_var_init",
+                                                  index = def_ind_y)
+    st.session_state.default_hue_var = st.selectbox("Default Hue Var", df.columns, key=f"hue_var_init",
+                                                    index = def_ind_hue)
+    trend_index = st.session_state.trend_types.index(st.session_state.default_trend_type)
+    st.session_state.default_trend_type = st.selectbox("Default Trend Line", st.session_state.trend_types,
+                                                       key=f"trend_type_init", index = trend_index)
     st.write('---')
 
     # Button to add a new plot
