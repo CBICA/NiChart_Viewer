@@ -7,9 +7,83 @@ from pandas.api.types import (
     is_object_dtype,
 )
 import plotly.express as px
+from math import ceil
 
-## Function definitions
-def filter_dataframe(df: pd.DataFrame, cno) -> pd.DataFrame:
+# Initiate Session State Values
+if 'instantiated' not in st.session_state:
+    st.session_state.plots = pd.DataFrame({'PID':[]})
+    st.session_state.pid = 1
+    st.session_state.instantiated = True
+
+def add_plot():
+    '''
+    Adds a new plot (updates a dataframe with plot ids)
+    '''
+    df_p = st.session_state.plots
+    df_p.loc[st.session_state.pid] = [f'Plot {st.session_state.pid}']
+    st.session_state.pid += 1
+
+# Remove a plot
+def remove_plot(pid):
+    '''
+    Removes the plot with the pid (updates the plot ids dataframe)
+    '''
+    df_p = st.session_state.plots
+    df_p = df_p[df_p.PID != pid]
+    st.session_state.plots = df_p
+
+def display_plot(pid):
+    '''
+    Displays the plot with the pid
+    '''
+
+    # Create a copy of dataframe for filtered data
+    df_filt = df.copy()
+
+    # Main container for the plot
+    plot_container = st.container(border=True)
+    with plot_container:
+
+        # Tabs for parameters
+        ptabs = st.tabs([":lock:", ":large_orange_circle:", ":large_yellow_circle:",
+                         ":large_green_circle:", ":x:"])
+
+        # Tab 0: to hide other tabs
+
+        # Tab 1: to set plotting parameters
+        with ptabs[1]:
+            plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{pid}")
+            # x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index=3)
+            # y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index=8)
+
+            # Set index for default values
+            x_ind = df.columns.get_loc(st.session_state.x_var)
+            y_ind = df.columns.get_loc(st.session_state.y_var)
+            hue_ind = df.columns.get_loc(st.session_state.hue_var)
+
+            x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index = x_ind)
+            y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index = y_ind)
+            hue_var = st.selectbox("Hue Var", df_filt.columns, key=f"hue_var_{pid}", index = hue_ind)
+
+        # Tab 2: to set data filtering parameters
+        with ptabs[2]:
+            df_filt = filter_dataframe(df, pid)
+
+        # Tab 3: to set centiles
+        with ptabs[3]:
+            cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{pid}")
+
+        # Tab 4: to reset parameters or to delete plot
+        with ptabs[4]:
+            st.button('Delete Plot', key=f'p_delete_{pid}',
+                      on_click=remove_plot, args=[pid])
+
+        # Main plot
+        scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var, color = hue_var, trendline="ols")
+        st.plotly_chart(scatter_plot)
+
+
+def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
     """
     Adds a UI on top of a dataframe to let viewers filter columns
 
@@ -37,14 +111,14 @@ def filter_dataframe(df: pd.DataFrame, cno) -> pd.DataFrame:
     # Create filters selected by the user
     modification_container = st.container()
     with modification_container:
-        widget_no = cno * 16
+        widget_no = pid + '_filter'
         to_filter_columns = st.multiselect("Filter dataframe on", df.columns, key = widget_no)
         for vno, column in enumerate(to_filter_columns):
             left, right = st.columns((1, 20))
             left.write("↳")
             # Treat columns with < 10 unique values as categorical
             if is_categorical_dtype(df[column]) or df[column].nunique() < 10:
-                widget_no = cno * 16 + vno + 1
+                widget_no = pid + '_col_' + str(vno)
                 user_cat_input = right.multiselect(
                     f"Values for {column}",
                     df[column].unique(),
@@ -89,67 +163,64 @@ def filter_dataframe(df: pd.DataFrame, cno) -> pd.DataFrame:
 
     return df
 
+# Config page
 st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
-# st.set_page_config(page_title="DataFrame Demo", page_icon="📊")
-st.markdown("# Plot Data")
-st.sidebar.header("Plot Data")
-st.write(
-    """View NiChart imaging variables and biomarkers
-    """
-)
 
-# Set plot counter
-if 'count_scatter_plots' not in st.session_state:
-    st.session_state.count_scatter_plots = 0
-
-if st.button("Add plot"):
-    st.session_state.count_scatter_plots += 1
-
-# Input data is hardcoded here
+# FIXME: Input data is hardcoded here for now
 fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"
 df = pd.read_csv(fname)
-#df = df.head(40)
 
+# Page controls in side bar
+with st.sidebar:
 
-# Create columns
-cols = st.columns(st.session_state.count_scatter_plots + 1)
+    # Slider to set number of plots in a row
+    st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
+    st.write('---')
 
-# Create plot in each column
-for cno in range(0, st.session_state.count_scatter_plots+1):
+    # Default x and y axis
+    DEFAULT_XVAR = 'Age'
+    DEFAULT_YVAR = 'GM'
+    DEFAULT_HUEVAR = 'Sex'
 
-    with cols[cno]:
+    def_ind_x = 0
+    if DEFAULT_XVAR in df.columns:
+        def_ind_x = df.columns.get_loc(DEFAULT_XVAR)
 
-        ## Data frame with filtered data
-        df_filt = df.copy()
+    def_ind_y = 0
+    if DEFAULT_YVAR in df.columns:
+        def_ind_y = df.columns.get_loc(DEFAULT_YVAR)
 
-        plot_container = st.container(border=True)
-        with plot_container:
+    def_ind_hue = 0
+    if DEFAULT_HUEVAR in df.columns:
+        def_ind_hue = df.columns.get_loc(DEFAULT_HUEVAR)
 
-            st.write('Plot ' + str(cno + 1))
+    st.session_state.x_var = st.selectbox("Default X Var", df.columns, key=f"x_var_init", index = def_ind_x)
+    st.session_state.y_var = st.selectbox("Default Y Var", df.columns, key=f"y_var_init", index = def_ind_y)
+    st.session_state.hue_var = st.selectbox("Default Hue Var", df.columns, key=f"hue_var_init", index = def_ind_hue)
+    st.write('---')
 
-            my_expander = st.popover(label='Settings')
-            with my_expander:
-                tab1, tab2, tab3 = st.tabs(["Plot", "Filters", "Centiles"])
-                with tab1:
-                    plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{cno}")
-                    x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{cno}")
-                    y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{cno}")
+    # Button to add a new plot
+    if st.button("Add plot"):
+        add_plot()
 
-                with tab2:
-                    df_filt = filter_dataframe(df, cno)
+# Read plot ids
+df_p = st.session_state.plots
+p_index = df_p.PID.tolist()
+plot_per_raw = st.session_state.plot_per_raw
 
-                with tab3:
-                    cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{cno}")
+# Render plots
+#  - iterates over plots;
+#  - for every "plot_per_raw" plots, creates a new columns block, resets column index, and displays the plot
+for i in range(0, len(p_index)):
+    column_no = i % plot_per_raw
+    if column_no == 0:
+        blocks = st.columns(plot_per_raw)
+    with blocks[column_no]:
+        display_plot(p_index[i])
 
-            # # Display filtered dataframe
-            # my_expander = st.expander(label='Data')
-            # with my_expander:
-            #     st.dataframe(df_filt)
-
-            my_expander = st.expander(label='Plot', expanded = True)
-            with my_expander:
-
-                scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var)
-                st.plotly_chart(scatter_plot)
+# # FIXME: this is for debugging for now; will be removed
+# # with st.expander('Saved DataFrames'):
+# with st.container():
+#     st.session_state.plots
 
 

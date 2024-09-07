@@ -77,7 +77,7 @@ def display_plot(pid):
                       on_click=remove_plot, args=[pid])
 
         # Main plot
-        scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var)
+        scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var, trendline="ols")
         st.plotly_chart(scatter_plot)
 
 
@@ -175,9 +175,20 @@ with st.sidebar:
     st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
     st.write('---')
 
-    # Default x axis
-    st.session_state.xvar = st.selectbox("Set X Var", df.columns, key=f"x_var_init")
-    st.session_state.yvar = st.selectbox("Set Y Var", df.columns, key=f"y_var_init")
+    # Default x and y axis
+    DEFAULT_XVAR = 'Age'
+    DEFAULT_YVAR = 'GM'
+
+    def_ind_x = 0
+    if DEFAULT_XVAR in df.columns:
+        def_ind_x = df.columns.get_loc(DEFAULT_XVAR)
+
+    def_ind_y = 0
+    if DEFAULT_YVAR in df.columns:
+        def_ind_y = df.columns.get_loc(DEFAULT_YVAR)
+
+    st.session_state.xvar = st.selectbox("Default X Var", df.columns, key=f"x_var_init", index = def_ind_x)
+    st.session_state.yvar = st.selectbox("Default Y Var", df.columns, key=f"y_var_init", index = def_ind_y)
     st.write('---')
 
     # Button to add a new plot
@@ -199,9 +210,9 @@ for i in range(0, len(p_index)):
     with blocks[column_no]:
         display_plot(p_index[i])
 
-# FIXME: this is for debugging for now; will be removed
-# with st.expander('Saved DataFrames'):
-with st.container():
-    st.session_state.plots
+# # FIXME: this is for debugging for now; will be removed
+# # with st.expander('Saved DataFrames'):
+# with st.container():
+#     st.session_state.plots
 
 
