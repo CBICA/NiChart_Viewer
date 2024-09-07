@@ -27,7 +27,8 @@ def add_plot():
 # Remove a plot
 def remove_plot(pid):
     df_p = st.session_state.plots
-    st.session_state.plots = df_p.drop(pid)
+    st.session_state.plots = df_p = df_p[df_p.PID != pid]
+
 
 
 # Display a plot
@@ -51,6 +52,10 @@ def display_plot(pid):
 
         with ptabs[3]:
             cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{pid}")
+
+        with ptabs[4]:
+            st.button('Delete Plot', key=f'p_delete_{pid}',
+                      on_click=remove_plot, args=[pid])
 
             # # Display filtered dataframe
             # my_expander = st.expander(label='Data')
@@ -165,7 +170,7 @@ if 'count_scatter_plots' not in st.session_state:
 # Page controls in Sidebar
 with st.sidebar:
 
-    st.session_state.plot_per_raw = st.slider('Plots per raw',1, 10,5, key='a_per_page')
+    st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
     st.write('---')
     # Button to add new answer block
 
@@ -196,7 +201,8 @@ for i in range(0, len(p_index)):
         display_plot(p_index[i])
         # display_plot(plot_index[i])
 
-with st.expander('Saved DataFrames'):
+# with st.expander('Saved DataFrames'):
+with st.container():
     st.session_state.plots
 
 
