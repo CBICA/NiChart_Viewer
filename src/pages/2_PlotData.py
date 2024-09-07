@@ -45,24 +45,24 @@ def display_plot(pid):
     plot_container = st.container(border=True)
     with plot_container:
 
-        st.write('Plot ' + str(cno + 1))
+        st.write('Plot ' + pid)
 
-        st.button('Remove Plot', key=f'p_remove_{cno}', on_click=remove_plot)
+        st.button('Remove Plot', key=f'p_remove_{pid}', on_click=remove_plot)
 
 
         my_expander = st.popover(label='Settings')
         with my_expander:
             tab1, tab2, tab3 = st.tabs(["Plot", "Filters", "Centiles"])
             with tab1:
-                plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{cno}")
-                x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{cno}")
-                y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{cno}")
+                plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{pid}")
+                x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}")
+                y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}")
 
             with tab2:
-                df_filt = filter_dataframe(df, cno)
+                df_filt = filter_dataframe(df, pid)
 
             with tab3:
-                cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{cno}")
+                cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{pid}")
 
         # # Display filtered dataframe
         # my_expander = st.expander(label='Data')
@@ -79,7 +79,7 @@ def display_plot(pid):
 
 
 ## Function definitions
-def filter_dataframe(df: pd.DataFrame, cno) -> pd.DataFrame:
+def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
     """
     Adds a UI on top of a dataframe to let viewers filter columns
 
@@ -107,14 +107,15 @@ def filter_dataframe(df: pd.DataFrame, cno) -> pd.DataFrame:
     # Create filters selected by the user
     modification_container = st.container()
     with modification_container:
-        widget_no = cno * 16
+        widget_no = pid + '_filter'
         to_filter_columns = st.multiselect("Filter dataframe on", df.columns, key = widget_no)
         for vno, column in enumerate(to_filter_columns):
             left, right = st.columns((1, 20))
             left.write("↳")
             # Treat columns with < 10 unique values as categorical
             if is_categorical_dtype(df[column]) or df[column].nunique() < 10:
-                widget_no = cno * 16 + vno + 1
+                # widget_no = cno * 16 + vno + 1
+                widget_no = pid + '_col_' + str(vno)
                 user_cat_input = right.multiselect(
                     f"Values for {column}",
                     df[column].unique(),
@@ -176,7 +177,7 @@ if 'count_scatter_plots' not in st.session_state:
 # Page controls in Sidebar
 with st.sidebar:
 
-    plot_per_raw = st.slider('Plots per raw',1, 10,5, key='a_per_page')
+    st.session_state.plot_per_raw = st.slider('Plots per raw',1, 10,5, key='a_per_page')
     st.write('---')
     # Button to add new answer block
 
@@ -185,7 +186,7 @@ with st.sidebar:
 
     if st.button("Add plot"):
         add_plot()
-        if st.session_state.count_scatter_plots < plot_per_raw - 1:
+        if st.session_state.count_scatter_plots < st.session_state.plot_per_raw - 1:
             st.session_state.count_scatter_plots += 1
 
 # Input data is hardcoded here
@@ -197,23 +198,24 @@ df = pd.read_csv(fname)
 # Create columns
 cols = st.columns(st.session_state.count_scatter_plots + 1)
 
-# Create plot in each column
-for cno in range(0, st.session_state.count_scatter_plots+1):
-    with cols[cno]:
-        display_plot(cno)
+# # Create plot in each column
+# for cno in range(0, st.session_state.count_scatter_plots+1):
+#     with cols[cno]:
+#         display_plot(cno)
 
 
-# # Render plots
-# df_p = st.session_state.plots
-# p_index = list(df_p.index)
-# plot_per_raw = st.session_state.plot_per_raw
-#
-# for i in range(0, len(p_index)):
-#     cno = i % st.session_state.plot_per_raw
-#     if cno = 0:
-#         blocks = st.columns(plot_per_raw)
-#     with blocks[cno]:
-#         display_plot(plot_index[i])
+# Render plots
+df_p = st.session_state.plots
+p_index = df_p.PID.tolist()
+plot_per_raw = st.session_state.plot_per_raw
+
+for i in range(0, len(p_index)):
+    cno = i % st.session_state.plot_per_raw
+    if cno == 0:
+        blocks = st.columns(plot_per_raw)
+    with blocks[cno]:
+        display_plot(p_index[i])
+        # display_plot(plot_index[i])
 
 with st.expander('Saved DataFrames'):
     st.session_state.plots
