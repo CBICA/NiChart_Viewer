@@ -33,47 +33,35 @@ def remove_plot(pid):
 # Display a plot
 def display_plot(pid):
 
-    # df_p = st.session_state.plots
-    # plot_block = st.container()
-    # a_block = qna_block.container()
-    # q_block = qna_block.container()
-    # mod_block = qna_block.container()
-
     ## Data frame with filtered data
     df_filt = df.copy()
 
     plot_container = st.container(border=True)
     with plot_container:
 
-        st.write('Plot ' + pid)
+        ptabs = st.tabs([":lock:", ":large_orange_circle:", ":large_yellow_circle:",
+                         ":large_green_circle:", ":x:"])
+        with ptabs[1]:
+            plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{pid}")
+            x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index=3)
+            y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index=8)
 
-        st.button('Remove Plot', key=f'p_remove_{pid}', on_click=remove_plot)
+        with ptabs[2]:
+            df_filt = filter_dataframe(df, pid)
 
+        with ptabs[3]:
+            cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{pid}")
 
-        my_expander = st.popover(label='Settings')
-        with my_expander:
-            tab1, tab2, tab3 = st.tabs(["Plot", "Filters", "Centiles"])
-            with tab1:
-                plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{pid}")
-                x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}")
-                y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}")
+            # # Display filtered dataframe
+            # my_expander = st.expander(label='Data')
+            # with my_expander:
+            #     st.dataframe(df_filt)
 
-            with tab2:
-                df_filt = filter_dataframe(df, pid)
-
-            with tab3:
-                cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{pid}")
-
-        # # Display filtered dataframe
-        # my_expander = st.expander(label='Data')
+        # my_expander = st.expander(label='Plot', expanded = True)
         # with my_expander:
-        #     st.dataframe(df_filt)
 
-        my_expander = st.expander(label='Plot', expanded = True)
-        with my_expander:
-
-            scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var)
-            st.plotly_chart(scatter_plot)
+        scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var)
+        st.plotly_chart(scatter_plot)
 
         # st.button('Remove QnA', key=f'a_remove_{pid}', on_click=remove_plot, args=[pid])
 
@@ -193,15 +181,6 @@ with st.sidebar:
 fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"
 df = pd.read_csv(fname)
 #df = df.head(40)
-
-
-# Create columns
-cols = st.columns(st.session_state.count_scatter_plots + 1)
-
-# # Create plot in each column
-# for cno in range(0, st.session_state.count_scatter_plots+1):
-#     with cols[cno]:
-#         display_plot(cno)
 
 
 # Render plots
