@@ -9,6 +9,7 @@ from pandas.api.types import (
 import plotly.express as px
 from math import ceil
 from streamlit_plotly_events import plotly_events
+from utils_trace import *
 
 # Initiate Session State Values
 if 'instantiated' not in st.session_state:
@@ -22,7 +23,7 @@ if 'instantiated' not in st.session_state:
     st.session_state.default_y_var = 'GM'
     st.session_state.default_hue_var = 'Sex'
     st.session_state.trend_types = ['none', 'ols', 'lowess']
-    st.session_state.default_trend_type = 'ols'
+    st.session_state.default_trend_type = 'none'
 
     # ID selected by user (default: empty)
     st.session_state.sel_id = ''
@@ -46,6 +47,7 @@ def remove_plot(pid):
     df_p = df_p[df_p.PID != pid]
     st.session_state.plots = df_p
 
+
 def display_plot(pid):
     '''
     Displays the plot with the pid
@@ -53,6 +55,7 @@ def display_plot(pid):
 
     # Create a copy of dataframe for filtered data
     df_filt = df.copy()
+
 
     # Main container for the plot
     plot_container = st.container(border=True)
@@ -100,6 +103,13 @@ def display_plot(pid):
         else:
             scatter_plot = px.scatter(df_filt, x = x_var, y = y_var, color = hue_var,
                                       trendline = trend_type)
+
+        # scatter_plot = linreg_trace(df, x_var, y_var, scatter_plot)
+        # linreg_trace(df, x_var, y_var, scatter_plot)
+        # lowess_trace(df, x_var, y_var, scatter_plot)
+        percentile_trace(df_cent, x_var, y_var, scatter_plot)
+
+
 
         # Add plot
         # - on_select: when clicked it will rerun and return the info
@@ -195,8 +205,11 @@ def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
 st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
 
 # FIXME: Input data is hardcoded here for now
-fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"
+# fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"
+fname = "../examples/test_input2/dset_test.csv"
+fcent = "../examples/test_input2/centiles_test.csv"
 df = pd.read_csv(fname)
+df_cent = pd.read_csv(fcent)
 
 # Page controls in side bar
 with st.sidebar:
