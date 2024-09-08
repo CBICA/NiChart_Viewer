@@ -8,6 +8,7 @@ from pandas.api.types import (
 )
 import plotly.express as px
 from math import ceil
+from streamlit_plotly_events import plotly_events
 
 # Initiate Session State Values
 if 'instantiated' not in st.session_state:
@@ -22,6 +23,9 @@ if 'instantiated' not in st.session_state:
     st.session_state.default_hue_var = 'Sex'
     st.session_state.trend_types = ['none', 'ols', 'lowess']
     st.session_state.default_trend_type = 'ols'
+
+    # ID selected by user (default: empty)
+    st.session_state.sel_id = ''
 
     st.session_state.instantiated = True
 
@@ -83,7 +87,7 @@ def display_plot(pid):
 
         # Tab 3: to set centiles
         with ptabs[3]:
-            cent_type = st.selectbox("Centile Type", df_filt.columns, key=f"cent_type_{pid}")
+            cent_type = st.selectbox("Centile Type", ['CN-All', 'CN-F', 'CN-M'], key=f"cent_type_{pid}")
 
         # Tab 4: to reset parameters or to delete plot
         with ptabs[4]:
@@ -92,10 +96,30 @@ def display_plot(pid):
 
         # Main plot
         if trend_type == 'none':
-            scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var, color = hue_var)
+            scatter_plot = px.scatter(df_filt, x = x_var, y = y_var, color = hue_var)
         else:
-            scatter_plot = px.scatter(df_filt, x = 'Age', y = y_var, color = hue_var, trendline = trend_type)
-        st.plotly_chart(scatter_plot)
+            scatter_plot = px.scatter(df_filt, x = x_var, y = y_var, color = hue_var,
+                                      trendline = trend_type)
+
+        # Add plot
+        # - on_select: when clicked it will rerun and return the info
+        sel_info = st.plotly_chart(scatter_plot, on_select='rerun', key="bubble_chart")
+
+        # Detect MRID from the click info
+        try:
+            sind = sel_info['selection']['point_indices'][0]
+            lgroup = sel_info['selection']['points'][0]['legendgroup']
+            mrid = df_filt[df_filt[hue_var] == lgroup].iloc[sind]['MRID']
+            st.sidebar.warning('Selected subject: ' + mrid)
+            st.session_state.sel_id = mrid
+
+        except:
+            print('Warning: Could not detect point!')
+            return
+
+        # ## FIXME: this is temp (for debugging the selection of clicked subject)
+        # st.dataframe(df_filt)
+
 
 
 def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
@@ -111,17 +135,6 @@ def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
 
     df_init = df.copy()
     df = df.copy()
-
-    # Try to convert datetimes into a standard format (datetime, no timezone)
-    for col in df.columns:
-        if is_object_dtype(df[col]):
-            try:
-                df[col] = pd.to_datetime(df[col])
-            except Exception:
-                pass
-
-        if is_datetime64_any_dtype(df[col]):
-            df[col] = df[col].dt.tz_localize(None)
 
     # Create filters selected by the user
     modification_container = st.container()
@@ -190,32 +203,37 @@ with st.sidebar:
 
     # Slider to set number of plots in a row
     st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
-    st.write('---')
 
-    # Default values for plot params
-    st.session_state.default_hue_var = 'Sex'
+    # Tabs for parameters
+    ptabs = st.tabs([":lock:", ":large_orange_circle:", ":large_yellow_circle:",
+                     ":large_green_circle:"])
 
-    def_ind_x = 0
-    if st.session_state.default_x_var in df.columns:
-        def_ind_x = df.columns.get_loc(st.session_state.default_x_var)
+    # Tab 0: to set plotting parameters
+    with ptabs[1]:
+        # Default values for plot params
+        st.session_state.default_hue_var = 'Sex'
 
-    def_ind_y = 0
-    if st.session_state.default_y_var in df.columns:
-        def_ind_y = df.columns.get_loc(st.session_state.default_y_var)
+        def_ind_x = 0
+        if st.session_state.default_x_var in df.columns:
+            def_ind_x = df.columns.get_loc(st.session_state.default_x_var)
 
-    def_ind_hue = 0
-    if st.session_state.default_hue_var in df.columns:
-        def_ind_hue = df.columns.get_loc(st.session_state.default_hue_var)
+        def_ind_y = 0
+        if st.session_state.default_y_var in df.columns:
+            def_ind_y = df.columns.get_loc(st.session_state.default_y_var)
 
-    st.session_state.default_x_var = st.selectbox("Default X Var", df.columns, key=f"x_var_init",
-                                                  index = def_ind_x)
-    st.session_state.default_y_var = st.selectbox("Default Y Var", df.columns, key=f"y_var_init",
-                                                  index = def_ind_y)
-    st.session_state.default_hue_var = st.selectbox("Default Hue Var", df.columns, key=f"hue_var_init",
-                                                    index = def_ind_hue)
-    trend_index = st.session_state.trend_types.index(st.session_state.default_trend_type)
-    st.session_state.default_trend_type = st.selectbox("Default Trend Line", st.session_state.trend_types,
-                                                       key=f"trend_type_init", index = trend_index)
+        def_ind_hue = 0
+        if st.session_state.default_hue_var in df.columns:
+            def_ind_hue = df.columns.get_loc(st.session_state.default_hue_var)
+
+        st.session_state.default_x_var = st.selectbox("Default X Var", df.columns, key=f"x_var_init",
+                                                    index = def_ind_x)
+        st.session_state.default_y_var = st.selectbox("Default Y Var", df.columns, key=f"y_var_init",
+                                                    index = def_ind_y)
+        st.session_state.default_hue_var = st.selectbox("Default Hue Var", df.columns, key=f"hue_var_init",
+                                                        index = def_ind_hue)
+        trend_index = st.session_state.trend_types.index(st.session_state.default_trend_type)
+        st.session_state.default_trend_type = st.selectbox("Default Trend Line", st.session_state.trend_types,
+                                                        key=f"trend_type_init", index = trend_index)
     st.write('---')
 
     # Button to add a new plot
@@ -236,6 +254,7 @@ for i in range(0, len(p_index)):
         blocks = st.columns(plot_per_raw)
     with blocks[column_no]:
         display_plot(p_index[i])
+
 
 # # FIXME: this is for debugging for now; will be removed
 # # with st.expander('Saved DataFrames'):
