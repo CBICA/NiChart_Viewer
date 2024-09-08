@@ -58,44 +58,45 @@ def display_plot(pid):
 
 
     # Main container for the plot
-    plot_container = st.container(border=True)
-    with plot_container:
+    with st.container(border=True):
 
-        # Tabs for parameters
-        ptabs = st.tabs([":lock:", ":large_orange_circle:", ":large_yellow_circle:",
-                         ":large_green_circle:", ":x:"])
+        with st.container(border=True):
 
-        # Tab 0: to hide other tabs
+            # Tabs for parameters
+            ptabs = st.tabs([":lock:", ":large_orange_circle:", ":large_yellow_circle:",
+                            ":large_green_circle:", ":x:"])
 
-        # Tab 1: to set plotting parameters
-        with ptabs[1]:
-            plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{pid}")
-            # x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index=3)
-            # y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index=8)
+            # Tab 0: to hide other tabs
 
-            # Set index for default values
-            x_ind = df.columns.get_loc(st.session_state.default_x_var)
-            y_ind = df.columns.get_loc(st.session_state.default_y_var)
-            hue_ind = df.columns.get_loc(st.session_state.default_hue_var)
-            trend_index = st.session_state.trend_types.index(st.session_state.default_trend_type)
+            # Tab 1: to set plotting parameters
+            with ptabs[1]:
+                plot_type = st.selectbox("Plot Type", ["DistPlot", "RegPlot"], key=f"plot_type_{pid}")
+                # x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index=3)
+                # y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index=8)
 
-            x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index = x_ind)
-            y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index = y_ind)
-            hue_var = st.selectbox("Hue Var", df_filt.columns, key=f"hue_var_{pid}", index = hue_ind)
-            trend_type = st.selectbox("Trend Line", st.session_state.trend_types, key=f"trend_type_{pid}", index = trend_index)
+                # Set index for default values
+                x_ind = df.columns.get_loc(st.session_state.default_x_var)
+                y_ind = df.columns.get_loc(st.session_state.default_y_var)
+                hue_ind = df.columns.get_loc(st.session_state.default_hue_var)
+                trend_index = st.session_state.trend_types.index(st.session_state.default_trend_type)
 
-        # Tab 2: to set data filtering parameters
-        with ptabs[2]:
-            df_filt = filter_dataframe(df, pid)
+                x_var = st.selectbox("X Var", df_filt.columns, key=f"x_var_{pid}", index = x_ind)
+                y_var = st.selectbox("Y Var", df_filt.columns, key=f"y_var_{pid}", index = y_ind)
+                hue_var = st.selectbox("Hue Var", df_filt.columns, key=f"hue_var_{pid}", index = hue_ind)
+                trend_type = st.selectbox("Trend Line", st.session_state.trend_types, key=f"trend_type_{pid}", index = trend_index)
 
-        # Tab 3: to set centiles
-        with ptabs[3]:
-            cent_type = st.selectbox("Centile Type", ['CN-All', 'CN-F', 'CN-M'], key=f"cent_type_{pid}")
+            # Tab 2: to set data filtering parameters
+            with ptabs[2]:
+                df_filt = filter_dataframe(df, pid)
 
-        # Tab 4: to reset parameters or to delete plot
-        with ptabs[4]:
-            st.button('Delete Plot', key=f'p_delete_{pid}',
-                      on_click=remove_plot, args=[pid])
+            # Tab 3: to set centiles
+            with ptabs[3]:
+                cent_type = st.selectbox("Centile Type", ['CN-All', 'CN-F', 'CN-M'], key=f"cent_type_{pid}")
+
+            # Tab 4: to reset parameters or to delete plot
+            with ptabs[4]:
+                st.button('Delete Plot', key=f'p_delete_{pid}',
+                        on_click=remove_plot, args=[pid])
 
         # Main plot
         if trend_type == 'none':
@@ -214,40 +215,46 @@ df_cent = pd.read_csv(fcent)
 # Page controls in side bar
 with st.sidebar:
 
-    # Slider to set number of plots in a row
-    st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
+    with st.container(border=True):
 
-    # Tabs for parameters
-    ptabs = st.tabs([":lock:", ":large_orange_circle:", ":large_yellow_circle:",
-                     ":large_green_circle:"])
+        # Slider to set number of plots in a row
+        st.session_state.plot_per_raw = st.slider('Plots per raw',1, 5, 3, key='a_per_page')
 
-    # Tab 0: to set plotting parameters
-    with ptabs[1]:
-        # Default values for plot params
-        st.session_state.default_hue_var = 'Sex'
+    with st.container(border=True):
 
-        def_ind_x = 0
-        if st.session_state.default_x_var in df.columns:
-            def_ind_x = df.columns.get_loc(st.session_state.default_x_var)
+        st.write('Plot Settings')
 
-        def_ind_y = 0
-        if st.session_state.default_y_var in df.columns:
-            def_ind_y = df.columns.get_loc(st.session_state.default_y_var)
+        # Tabs for parameters
+        ptabs = st.tabs([":lock:", ":large_orange_circle:", ":large_yellow_circle:",
+                        ":large_green_circle:"])
 
-        def_ind_hue = 0
-        if st.session_state.default_hue_var in df.columns:
-            def_ind_hue = df.columns.get_loc(st.session_state.default_hue_var)
+        # Tab 0: to set plotting parameters
+        with ptabs[1]:
+            # Default values for plot params
+            st.session_state.default_hue_var = 'Sex'
 
-        st.session_state.default_x_var = st.selectbox("Default X Var", df.columns, key=f"x_var_init",
-                                                    index = def_ind_x)
-        st.session_state.default_y_var = st.selectbox("Default Y Var", df.columns, key=f"y_var_init",
-                                                    index = def_ind_y)
-        st.session_state.default_hue_var = st.selectbox("Default Hue Var", df.columns, key=f"hue_var_init",
-                                                        index = def_ind_hue)
-        trend_index = st.session_state.trend_types.index(st.session_state.default_trend_type)
-        st.session_state.default_trend_type = st.selectbox("Default Trend Line", st.session_state.trend_types,
-                                                        key=f"trend_type_init", index = trend_index)
-    st.write('---')
+            def_ind_x = 0
+            if st.session_state.default_x_var in df.columns:
+                def_ind_x = df.columns.get_loc(st.session_state.default_x_var)
+
+            def_ind_y = 0
+            if st.session_state.default_y_var in df.columns:
+                def_ind_y = df.columns.get_loc(st.session_state.default_y_var)
+
+            def_ind_hue = 0
+            if st.session_state.default_hue_var in df.columns:
+                def_ind_hue = df.columns.get_loc(st.session_state.default_hue_var)
+
+            st.session_state.default_x_var = st.selectbox("Default X Var", df.columns, key=f"x_var_init",
+                                                        index = def_ind_x)
+            st.session_state.default_y_var = st.selectbox("Default Y Var", df.columns, key=f"y_var_init",
+                                                        index = def_ind_y)
+            st.session_state.default_hue_var = st.selectbox("Default Hue Var", df.columns, key=f"hue_var_init",
+                                                            index = def_ind_hue)
+            trend_index = st.session_state.trend_types.index(st.session_state.default_trend_type)
+            st.session_state.default_trend_type = st.selectbox("Default Trend Line",
+                                                               st.session_state.trend_types,
+                                                               key=f"trend_type_init", index = trend_index)
 
     # Button to add a new plot
     if st.button("Add plot"):
