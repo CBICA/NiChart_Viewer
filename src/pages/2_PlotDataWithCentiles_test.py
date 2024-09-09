@@ -206,9 +206,15 @@ def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
 st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
 
 # FIXME: Input data is hardcoded here for now
+
 # fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"
+
 fname = "../examples/test_input2/dset_test.csv"
 fcent = "../examples/test_input2/centiles_test.csv"
+
+# fname = "../examples/test_input3/DLMUSE_Volumes.csv"
+# fcent = "../examples/test_input2/centiles_test.csv"
+
 df = pd.read_csv(fname)
 df_cent = pd.read_csv(fcent)
 
@@ -260,6 +266,10 @@ with st.sidebar:
     if st.button("Add plot"):
         add_plot()
 
+# Add a single plot (initial page includes one plot)
+if st.session_state.plots.shape[0] == 0:
+    add_plot()
+
 # Read plot ids
 df_p = st.session_state.plots
 p_index = df_p.PID.tolist()
@@ -276,9 +286,9 @@ for i in range(0, len(p_index)):
         display_plot(p_index[i])
 
 
-# # FIXME: this is for debugging for now; will be removed
-# # with st.expander('Saved DataFrames'):
-# with st.container():
-#     st.session_state.plots
+# FIXME: this is for debugging for now; will be removed
+# with st.expander('Saved DataFrames'):
+with st.container():
+    st.session_state.plots
 
 

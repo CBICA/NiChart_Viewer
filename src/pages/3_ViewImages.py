@@ -16,8 +16,8 @@ st.write(
 st.write('Hello')
 
 # FIXME: Input data is hardcoded here for now
-f1 = "/home/gurayerus/GitHub/data/vTest2/Study1/Images/IXI002-Guys-0828_T1.nii.gz"
-f2 = "/home/gurayerus/GitHub/data/vTest2/Study1/DLMUSE/IXI002-Guys-0828_T1_DLMUSE.nii.gz"
+f1 = "../examples/test_input3/IXI002-Guys-0828_T1.nii.gz"
+f2 = "../examples/test_input3/IXI002-Guys-0828_T1_DLMUSE.nii.gz"
 sel_roi = 51
 mask_color = (0, 255, 0)  # RGB format
 
