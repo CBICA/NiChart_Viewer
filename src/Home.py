@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 import os
 
+
 st.sidebar.image("../resources/nichart1.png")
 
 st.write("# Welcome to NiChart Project!")

@@ -17,9 +17,5 @@ st.set_page_config(page_title="NiChart", page_icon=nicon, layout='wide',
 nav = get_nav_from_toml(".streamlit/pages_sections.toml")
 
 pg = st.navigation(nav)
-
 add_page_title(pg)
-
-# hide_pages(["Plot Data"])
-
 pg.run()

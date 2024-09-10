@@ -10,6 +10,10 @@ import plotly.express as px
 from math import ceil
 from streamlit_plotly_events import plotly_events
 from utils_trace import *
+from st_pages import hide_pages
+
+#hide_pages(["Image Processing", "Data Analytics"])
+
 
 # Initiate Session State Values
 if 'instantiated' not in st.session_state:
