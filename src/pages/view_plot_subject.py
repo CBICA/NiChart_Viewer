@@ -34,8 +34,8 @@ def display_plot(sel_id):
         fig = px.bar(x=dtmp, y=vtmp, title='Data Values')
         st.plotly_chart(fig)
 
-# Config page
-st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
+# # Config page
+# st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
 
 # FIXME: Input data is hardcoded here for now
 fname = "../examples/test_input/vTest1/Study1/StudyTest1_DLMUSE_All.csv"

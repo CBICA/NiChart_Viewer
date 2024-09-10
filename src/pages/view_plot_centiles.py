@@ -202,8 +202,8 @@ def filter_dataframe(df: pd.DataFrame, pid) -> pd.DataFrame:
 
     return df
 
-# Config page
-st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
+# # Config page
+# st.set_page_config(page_title="DataFrame Demo", page_icon="📊", layout='wide')
 
 # FIXME: Input data is hardcoded here for now
 
